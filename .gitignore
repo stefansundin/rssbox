@@ -1,0 +1,6 @@
+/log
+/tmp
+/.env
+Thumbs.db
+.DS_Store
+*.swp
