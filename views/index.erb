@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_blank">
+  <title>RSS Box</title>
+
+  <meta charset="utf-8">
+  <meta name="author" content="Stefan Sundin">
+  <meta name="description" content="Get RSS feeds for services">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <link rel="icon" href="/img/icon32.png">
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="https://stefansundin.github.io/css/main.css">
+  <link rel="alternate" type="application/atom+xml" href="https://github.com/stefansundin/rssbox/releases.atom" title="Release feed">
+</head>
+<body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
+  <header>
+    <img src="/img/icon128.png" width="128" height="128" alt="Icon" itemprop="image">
+    <hgroup>
+      <h1 itemprop="name">RSS Box</h1>
+      <h2 itemprop="description">Get RSS feeds for services</h2>
+    </hgroup>
+  </header>
+
+  <div class="container">
+    <form class="input-group" method="get" action="/youtube" target="_self">
+      <div class="input-group-addon">YouTube</div>
+      <input class="form-control" type="search" name="q" placeholder="Enter YouTube url to video or channel">
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+
+
+    <h2>About</h2>
+
+    <p>Some services like YouTube and Facebook have publicly available RSS feeds, and this page makes it easier to find them.</p>
+
+    <p>YouTube lets you subscribe to a channels recent videos.</p>
+    <p>Facebook lets you subscribe to the activity of public pages (not groups or users!).</p>
+
+
+    <h2>Donate</h2>
+
+    <p>I provide this service free of charge. If you find it useful, please make a donation. I greatly appreciate any support!</p>
+
+    <form method="post" action="https://www.paypal.com/cgi-bin/webscr" track="donate">
+      <input type="hidden" name="cmd" value="_xclick">
+      <input type="hidden" name="business" value="KYMVEK692RF5Q">
+      <input type="hidden" name="item_number" value="RSS Box">
+      <input type="hidden" name="return" value="https://stefansundin.github.io/thx">
+      <input type="hidden" name="cbt" value="Learn why you just became awesome">
+      <div class="input-group col-sm-5">
+        <input class="form-control" type="text" name="amount" id="amount" value="$5.00" placeholder="Amount">
+        <span class="input-group-btn">
+          <input class="btn btn-success" type="submit" value="Donate with PayPal">
+        </span>
+      </div>
+    </form>
+
+    <p><small><a class="expander" expand="donation-options">Show other donation options: Bitcoin, Square Cash.</a></small></p>
+    <div class="expandable" id="donation-options">
+      <p>Other donation options:</p>
+      <ul>
+        <li>Bitcoin: <tt>1EhDUbc5MjC6JavC6idKiTCxnqSxY2sbTX</tt> (<a href="https://stefansundin.github.io/img/btc-qr.png">QR code</a>)</li>
+        <li>Square Cash: <a href="https://cash.me/$StefanSundin">$StefanSundin</a></li>
+        <li>Contact me at <a fubar>stefaNStefansundinCom</a> if none of the above options work.</li>
+      </ul>
+    </div>
+
+
+    <h2>Credits</h2>
+
+    <p>Made by Stefan Sundin.</p>
+
+    <p>You can <a href="https://stefansundin.github.io/">browse my other projects</a>, or <a href="https://stefansundin.com/">visit my personal website</a>.</p>
+
+
+    <div class="share">
+      <iframe src="https://mdo.github.io/github-buttons/github-btn.html?user=stefansundin&amp;repo=rssbox&amp;type=watch&amp;count=true&amp;size=large" allowtransparency="true" frameborder="0" scrolling="0" width="155" height="30"></iframe>
+    </div>
+  </div>
+
+  <%- if request.host == "rssbox.herokuapp.com" -%>
+  <script src="https://stefansundin.github.io/js/ga.js"></script>
+  <%- end -%>
+  <script src="https://stefansundin.github.io/js/fubar.js"></script>
+  <script src="https://stefansundin.github.io/js/main.js"></script>
+</body>
+</html>

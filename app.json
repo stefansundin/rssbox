@@ -1,0 +1,17 @@
+{
+  "name": "RSS Box",
+  "description": "Get RSS feeds for services",
+  "repository": "https://github.com/stefansundin/rssbox",
+  "website": "https://github.com/stefansundin/rssbox",
+  "logo": "https://stefansundin.github.io/rssbox/img/icon128.png",
+  "success_url": "/",
+  "addons": ["heroku-redis", "raygun:intro"],
+  "keywords": ["rss"],
+  "env": {
+    "RACK_ENV": "production",
+    "GOOGLE_API_KEY": {
+      "description": "(Optional) Your Google API key for YouTube queries.",
+      "required": false
+    }
+  }
+}

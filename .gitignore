@@ -1,0 +1,7 @@
+/log/*.log
+/tmp/*.pid
+/tmp/restart.txt
+/.env
+Thumbs.db
+.DS_Store
+*.swp
