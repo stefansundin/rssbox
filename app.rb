@@ -45,7 +45,6 @@ get "/youtube" do
       channel_id = response.parsed_response["items"][0]["snippet"]["channelId"]
     end
   end
-  raise response
 
   if channel_id
     redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
