@@ -3,6 +3,7 @@ require "./config/application"
 require "erb"
 
 class YoutubeException < Exception; end
+class FacebookException < Exception; end
 
 
 get "/" do
@@ -51,6 +52,25 @@ get "/youtube" do
   else
     "Could not figure out channel id from url. Sorry."
   end
+end
+
+get "/facebook" do
+  if /facebook\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
+    # https://www.facebook.com/celldweller/info?tab=overview
+  else
+    return "That doesn't look like a facebook url. Sorry."
+  end
+
+  response = HTTParty.get("https://graph.facebook.com/#{name}")
+  if response.code == 404
+    return "Can't find a page with that name. Sorry."
+  end
+  if not response.success?
+    raise FacebookException, response
+  end
+  facebook_id = response.parsed_response["id"]
+
+  redirect "https://www.facebook.com/feeds/page.php?format=rss20&id=#{facebook_id}"
 end
 
 get "/favicon.ico" do

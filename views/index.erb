@@ -15,6 +15,14 @@
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="https://stefansundin.github.io/css/main.css">
   <link rel="alternate" type="application/atom+xml" href="https://github.com/stefansundin/rssbox/releases.atom" title="Release feed">
+  <style>
+.input-group-addon {
+  min-width: 100px;
+}
+.input-group-addon label {
+  margin: 0;
+}
+  </style>
 </head>
 <body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
   <header>
@@ -27,8 +35,16 @@
 
   <div class="container">
     <form class="input-group" method="get" action="/youtube" target="_self">
-      <div class="input-group-addon">YouTube</div>
-      <input class="form-control" type="search" name="q" placeholder="Enter YouTube url to video or channel">
+      <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
+      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter url to a YouTube video or channel.">
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+
+    <form class="input-group" method="get" action="/facebook" target="_self">
+      <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
+      <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter url to a Facebook page.">
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -37,9 +53,9 @@
 
     <h2>About</h2>
 
-    <p>Some services like YouTube and Facebook have publicly available RSS feeds, and this page makes it easier to find them.</p>
+    <p>Some services like YouTube and Facebook have publicly available RSS feeds, but the problem is that these feeds are difficult to find. This page makes looks up the url for you.</p>
 
-    <p>YouTube lets you subscribe to a channels recent videos.</p>
+    <p>YouTube lets you subscribe to a channel's recent videos.</p>
     <p>Facebook lets you subscribe to the activity of public pages (not groups or users!).</p>
 
 
