@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>instagram:<%= @user_id %></id>
+  <title><%= @user %> on Instagram</title>
+  <icon>https://instagramstatic-a.akamaihd.net/bluebar/97ef9c7/images/ico/favicon.ico</icon>
+  <link href="<%= request.url %>" rel="self" />
+  <updated><%= Time.at(@data[0]["created_time"].to_i) if @data[0] %></updated>
+<%- @data.each do |post| -%>
+
+  <entry>
+    <id>instagram:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["caption"]["text"] rescue "")) %></id>
+    <title><%= post["caption"]["text"] rescue "Image" %></title>
+    <link href="<%= post["link"] %>" />
+    <updated><%= Time.at(post["created_time"].to_i) %></updated>
+    <author><name><%= post["user"]["full_name"] %></name></author>
+    <content type="html">
+&lt;img src="<%= post["images"]["standard_resolution"]["url"] %>">
+
+&lt;p>Filter: <%= post["filter"] %>&lt;/p>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

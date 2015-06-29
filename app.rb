@@ -4,6 +4,11 @@ require "erb"
 
 class YoutubeException < Exception; end
 class FacebookException < Exception; end
+class InstagramException < Exception; end
+
+def httparty_error(r)
+  "#{r.request.path.to_s}: #{r.code} #{r.message}: #{r.body}. #{r.headers.to_h.to_json}"
+end
 
 
 get "/" do
@@ -29,7 +34,7 @@ get "/youtube" do
 
   if user
     response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=#{user}&key=#{ENV["GOOGLE_API_KEY"]}")
-    if not response.success?
+    if !response.success?
       raise YoutubeException, response
     end
     if response.parsed_response["items"].length > 0
@@ -39,7 +44,7 @@ get "/youtube" do
 
   if video_id
     response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=#{video_id}&key=#{ENV["GOOGLE_API_KEY"]}")
-    if not response.success?
+    if !response.success?
       raise YoutubeException, response
     end
     if response.parsed_response["items"].length > 0
@@ -65,12 +70,71 @@ get "/facebook" do
   if response.code == 404
     return "Can't find a page with that name. Sorry."
   end
-  if not response.success?
+  if !response.success?
     raise FacebookException, response
   end
   facebook_id = response.parsed_response["id"]
 
   redirect "https://www.facebook.com/feeds/page.php?format=rss20&id=#{facebook_id}"
+end
+
+get "/instagram/auth" do
+  return "Already authed" if ENV["INSTAGRAM_ACCESS_TOKEN"]
+  if params[:code]
+    response = HTTParty.post("https://api.instagram.com/oauth/access_token", body: {
+      client_id: ENV["INSTAGRAM_CLIENT_ID"],
+      client_secret: ENV["INSTAGRAM_CLIENT_SECRET"],
+      grant_type: "authorization_code",
+      redirect_uri: request.url.split("?").first,
+      code: params[:code]
+    })
+    raise InstagramException, httparty_error(response) if !response.success?
+    headers "Content-Type" => "text/plain"
+    "heroku config:set INSTAGRAM_ACCESS_TOKEN=#{response.parsed_response["access_token"]}"
+  else
+    redirect "https://api.instagram.com/oauth/authorize/?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&redirect_uri=#{request.url}&response_type=code"
+  end
+end
+
+get "/instagram" do
+  if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
+    # https://instagram.com/p/4KaPsKSjni/
+    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
+    return response.parsed_response["meta"]["error_message"] if !response.success?
+    user = response.parsed_response["data"]["user"]
+  elsif /instagram\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
+    # https://instagram.com/infectedmushroom/
+    response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
+    raise InstagramException, response if !response.success?
+    user = response.parsed_response["data"].find { |user| user["username"] == name }
+  else
+    return "That doesn't look like an instagram url. Sorry."
+  end
+
+  if user
+    redirect "/instagram/#{user["id"]}/#{user["username"]}"
+  else
+    "Can't find a user with that name. Sorry."
+  end
+end
+
+get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
+  @user_id = user_id
+
+  response = HTTParty.get("https://api.instagram.com/v1/users/#{user_id}/media/recent?access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
+  if response.code == 400
+    # user no longer exists or is private, show the error in the feed
+    @meta = response.parsed_response["meta"]
+    headers "Content-Type" => "application/atom+xml;charset=utf-8"
+    return erb :instagram_error
+  end
+  raise InstagramException, response if !response.success?
+
+  @data = response.parsed_response["data"]
+  @user = @data[0]["user"]["username"] rescue username
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :instagram_feed
 end
 
 get "/favicon.ico" do
@@ -103,4 +167,12 @@ end
 
 error YoutubeException do
   "There was a problem talking to YouTube."
+end
+
+error FacebookException do
+  "There was a problem talking to Facebook."
+end
+
+error InstagramException do
+  "There was a problem talking to Instagram."
 end

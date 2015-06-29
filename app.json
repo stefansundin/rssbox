@@ -12,6 +12,18 @@
     "GOOGLE_API_KEY": {
       "description": "(Optional) Your Google API key for YouTube queries.",
       "required": false
+    },
+    "INSTAGRAM_CLIENT_ID": {
+      "description": "(Optional) Your Instagram client id.",
+      "required": false
+    },
+    "INSTAGRAM_CLIENT_SECRET": {
+      "description": "(Optional) Your Instagram client secret.",
+      "required": false
+    },
+    "INSTAGRAM_ACCESS_TOKEN": {
+      "description": "(Optional) Your Instagram access token. If you use this then you don't have to supply client id and secret above.",
+      "required": false
     }
   }
 }
