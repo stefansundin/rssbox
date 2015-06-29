@@ -33,19 +33,21 @@
     </hgroup>
   </header>
 
+<% if ENV["GOOGLE_API_KEY"] %>
   <div class="container">
     <form class="input-group" method="get" action="/youtube" target="_self">
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
-      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter url to a YouTube video or channel.">
+      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video.">
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
+<% end %>
 
 <% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
     <form class="input-group" method="get" action="/facebook" target="_self">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
-      <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter url to a Facebook page.">
+      <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url.">
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -55,7 +57,7 @@
 <% if ENV["INSTAGRAM_ACCESS_TOKEN"] %>
     <form class="input-group" method="get" action="/instagram" target="_self">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
-      <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter url to an Instagram post or user.">
+      <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post.">
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>

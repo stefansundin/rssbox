@@ -17,6 +17,8 @@ get "/" do
 end
 
 get "/youtube" do
+  return "Insufficient parameters" if params[:q].empty?
+
   if /youtube\.com\/channel\/(?<channel_id>UC[^\/\?#]+)/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
   elsif /youtube\.com\/user\/(?<user>[^\/\?#]+)/ =~ params[:q]
@@ -29,8 +31,11 @@ get "/youtube" do
     # https://www.youtube.com/khanacademy
   elsif /youtu\.be\/(?<video_id>[^\?#]+)/ =~ params[:q]
     # https://youtu.be/vVXbgbMp0oY?t=1s
+  elsif /(?<channel_id>UC[^\/\?#]+)/ =~ params[:q]
+    # it's a channel id
   else
-    return "That doesn't look like a youtube url. Sorry."
+    # it's probably a channel name
+    user = params[:q]
   end
 
   if user
@@ -56,21 +61,21 @@ get "/youtube" do
   if channel_id
     redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
   else
-    "Could not figure out channel id from url. Sorry."
+    "Could not find the channel. Sorry."
   end
 end
 
 get "/facebook" do
+  return "Insufficient parameters" if params[:q].empty?
+
   if /facebook\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
     # https://www.facebook.com/celldweller/info?tab=overview
   else
-    return "That doesn't look like a facebook url. Sorry."
+    name = params[:q]
   end
 
   response = HTTParty.get("https://graph.facebook.com/v2.3/#{name}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
-  if response.code == 404
-    return "Can't find a page with that name. Sorry."
-  end
+  return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookException, response if !response.success?
 
   data = response.parsed_response
@@ -92,6 +97,7 @@ end
 
 get "/instagram/auth" do
   return "Already authed" if ENV["INSTAGRAM_ACCESS_TOKEN"]
+
   if params[:code]
     response = HTTParty.post("https://api.instagram.com/oauth/access_token", body: {
       client_id: ENV["INSTAGRAM_CLIENT_ID"],
@@ -109,6 +115,8 @@ get "/instagram/auth" do
 end
 
 get "/instagram" do
+  return "Insufficient parameters" if params[:q].empty?
+
   if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
     # https://instagram.com/p/4KaPsKSjni/
     response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
@@ -116,11 +124,14 @@ get "/instagram" do
     user = response.parsed_response["data"]["user"]
   elsif /instagram\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
     # https://instagram.com/infectedmushroom/
+  else
+    name = params[:q]
+  end
+
+  if name
     response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
     raise InstagramException, response if !response.success?
     user = response.parsed_response["data"].find { |user| user["username"] == name }
-  else
-    return "That doesn't look like an instagram url. Sorry."
   end
 
   if user
