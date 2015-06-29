@@ -8,15 +8,19 @@
 <%- @data.each do |post| -%>
 
   <entry>
-    <id>instagram:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["caption"]["text"] rescue "")) %></id>
-    <title><%= post["caption"]["text"] rescue "Image" %></title>
+    <id>instagram:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["caption"]["text"] rescue "")) %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= "Video: " if post["type"] == "video" %><%= post["caption"]["text"] rescue "No title" %></title>
     <link href="<%= post["link"] %>" />
     <updated><%= Time.at(post["created_time"].to_i) %></updated>
     <author><name><%= post["user"]["full_name"] %></name></author>
     <content type="html">
+<% if post["videos"] %>
+&lt;iframe src="<%= post["link"] %>/embed/" width="612" height="710" frameborder="0" scrolling="no" allowfullscreen>&lt;/iframe>
+<% else %>
 &lt;img src="<%= post["images"]["standard_resolution"]["url"] %>">
 
 &lt;p>Filter: <%= post["filter"] %>&lt;/p>
+<% end %>
     </content>
   </entry>
 <%- end -%>
