@@ -15,7 +15,7 @@
     <author><name><%= post["user"]["full_name"] %></name></author>
     <content type="html">
 <% if post["videos"] %>
-&lt;iframe src="<%= post["link"] %>/embed/" width="612" height="710" frameborder="0" scrolling="no" allowfullscreen>&lt;/iframe>
+&lt;iframe src="<%= post["link"] %>embed/" width="612" height="710" frameborder="0" scrolling="no" allowfullscreen>&lt;/iframe>
 <% else %>
 &lt;img src="<%= post["images"]["standard_resolution"]["url"] %>">
 
