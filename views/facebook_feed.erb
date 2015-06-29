@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>facebook:<%= @id %></id>
+  <title><%= @user %> on Facebook</title>
+  <icon>https://www.facebook.com/favicon.ico</icon>
+  <link href="<%= request.url %>" rel="self" />
+  <updated><%= @data[0]["updated_time"] if @data[0] %></updated>
+<%- @data.each do |post| -%>
+
+  <entry>
+    <id>facebook:post:<%= post["id"] %>:<%= post["updated_time"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= post["message"] ? post["message"].truncate(120) : post["type"] %></title>
+    <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
+    <updated><%= post["updated_time"] %></updated>
+    <author><name><%= post["from"]["name"] %></name></author>
+    <content><%= post["message"] %></content>
+  </entry>
+<%- end -%>
+</feed>

@@ -13,6 +13,7 @@ gem "airbrake"
 gem "rack-ssl-enforcer"
 gem "clogger"
 gem "heroku-env"
+gem "activesupport"
 
 group :development do
   gem "rake"

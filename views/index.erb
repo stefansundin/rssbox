@@ -42,6 +42,7 @@
       </span>
     </form>
 
+<% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
     <form class="input-group" method="get" action="/facebook" target="_self">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
       <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter url to a Facebook page.">
@@ -49,6 +50,7 @@
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
+<% end %>
 
 <% if ENV["INSTAGRAM_ACCESS_TOKEN"] %>
     <form class="input-group" method="get" action="/instagram" target="_self">

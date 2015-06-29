@@ -13,6 +13,14 @@
       "description": "(Optional) Your Google API key for YouTube queries.",
       "required": false
     },
+    "FACEBOOK_APP_ID": {
+      "description": "(Optional) Your Facebook app id.",
+      "required": false
+    },
+    "FACEBOOK_APP_SECRET": {
+      "description": "(Optional) Your Facebook app secret.",
+      "required": false
+    },
     "INSTAGRAM_CLIENT_ID": {
       "description": "(Optional) Your Instagram client id.",
       "required": false

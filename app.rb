@@ -1,6 +1,7 @@
 require "sinatra"
 require "./config/application"
 require "erb"
+require "active_support/core_ext/string"
 
 class YoutubeException < Exception; end
 class FacebookException < Exception; end
@@ -66,16 +67,27 @@ get "/facebook" do
     return "That doesn't look like a facebook url. Sorry."
   end
 
-  response = HTTParty.get("https://graph.facebook.com/#{name}")
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{name}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
   if response.code == 404
     return "Can't find a page with that name. Sorry."
   end
-  if !response.success?
-    raise FacebookException, response
-  end
-  facebook_id = response.parsed_response["id"]
+  raise FacebookException, response if !response.success?
 
-  redirect "https://www.facebook.com/feeds/page.php?format=rss20&id=#{facebook_id}"
+  data = response.parsed_response
+  redirect "/facebook/#{data["id"]}/#{data["username"]}"
+end
+
+get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @id = id
+
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/posts?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
+  raise FacebookException, response if !response.success?
+
+  @data = response.parsed_response["data"]
+  @user = @data[0]["from"]["name"] rescue username
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :facebook_feed
 end
 
 get "/instagram/auth" do
