@@ -4,6 +4,7 @@
   <title><%= @user %> on Facebook</title>
   <icon>https://www.facebook.com/favicon.ico</icon>
   <link href="<%= request.url %>" rel="self" />
+  <link href="https://www.facebook.com/<%= @id %>" rel="alternate" />
   <updated><%= @data[0]["updated_time"] if @data[0] %></updated>
 <%- @data.each do |post| -%>
 

@@ -103,7 +103,7 @@ get "/instagram/auth" do
       client_id: ENV["INSTAGRAM_CLIENT_ID"],
       client_secret: ENV["INSTAGRAM_CLIENT_SECRET"],
       grant_type: "authorization_code",
-      redirect_uri: request.url.split("?").first,
+      redirect_uri: request.base_url+request.path_info,
       code: params[:code]
     })
     raise InstagramException, httparty_error(response) if !response.success?
