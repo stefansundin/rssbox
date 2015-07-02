@@ -21,7 +21,7 @@ get "/go" do
   if /^https?:\/\/(www\.)?youtu(\.?be|be\.com)/ =~ params[:q]
     redirect "/youtube?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?facebook\.com/ =~ params[:q]
-    redirect "/facebook?#{params.to_querystring}}"
+    redirect "/facebook?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?instagram\.com/ =~ params[:q]
     redirect "/instagram?#{params.to_querystring}"
   else
