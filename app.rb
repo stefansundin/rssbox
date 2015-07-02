@@ -19,11 +19,11 @@ end
 get "/go" do
   return "Insufficient parameters" if params[:q].empty?
   if /^https?:\/\/(www\.)?youtu(\.?be|be\.com)/ =~ params[:q]
-    redirect "/youtube?q=#{params[:q]}"
+    redirect "/youtube?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?facebook\.com/ =~ params[:q]
-    redirect "/facebook?q=#{params[:q]}"
+    redirect "/facebook?#{params.to_querystring}}"
   elsif /^https?:\/\/(www\.)?instagram\.com/ =~ params[:q]
-    redirect "/instagram?q=#{params[:q]}"
+    redirect "/instagram?#{params.to_querystring}"
   else
     "Unknown service"
   end
