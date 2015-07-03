@@ -81,7 +81,9 @@ end
 get "/facebook" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /facebook\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
+  if /facebook\.com\/pages\/[^\/]+\/(?<name>\d+)/ =~ params[:q]
+    # https://www.facebook.com/pages/Aln%C3%B6-IF/284405309736?fref=ts
+  elsif /facebook\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
     # https://www.facebook.com/celldweller/info?tab=overview
   else
     name = params[:q]
@@ -92,7 +94,7 @@ get "/facebook" do
   raise FacebookError, response if !response.success?
 
   data = response.parsed_response
-  redirect "/facebook/#{data["id"]}/#{data["username"]}"
+  redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}"
 end
 
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
