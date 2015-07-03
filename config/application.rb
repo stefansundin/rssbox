@@ -8,6 +8,9 @@ Dir["#{app_path}/config/initializers/*.rb"].each { |f| require f }
 
 set :erb, trim: "-"
 
+# uncomment to get production error pages in development
+# set :environment, :production
+
 # development specific
 configure :development do
   use BetterErrors::Middleware

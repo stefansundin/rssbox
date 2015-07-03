@@ -3,9 +3,27 @@ require "./config/application"
 require "erb"
 require "active_support/core_ext/string"
 
-class YoutubeError < StandardError; end
-class FacebookError < StandardError; end
-class InstagramError < StandardError; end
+class PartyError < StandardError
+  def initialize(request)
+    @request = request
+  end
+
+  def request
+    @request
+  end
+
+  def data
+    @request.parsed_response
+  end
+
+  def message
+    @request.to_s
+  end
+end
+
+class YoutubeError < PartyError; end
+class FacebookError < PartyError; end
+class InstagramError < PartyError; end
 
 def httparty_error(r)
   "#{r.request.path.to_s}: #{r.code} #{r.message}: #{r.body}. #{r.headers.to_h.to_json}"
@@ -53,9 +71,8 @@ get "/youtube" do
 
   if user
     response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=#{user}&key=#{ENV["GOOGLE_API_KEY"]}")
-    if !response.success?
-      raise YoutubeError, response
-    end
+    raise YoutubeError.new(response) if !response.success?
+
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["id"]
     end
@@ -63,9 +80,8 @@ get "/youtube" do
 
   if video_id
     response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=#{video_id}&key=#{ENV["GOOGLE_API_KEY"]}")
-    if !response.success?
-      raise YoutubeError, response
-    end
+    raise YoutubeError.new(response) if !response.success?
+
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["snippet"]["channelId"]
     end
@@ -91,7 +107,7 @@ get "/facebook" do
 
   response = HTTParty.get("https://graph.facebook.com/v2.3/#{name}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
   return "Can't find a page with that name. Sorry." if response.code == 404
-  raise FacebookError, response if !response.success?
+  raise FacebookError.new(response) if !response.success?
 
   data = response.parsed_response
   redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}"
@@ -101,7 +117,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
   response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/posts?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
-  raise FacebookError, response if !response.success?
+  raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
   @user = @data[0]["from"]["name"] rescue username
@@ -121,7 +137,7 @@ get "/instagram/auth" do
       redirect_uri: request.base_url+request.path_info,
       code: params[:code]
     })
-    raise InstagramError, httparty_error(response) if !response.success?
+    raise InstagramError.new(response) if !response.success?
     headers "Content-Type" => "text/plain"
     "heroku config:set INSTAGRAM_ACCESS_TOKEN=#{response.parsed_response["access_token"]}"
   else
@@ -145,7 +161,7 @@ get "/instagram" do
 
   if name
     response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
-    raise InstagramError, response if !response.success?
+    raise InstagramError.new(response) if !response.success?
     user = response.parsed_response["data"].find { |user| user["username"] == name }
   end
 
@@ -166,7 +182,7 @@ get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
     headers "Content-Type" => "application/atom+xml;charset=utf-8"
     return erb :instagram_error
   end
-  raise InstagramError, response if !response.success?
+  raise InstagramError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
   @user = @data[0]["user"]["username"] rescue username
@@ -199,22 +215,22 @@ if ENV["LOADERIO_VERIFICATION_TOKEN"]
 end
 
 
-error do
+error do |e|
   status 500
-  "Sorry, a nasty error occurred: #{env["sinatra.error"].message}"
+  "Sorry, a nasty error occurred: #{e}"
 end
 
-error YoutubeError do
+error YoutubeError do |e|
   status 503
   "There was a problem talking to YouTube."
 end
 
-error FacebookError do
+error FacebookError do |e|
   status 503
   "There was a problem talking to Facebook."
 end
 
-error InstagramError do
+error InstagramError do |e|
   status 503
   "There was a problem talking to Instagram."
 end
