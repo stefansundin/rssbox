@@ -126,31 +126,12 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   erb :facebook_feed
 end
 
-get "/instagram/auth" do
-  return "Already authed" if ENV["INSTAGRAM_ACCESS_TOKEN"]
-
-  if params[:code]
-    response = HTTParty.post("https://api.instagram.com/oauth/access_token", body: {
-      client_id: ENV["INSTAGRAM_CLIENT_ID"],
-      client_secret: ENV["INSTAGRAM_CLIENT_SECRET"],
-      grant_type: "authorization_code",
-      redirect_uri: request.base_url+request.path_info,
-      code: params[:code]
-    })
-    raise InstagramError.new(response) if !response.success?
-    headers "Content-Type" => "text/plain"
-    "heroku config:set INSTAGRAM_ACCESS_TOKEN=#{response.parsed_response["access_token"]}"
-  else
-    redirect "https://api.instagram.com/oauth/authorize/?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&redirect_uri=#{request.url}&response_type=code"
-  end
-end
-
 get "/instagram" do
   return "Insufficient parameters" if params[:q].empty?
 
   if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
     # https://instagram.com/p/4KaPsKSjni/
-    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
+    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}")
     return response.parsed_response["meta"]["error_message"] if !response.success?
     user = response.parsed_response["data"]["user"]
   elsif /instagram\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
@@ -160,7 +141,7 @@ get "/instagram" do
   end
 
   if name
-    response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
+    response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}")
     raise InstagramError.new(response) if !response.success?
     user = response.parsed_response["data"].find { |user| user["username"] == name }
   end
@@ -175,7 +156,7 @@ end
 get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   @user_id = user_id
 
-  response = HTTParty.get("https://api.instagram.com/v1/users/#{user_id}/media/recent?access_token=#{ENV["INSTAGRAM_ACCESS_TOKEN"]}")
+  response = HTTParty.get("https://api.instagram.com/v1/users/#{user_id}/media/recent?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}")
   if response.code == 400
     # user no longer exists or is private, show the error in the feed
     @meta = response.parsed_response["meta"]
