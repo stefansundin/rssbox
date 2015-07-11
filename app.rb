@@ -1,6 +1,5 @@
 require "sinatra"
 require "./config/application"
-require "erb"
 require "active_support/core_ext/string"
 
 class PartyError < StandardError
