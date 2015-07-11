@@ -15,6 +15,10 @@ gem "clogger"
 gem "heroku-env"
 gem "activesupport"
 
+# database
+gem "sinatra-activerecord", require: "sinatra/activerecord"
+gem "pg"
+
 group :development do
   gem "rake"
   gem "sinatra-reloader"

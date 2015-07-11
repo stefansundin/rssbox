@@ -5,3 +5,11 @@ if environment == "development"
 end
 
 Dir["lib/tasks/*.rake"].each { |f| load f }
+
+# activerecord
+require "sinatra/activerecord/rake"
+namespace :db do
+  task :load_config do
+    require "./app"
+  end
+end
