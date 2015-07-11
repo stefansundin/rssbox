@@ -10,11 +10,20 @@
 
   <entry>
     <id>facebook:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["message"] || "" rescue "")) %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= post["message"] ? post["message"].truncate(120) : post["type"] %></title>
+    <title><%= post["message"] ? post["message"].to_line.truncate(120) : post["type"] %></title>
     <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
     <updated><%= post["updated_time"] %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
-    <content><%= post["message"] %></content>
+    <content type="html">
+&lt;pre><%= post["message"] %>&lt;/pre>
+<%=
+if post["type"] == "video"
+  "&lt;iframe src='https://www.facebook.com/video/embed?video_id=#{post["object_id"]}' width='1280' height='720' frameborder='0' scrolling='no' allowfullscreen>&lt;/iframe>"
+elsif post["type"] == "photo"
+  "&lt;img src='#{post["picture"]}'>"
+end
+%>
+    </content>
   </entry>
 <%- end -%>
 </feed>
