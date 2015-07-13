@@ -33,8 +33,8 @@
     </hgroup>
   </header>
 
-<% if ENV["GOOGLE_API_KEY"] %>
   <div class="container">
+<% if ENV["GOOGLE_API_KEY"] %>
     <form class="input-group" method="get" action="/youtube" target="_self">
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
       <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video.">
