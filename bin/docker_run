@@ -1,0 +1,1 @@
+docker run -d --env-file=.dockerenv --link rssbox-redis:redis -P rssbox
