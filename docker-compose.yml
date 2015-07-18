@@ -1,0 +1,9 @@
+web:
+  build: .
+  ports:
+   - "3000:8080"
+  links:
+   - redis
+  env_file: .dockerenv
+redis:
+  image: redis
