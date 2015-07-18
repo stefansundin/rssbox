@@ -1,2 +1,3 @@
+#!/bin/bash
 # listens on port 3000 unless port is specified as first argument
 bundle exec unicorn -p ${1-3000} -c config/unicorn.rb -N

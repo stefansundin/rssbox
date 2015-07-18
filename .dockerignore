@@ -1,8 +1,1 @@
-/log/*.log
-/tmp/*.pid
-/tmp/restart.txt
-/.env
-/.dockerenv
-Thumbs.db
-.DS_Store
-*.swp
+.gitignore
