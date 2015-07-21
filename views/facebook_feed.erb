@@ -10,7 +10,15 @@
 
   <entry>
     <id>facebook:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["message"] || "" rescue "")) %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= post["message"] ? post["message"].to_line.truncate(120) : post["type"] %></title>
+    <title><%=
+if post["message"]
+  post["message"].to_line.truncate(120)
+elsif post["type"] == "link"
+  "Link: #{post["link"]}"
+else
+  post["type"]
+end
+%></title>
     <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
     <updated><%= post["updated_time"] %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
