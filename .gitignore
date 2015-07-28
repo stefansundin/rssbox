@@ -3,6 +3,7 @@
 /tmp/restart.txt
 /.env
 /.dockerenv
+.vagrant
 Thumbs.db
 .DS_Store
 *.swp
