@@ -21,8 +21,8 @@ else
   git clone https://github.com/rkh/rbenv-update.git $RBENV_ROOT/plugins/rbenv-update
 fi
 
-rbenv install 2.2.2
-rbenv global 2.2.2
+rbenv install 2.2.3
+rbenv global 2.2.3
 
 gem install bundler
 
