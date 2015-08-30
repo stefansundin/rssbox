@@ -15,6 +15,8 @@ if post["message"]
   post["message"].to_line.truncate(120)
 elsif post["type"] == "link"
   "Link: #{post["link"]}"
+elsif post["name"]
+  post["name"]
 else
   post["type"]
 end
@@ -23,7 +25,7 @@ end
     <updated><%= post["updated_time"] %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
-&lt;pre><%= post["message"] %>&lt;/pre>
+&lt;pre><%= post["message"] || post["description"] %>&lt;/pre>
 <%=
 if post["type"] == "video"
   "&lt;iframe src='https://www.facebook.com/video/embed?video_id=#{post["object_id"]}' width='1280' height='720' frameborder='0' scrolling='no' allowfullscreen>&lt;/iframe>"
