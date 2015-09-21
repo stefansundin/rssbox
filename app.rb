@@ -69,15 +69,19 @@ end
 get "/facebook" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /facebook\.com\/pages\/[^\/]+\/(?<name>\d+)/ =~ params[:q]
-    # https://www.facebook.com/pages/Aln%C3%B6-IF/284405309736?fref=ts
-  elsif /facebook\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
+  if /facebook\.com\/pages\/[^\/]+\/(?<id>\d+)/ =~ params[:q]
+    # https://www.facebook.com/pages/Lule%C3%A5-Sweden/106412259396611?fref=ts
+  elsif /facebook\.com\/groups\/(?<id>\d+)/ =~ params[:q]
+    # https://www.facebook.com/groups/223764997793315
+  elsif /facebook\.com\/[^\/]+-(?<id>[\d]+)/ =~ params[:q]
+    # https://www.facebook.com/TNG-Recuts-867357396651373/
+  elsif /facebook\.com\/(?<id>[^\/\?#]+)/ =~ params[:q]
     # https://www.facebook.com/celldweller/info?tab=overview
   else
-    name = params[:q]
+    id = params[:q]
   end
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{name}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
 
