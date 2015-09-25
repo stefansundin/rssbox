@@ -27,7 +27,7 @@ GEM
     github-release-party (0.0.3)
       httparty (~> 0.13)
     heroku-env (0.1.2)
-    httparty (0.13.7)
+    httparty (0.13.5)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
@@ -94,7 +94,7 @@ DEPENDENCIES
   dotenv
   github-release-party
   heroku-env
-  httparty
+  httparty (= 0.13.5)
   powder
   pry-remote
   rack
