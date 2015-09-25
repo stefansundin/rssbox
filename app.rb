@@ -14,6 +14,8 @@ get "/go" do
     redirect "/facebook?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?instagram\.com/ =~ params[:q]
     redirect "/instagram?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
+    redirect "/soundcloud?#{params.to_querystring}"
   else
     "Unknown service"
   end
