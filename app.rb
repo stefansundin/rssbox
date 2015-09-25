@@ -148,6 +148,38 @@ get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   erb :instagram_feed
 end
 
+get "/soundcloud" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /soundcloud\.com\/(?<username>[^\/\?#]+)/ =~ params[:q]
+    # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
+  else
+    username = params[:q]
+  end
+
+  response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}")
+  # response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}&client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}")
+  raise SoundcloudError.new(response) if !response.success?
+  data = response.parsed_response.first
+  return "Can't find a user with that name. Sorry." if !data
+
+  redirect "/soundcloud/#{data["id"]}/#{data["permalink"]}"
+end
+
+get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @id = id
+
+  response = HTTParty.get("https://api.soundcloud.com/users/#{id}/tracks?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", headers: {'Accept' => 'application/json'})
+  raise SoundcloudError.new(response) if !response.success?
+
+  @data = response.parsed_response
+  @username = @data[0]["user"]["permalink"] rescue username
+  @user = @data[0]["user"]["username"] rescue username
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :soundcloud_feed
+end
+
 get "/favicon.ico" do
   redirect "/img/icon32.png"
 end
