@@ -1,3 +1,23 @@
+$setup_env = <<SCRIPT
+# To unset variables when restarting, set them to an empty string
+export RBENV_ROOT=/home/vagrant/.rbenv
+export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
+export LOG_ENABLED=1
+
+export REDIS_URL=redis://localhost:6379/3
+#export GOOGLE_API_KEY=
+#export FACEBOOK_APP_ID=
+#export FACEBOOK_APP_SECRET=
+#export INSTAGRAM_CLIENT_ID=
+#export INSTAGRAM_CLIENT_SECRET=
+#export SOUNDCLOUD_CLIENT_ID=
+
+#export GOOGLE_VERIFICATION_TOKEN=googleXXXXXXXXXXXXXXXX.html
+#export GOOGLE_ANALYTICS_ID=UA-1234567-1
+#export LOADERIO_VERIFICATION_TOKEN=loaderio-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+SCRIPT
+
+
 $unicorn_initd = <<SCRIPT
 ### BEGIN INIT INFO
 # Provides:          unicorn
@@ -13,17 +33,22 @@ $unicorn_initd = <<SCRIPT
 set -u
 set -e
 
+
 # Setup
-RBENV_ROOT=/home/vagrant/.rbenv
-PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
+ENV_SCRIPT=/home/vagrant/setup_env.sh
 APP_ROOT=/vagrant
 PIDFILE=$APP_ROOT/tmp/unicorn.pid
 USER=vagrant
-CMD="export PATH=$PATH; cd $APP_ROOT; bundle exec unicorn -p 8080 -c config/unicorn.rb -N -D -E production"
+CMD="source $ENV_SCRIPT; export ENV_SCRIPT=$ENV_SCRIPT; cd $APP_ROOT; bundle exec unicorn -p 8080 -c config/unicorn.rb -N -D -E production"
 
 # Helper to send signals to running unicorn
 sig() {
   test -s "$PIDFILE" && kill -$1 `cat $PIDFILE` 2>/dev/null
+}
+
+# Helper to send signals to old unicorn (used when restarting)
+oldsig() {
+    test -s "$PIDFILE.oldbin" && kill -$1 `cat "$PIDFILE.oldbin"` 2>/dev/null
 }
 
 case ${1-help} in
@@ -65,6 +90,12 @@ restart|reload)
     echo "Error reloading"
     exit 1
   fi
+
+  # signal the old unicorn master to quit
+  oldsig QUIT || {
+    echo "Couldn't quit old unicorn process"
+    exit $?
+  }
 
   echo "Reloaded OK"
   exit 0
@@ -124,9 +155,8 @@ gem install bundler
 
 ln -sf /vagrant/.irbrc /home/vagrant/.irbrc
 
-cat > ~/setup_env.sh << EOF
-export RBENV_ROOT=/home/vagrant/.rbenv
-export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
+cat > ~/setup_env.sh << 'EOF'
+#{$setup_env}
 EOF
 
 cat >> ~/.bashrc << EOF
@@ -142,8 +172,13 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
+  config.vm.hostname = "rssbox"
   config.vm.network "forwarded_port", guest: 8080, host: 3000
   config.vm.provision "shell", inline: $root_provision
   config.vm.provision "shell", inline: $user_provision, privileged: false
   config.vm.provision "shell", inline: "service unicorn start", run: "always"
+  config.vm.post_up_message = <<EOF
+Webserver should now be running at http://localhost:3000/"
+Please run 'vagrant ssh' and edit ~/setup_env.sh, then run 'sudo service unicorn restart'.
+EOF
 end
