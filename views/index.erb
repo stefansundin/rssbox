@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <link rel="icon" href="/img/icon32.png">
+  <link rel="icon" href="img/icon32.png">
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
   <link rel="stylesheet" href="https://stefansundin.github.io/css/main.css">
@@ -26,7 +26,7 @@
 </head>
 <body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
   <header>
-    <img src="/img/icon128.png" width="128" height="128" alt="Icon" itemprop="image">
+    <img src="img/icon128.png" width="128" height="128" alt="Icon" itemprop="image">
     <hgroup>
       <h1 itemprop="name">RSS Box</h1>
       <h2 itemprop="description">Get RSS feeds for services</h2>
@@ -35,7 +35,7 @@
 
   <div class="container">
 <% if ENV["GOOGLE_API_KEY"] %>
-    <form class="input-group" method="get" action="/youtube" target="_self">
+    <form class="input-group" method="get" action="youtube" target="_self">
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
       <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video.">
       <span class="input-group-btn">
@@ -45,7 +45,7 @@
 <% end %>
 
 <% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
-    <form class="input-group" method="get" action="/facebook" target="_self">
+    <form class="input-group" method="get" action="facebook" target="_self">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
       <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url.">
       <span class="input-group-btn">
@@ -55,7 +55,7 @@
 <% end %>
 
 <% if ENV["INSTAGRAM_CLIENT_ID"] and ENV["INSTAGRAM_CLIENT_SECRET"] %>
-    <form class="input-group" method="get" action="/instagram" target="_self">
+    <form class="input-group" method="get" action="instagram" target="_self">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
       <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post.">
       <span class="input-group-btn">
@@ -65,7 +65,7 @@
 <% end %>
 
 <% if ENV["SOUNDCLOUD_CLIENT_ID"] %>
-    <form class="input-group" method="get" action="/soundcloud" target="_self">
+    <form class="input-group" method="get" action="soundcloud" target="_self">
       <div class="input-group-addon"><label for="soundcloud_q">SoundCloud</label></div>
       <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track.">
       <span class="input-group-btn">

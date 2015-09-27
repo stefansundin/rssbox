@@ -3,7 +3,7 @@
   <id>instagram:<%= @user_id %></id>
   <title><%= @user_id %> on Instagram</title>
   <icon>https://instagramstatic-a.akamaihd.net/bluebar/97ef9c7/images/ico/favicon.ico</icon>
-  <link href="<%= request.url %>" rel="self" />
+  <link href="<%= request.original_url %>" rel="self" />
 
   <entry>
     <id>instagram:error:<%= @user_id %>:<%= @meta["error_type"] %></id>
