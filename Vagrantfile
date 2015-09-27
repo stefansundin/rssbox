@@ -41,7 +41,7 @@ ENV_SCRIPT=/home/vagrant/setup_env.sh
 APP_ROOT=/vagrant
 PIDFILE=$APP_ROOT/tmp/unicorn.pid
 USER=vagrant
-CMD="source $ENV_SCRIPT; export ENV_SCRIPT=$ENV_SCRIPT; cd $APP_ROOT; bundle exec unicorn -p 8080 -c config/unicorn.rb -N -D -E production"
+CMD="source $ENV_SCRIPT; export ENV_SCRIPT=$ENV_SCRIPT; cd $APP_ROOT; bundle exec unicorn -p 8080 -c config/unicorn.rb -N -D"
 
 # Helper to send signals to running unicorn
 sig() {
