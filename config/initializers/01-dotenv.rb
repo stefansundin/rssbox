@@ -1,3 +1,1 @@
-configure :development do
-  Dotenv.load ".env"
-end
+Dotenv.load ".env"

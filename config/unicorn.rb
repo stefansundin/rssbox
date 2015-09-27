@@ -12,14 +12,12 @@ preload_app true
 app_path = File.expand_path("../..", __FILE__)
 working_directory app_path
 pid "#{app_path}/tmp/unicorn.pid"
+listen "#{app_path}/tmp/unicorn.sock"
 
 if ENV["LOG_ENABLED"]
   stdout_path "#{app_path}/log/unicorn-stdout.log"
   stderr_path "#{app_path}/log/unicorn-stderr.log"
 end
-
-# listen "#{app_path}/tmp/unicorn.sock", backlog: 64
-# listen 3000, backlog: 64
 
 
 # reload environment variables on restart (used by init.d script in Vagrantfile)

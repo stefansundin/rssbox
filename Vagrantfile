@@ -2,6 +2,8 @@ $setup_env = <<SCRIPT
 # To unset variables when restarting, set them to an empty string
 export RBENV_ROOT=/home/vagrant/.rbenv
 export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
+export RACK_ENV=production
+export RAILS_ENV=production
 export LOG_ENABLED=1
 
 export REDIS_URL=redis://localhost:6379/3
@@ -101,8 +103,8 @@ restart|reload)
   exit 0
   ;;
 upgrade)
-  su - $USER -c "export PATH=$PATH; cd $APP_ROOT; bundle install --without development:test --path=.bundle/gems"
-  sig USR2 && exit 0
+  su - $USER -c "source $ENV_SCRIPT; cd $APP_ROOT; bundle install --without development:test"
+  sig USR2 && sleep 2 && sig 0 && oldsig QUIT && exit 0
   echo "Couldn't upgrade, starting instead"
   su - $USER -c "$CMD"
   ;;
