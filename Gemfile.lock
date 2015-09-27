@@ -32,7 +32,7 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
     json (1.8.3)
-    kgio (2.10.0)
+    kgio (2.9.3)
     method_source (0.8.2)
     minitest (5.8.1)
     multi_json (1.11.2)
@@ -94,7 +94,7 @@ DEPENDENCIES
   dotenv
   github-release-party
   heroku-env
-  httparty (= 0.13.5)
+  httparty
   powder
   pry-remote
   rack
