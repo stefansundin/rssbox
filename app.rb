@@ -159,8 +159,7 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}")
-  # response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}&client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}")
+  response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}") # for some reason this endpoint doesn't need client_id
   raise SoundcloudError.new(response) if !response.success?
   data = response.parsed_response.first
   return "Can't find a user with that name. Sorry." if !data

@@ -15,6 +15,8 @@
     <updated><%= Time.parse(track["created_at"]) %></updated>
     <author><name><%= track["user"]["username"] %></name></author>
     <content type="html">
+&lt;iframe width="100%" height="185" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/<%= track["id"] %>">&lt;/iframe>
+
 &lt;img src="<%= track["artwork_url"] %>">
 
 &lt;pre><%= track["description"] %>&lt;/pre>
