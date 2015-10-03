@@ -27,7 +27,7 @@ end
     <content type="html">
 &lt;pre><%= post["message"] || post["description"] %>&lt;/pre>
 
-<%= post["embed_html"] %>
+<%= post["embed_html"].gsub("<","&lt;") if post["embed_html"] %>
 <%= "&lt;img src='#{post["source"]}'>" if post["source"] %>
 <%=
 if post["type"] == "video"

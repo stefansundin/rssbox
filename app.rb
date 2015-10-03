@@ -89,7 +89,7 @@ get "/facebook" do
   raise FacebookError.new(response) if !response.success?
 
   data = response.parsed_response
-  redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if params[:type]}"
+  redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
