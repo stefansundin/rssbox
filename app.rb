@@ -131,7 +131,7 @@ get "/instagram" do
   end
 
   if user
-    redirect "/instagram/#{user["id"]}/#{user["username"]}"
+    redirect "/instagram/#{user["id"]}/#{user["username"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   else
     "Can't find a user with that name. Sorry."
   end
@@ -151,6 +151,17 @@ get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
 
   @data = response.parsed_response["data"]
   @user = @data[0]["user"]["username"] rescue username
+
+  type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
+  if type == "videos"
+    @data.select! { |post| post["type"] == "video" }
+  elsif type == "photos"
+    @data.select! { |post| post["type"] == "image" }
+  end
+
+  @title = @user
+  @title += "'s #{type}" if type != "posts"
+  @title += " on Instagram"
 
   headers "Content-Type" => "application/atom+xml;charset=utf-8"
   erb :instagram_feed

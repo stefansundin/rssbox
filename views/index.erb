@@ -78,6 +78,7 @@ h2 {
   </style>
   <script>
 $(document).ready(function() {
+  $("[name=type]").val(""); // clear type when using the back button
   $("[data-submit-type]").click(function() {
     form = $(this).parents("form")
     form.find("[name=type]").val($(this).attr("data-submit-type"));
@@ -127,7 +128,14 @@ $(document).ready(function() {
     <form class="input-group" method="get" action="instagram" target="_self">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
       <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
+      <input type="hidden" name="type">
       <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-submit-type="posts">All posts (default)</a></li>
+          <li><a data-submit-type="videos">Videos</a></li>
+          <li><a data-submit-type="photos">Photos</a></li>
+        </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
