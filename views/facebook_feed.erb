@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>facebook:<%= @id %></id>
-  <title><%= @user %> on Facebook</title>
+  <title><%= @title %></title>
   <icon>https://www.facebook.com/favicon.ico</icon>
   <link href="<%= request.original_url %>" rel="self" />
   <link href="https://www.facebook.com/<%= @id %>" rel="alternate" />
@@ -26,6 +26,9 @@ end
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
 &lt;pre><%= post["message"] || post["description"] %>&lt;/pre>
+
+<%= post["embed_html"] %>
+<%= "&lt;img src='#{post["source"]}'>" if post["source"] %>
 <%=
 if post["type"] == "video"
   "&lt;iframe src='https://www.facebook.com/video/embed?video_id=#{post["object_id"]}' width='1280' height='720' frameborder='0' scrolling='no' allowfullscreen>&lt;/iframe>"

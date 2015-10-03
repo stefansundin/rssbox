@@ -89,17 +89,22 @@ get "/facebook" do
   raise FacebookError.new(response) if !response.success?
 
   data = response.parsed_response
-  redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}"
+  redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if params[:type]}"
 end
 
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/posts?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
+  type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
+
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{type}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
   @user = @data[0]["from"]["name"] rescue username
+  @title = @user
+  @title += "'s #{type}" if type != "posts"
+  @title += " on Facebook"
 
   headers "Content-Type" => "application/atom+xml;charset=utf-8"
   erb :facebook_feed

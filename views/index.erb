@@ -11,18 +11,80 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <link rel="icon" href="img/icon32.png">
-  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" href="https://stefansundin.github.io/css/main.css">
   <link rel="alternate" type="application/atom+xml" href="https://github.com/stefansundin/rssbox/releases.atom" title="Release feed">
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha384-pdapHxIh7EYuwy6K7iE41uXVxGCXY0sAjBzaElYGJUrzwodck3Lx6IE2lA0rFREo" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js" integrity="sha384-R4/ztc4ZlRqWjqIuvf6RX5yb/v90qNGx6fS48N0tRxiGkqveZETq72KgDVJCp2TC" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha384-pPttEvTHTuUJ9L2kCoMnNqCRcaMPMVMsWVO+RLaaaYDmfSP5//dP6eKRusbPcqhZ" crossorigin="anonymous"></script>
   <style>
+body {
+  padding: 0 15px;
+  margin-bottom: 100px;
+}
+a {
+  cursor: pointer;
+}
+.container {
+  padding: 0;
+}
+@media (min-width: 768px) {
+  .container {
+    max-width: 730px;
+  }
+}
+
+header {
+  margin-top: 25px;
+  text-align: center;
+}
+hgroup h1 {
+  font-size: 4em;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+hgroup h2 {
+  border: none;
+  margin-top: 1em;
+  font-size: 1.5em;
+  font-weight: 400;
+}
+h2 {
+  border-bottom: 1px solid #ccc;
+  margin-top: 2em;
+  padding-bottom: 0.125em;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
 .input-group-addon {
   min-width: 110px;
 }
 .input-group-addon label {
   margin: 0;
 }
+.dropdown-toggle {
+  border-radius: 0;
+  padding: 6px 4px;
+}
+
+.expander {
+  display: none;
+}
+.share {
+  text-align: center;
+  margin: 80px 0 45px;
+}
   </style>
+  <script>
+$(document).ready(function() {
+  $("[data-submit-type]").click(function() {
+    form = $(this).parents("form")
+    form.find("[name=type]").val($(this).attr("data-submit-type"));
+    form.find("[type=submit]").click();
+  });
+});
+  </script>
 </head>
 <body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
   <header>
@@ -37,7 +99,7 @@
 <% if ENV["GOOGLE_API_KEY"] %>
     <form class="input-group" method="get" action="youtube" target="_self">
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
-      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video.">
+      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -47,8 +109,15 @@
 <% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
     <form class="input-group" method="get" action="facebook" target="_self">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
-      <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url.">
+      <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
+      <input type="hidden" name="type">
       <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-submit-type="posts">All posts (default)</a></li>
+          <li><a data-submit-type="videos">Videos</a></li>
+          <li><a data-submit-type="photos">Photos</a></li>
+        </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
@@ -57,7 +126,7 @@
 <% if ENV["INSTAGRAM_CLIENT_ID"] and ENV["INSTAGRAM_CLIENT_SECRET"] %>
     <form class="input-group" method="get" action="instagram" target="_self">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
-      <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post.">
+      <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -67,7 +136,7 @@
 <% if ENV["SOUNDCLOUD_CLIENT_ID"] %>
     <form class="input-group" method="get" action="soundcloud" target="_self">
       <div class="input-group-addon"><label for="soundcloud_q">SoundCloud</label></div>
-      <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track.">
+      <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -79,8 +148,7 @@
 
     <ul>
       <li>YouTube lets you subscribe to a channel's recent videos, but it is difficult to find the url.</li>
-      <li>Facebook used to let you subscribe to an RSS feed, but now this website builds an RSS feed for you.</li>
-      <li>Instagram does not supply RSS feeds, but this website builds one for you.</li>
+      <li>The other platforms don't have native feeds, so this website builds a feed from their API.</li>
     </ul>
 
     <p><a href="https://github.com/stefansundin/rssbox">This app is free software.</a></p>
@@ -104,12 +172,13 @@
       </div>
     </form>
 
-    <p><small><a class="expander" expand="donation-options">Show other donation options: Bitcoin, Square Cash.</a></small></p>
+    <p><small><a class="expander" expand="donation-options">Show other donation options: Bitcoin, Square Cash, ChangeTip.</a></small></p>
     <div class="expandable" id="donation-options">
       <p>Other donation options:</p>
       <ul>
         <li>Bitcoin: <tt>1EhDUbc5MjC6JavC6idKiTCxnqSxY2sbTX</tt> (<a href="https://stefansundin.github.io/img/btc-qr.png">QR code</a>)</li>
         <li>Square Cash: <a href="https://cash.me/$StefanSundin">$StefanSundin</a></li>
+        <li>ChangeTip: <a href="https://www.changetip.com/tipme/stefansundin">stefansundin</a></li>
         <li>Contact me at <a fubar>stefaNStefansundinCom</a> if none of the above options work.</li>
       </ul>
     </div>
