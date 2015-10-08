@@ -33,6 +33,8 @@ get "/youtube" do
     # https://www.youtube.com/c/khanacademy/videos
   elsif /youtube\.com\/.*[\?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
+  elsif /youtube\.com\/.*[\?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
+    # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
   elsif /youtube\.com\/(?<user>[^\/\?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
   elsif /youtu\.be\/(?<video_id>[^\?#]+)/ =~ params[:q]
@@ -64,6 +66,8 @@ get "/youtube" do
 
   if channel_id
     redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
+  elsif playlist_id
+    redirect "https://www.youtube.com/feeds/videos.xml?playlist_id=#{playlist_id}"
   else
     "Could not find the channel. Sorry."
   end
