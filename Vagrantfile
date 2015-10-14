@@ -137,7 +137,7 @@ SCRIPT
 
 
 $user_provision = <<SCRIPT
-# install rbenv to /usr/local/rbenv
+# install rbenv to /home/vagrant/.rbenv
 export RBENV_ROOT=/home/vagrant/.rbenv
 export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
 
