@@ -80,9 +80,14 @@ h2 {
 $(document).ready(function() {
   $("[name=type]").val(""); // clear type when using the back button
   $("[data-submit-type]").click(function() {
-    form = $(this).parents("form")
+    form = $(this).parents("form");
     form.find("[name=type]").val($(this).attr("data-submit-type"));
     form.find("[type=submit]").click();
+  });
+  $("[data-soundcloud-download]").click(function() {
+    form = $(this).parents("form");
+    url = form.find("input[name=q]").val();
+    window.location = "soundcloud/download?url="+url;
   });
 });
   </script>
@@ -146,6 +151,10 @@ $(document).ready(function() {
       <div class="input-group-addon"><label for="soundcloud_q">SoundCloud</label></div>
       <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
       <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-soundcloud-download>Download track</a></li>
+        </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
@@ -187,8 +196,8 @@ $(document).ready(function() {
         <li>Bitcoin: <tt>1EhDUbc5MjC6JavC6idKiTCxnqSxY2sbTX</tt> (<a href="https://stefansundin.github.io/img/btc-qr.png">QR code</a>)</li>
         <li>Square Cash: <a href="https://cash.me/$StefanSundin">$StefanSundin</a></li>
         <li>ChangeTip: <a href="https://www.changetip.com/tipme/stefansundin">stefansundin</a></li>
-        <li>Contact me at <a fubar>stefaNStefansundinCom</a> if none of the above options work.</li>
       </ul>
+      Contact me at <a fubar>stefaNStefansundinCom</a> if none of the above work.
     </div>
 
 

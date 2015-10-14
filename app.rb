@@ -47,7 +47,7 @@ get "/youtube" do
   end
 
   if user
-    response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=#{user}&key=#{ENV["GOOGLE_API_KEY"]}")
+    response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=#{user}&key=#{ENV["GOOGLE_API_KEY"]}", format: :json)
     raise YoutubeError.new(response) if !response.success?
 
     if response.parsed_response["items"].length > 0
@@ -56,7 +56,7 @@ get "/youtube" do
   end
 
   if video_id
-    response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=#{video_id}&key=#{ENV["GOOGLE_API_KEY"]}")
+    response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=#{video_id}&key=#{ENV["GOOGLE_API_KEY"]}", format: :json)
     raise YoutubeError.new(response) if !response.success?
 
     if response.parsed_response["items"].length > 0
@@ -88,7 +88,7 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
 
@@ -101,7 +101,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{type}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}")
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{type}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
@@ -119,7 +119,7 @@ get "/instagram" do
 
   if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
     # https://instagram.com/p/4KaPsKSjni/
-    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}")
+    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
     return response.parsed_response["meta"]["error_message"] if !response.success?
     user = response.parsed_response["data"]["user"]
   elsif /instagram\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
@@ -129,7 +129,7 @@ get "/instagram" do
   end
 
   if name
-    response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}")
+    response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
     raise InstagramError.new(response) if !response.success?
     user = response.parsed_response["data"].find { |user| user["username"] == name }
   end
@@ -144,7 +144,7 @@ end
 get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   @user_id = user_id
 
-  response = HTTParty.get("https://api.instagram.com/v1/users/#{user_id}/media/recent?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}")
+  response = HTTParty.get("https://api.instagram.com/v1/users/#{user_id}/media/recent?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
   if response.code == 400
     # user no longer exists or is private, show the error in the feed
     @meta = response.parsed_response["meta"]
@@ -180,7 +180,7 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}") # for some reason this endpoint doesn't need client_id
+  response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}", format: :json) # for some reason this endpoint doesn't need client_id
   raise SoundcloudError.new(response) if !response.success?
   data = response.parsed_response.first
   return "Can't find a user with that name. Sorry." if !data
@@ -188,10 +188,21 @@ get "/soundcloud" do
   redirect "/soundcloud/#{data["id"]}/#{data["permalink"]}"
 end
 
+get "/soundcloud/download" do
+  response = HTTParty.get("https://api.soundcloud.com/resolve?url=#{params[:url]}&client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", follow_redirects: false)
+  return "URL does not resolve." if response.code == 404
+  raise SoundcloudError.new(response) if response.code != 302
+  uri = URI.parse response["location"]
+  return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
+  response = HTTParty.get("#{uri.scheme}://#{uri.host}#{uri.path}/stream?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", follow_redirects: false)
+  raise SoundcloudError.new(response) if response.code != 302
+  redirect response["location"]
+end
+
 get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  response = HTTParty.get("https://api.soundcloud.com/users/#{id}/tracks?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", headers: {'Accept' => 'application/json'})
+  response = HTTParty.get("https://api.soundcloud.com/users/#{id}/tracks?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", format: :json)
   raise SoundcloudError.new(response) if !response.success?
 
   @data = response.parsed_response

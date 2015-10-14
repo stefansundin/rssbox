@@ -1,4 +1,4 @@
-# Helper function for nginx proxy
+# Helper function for nginx proxy that uses a subdir.
 # Example use:
 # location /rssbox/ {
 #   proxy_pass http://unix:/home/deploy/rssbox/tmp/unicorn.sock:/;
@@ -12,5 +12,14 @@
 class Sinatra::Request
   def original_url
     env["HTTP_X_FORWARDED_URL"] || url
+  end
+
+  def root_url
+    return base_url if !env["HTTP_X_FORWARDED_URL"]
+    forwarded_path = URI.parse(env["HTTP_X_FORWARDED_URL"]).path
+    uri = URI.parse url
+    uri.path = forwarded_path[0..(forwarded_path.length-uri.path.length-1)]
+    uri.query = uri.fragment = nil
+    uri.to_s
   end
 end
