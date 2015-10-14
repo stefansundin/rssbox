@@ -17,9 +17,9 @@
     <content type="html">
 <% if post["videos"] %>
 &lt;iframe src="<%= post["link"] %>embed/" width="612" height="710" frameborder="0" scrolling="no" allowfullscreen>&lt;/iframe>
+&lt;p>Download: &lt;a href="<%= post["videos"]["standard_resolution"]["url"] %>"><%= post["videos"]["standard_resolution"]["url"] %>&lt;/a>&lt;/p>
 <% else %>
 &lt;img src="<%= post["images"]["standard_resolution"]["url"] %>">
-
 &lt;p>Filter: <%= post["filter"] %>&lt;/p>
 <% end %>
     </content>
