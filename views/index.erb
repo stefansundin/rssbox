@@ -29,7 +29,7 @@ a {
 }
 @media (min-width: 768px) {
   .container {
-    max-width: 770px;
+    max-width: 768px;
   }
 }
 
@@ -37,12 +37,12 @@ header {
   margin-top: 25px;
   text-align: center;
 }
-hgroup h1 {
+header h1 {
   font-size: 4em;
   font-weight: 700;
   margin-bottom: 0.5em;
 }
-hgroup h2 {
+header h2 {
   border: none;
   margin-top: 1em;
   font-size: 1.5em;
@@ -78,7 +78,6 @@ h2 {
   </style>
   <script>
 $(document).ready(function() {
-  $("[name=type]").val(""); // clear type when using the back button
   $("[data-submit-type]").click(function() {
     form = $(this).parents("form");
     form.find("[name=type]").val($(this).attr("data-submit-type"));
@@ -90,15 +89,16 @@ $(document).ready(function() {
     window.location = "soundcloud/download?url="+url;
   });
 });
+$(window).bind("pageshow", function(e) {
+  $("[name=type]").val(""); // clear type when using the back button
+});
   </script>
 </head>
 <body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
   <header>
     <img src="img/icon128.png" width="128" height="128" alt="Icon" itemprop="image">
-    <hgroup>
-      <h1 itemprop="name">RSS Box</h1>
-      <h2 itemprop="description">Get RSS feeds for services</h2>
-    </hgroup>
+    <h1 itemprop="name">RSS Box</h1>
+    <h2 itemprop="description">Get RSS feeds for services</h2>
   </header>
 
   <div class="container">
@@ -190,14 +190,14 @@ $(document).ready(function() {
     </form>
 
     <p><small><a class="expander" expand="donation-options">Show other donation options: Bitcoin, Square Cash, ChangeTip.</a></small></p>
-    <div class="expandable" id="donation-options">
+    <div id="donation-options">
       <p>Other donation options:</p>
       <ul>
         <li>Bitcoin: <tt>1EhDUbc5MjC6JavC6idKiTCxnqSxY2sbTX</tt> (<a href="https://stefansundin.github.io/img/btc-qr.png">QR code</a>)</li>
         <li>Square Cash: <a href="https://cash.me/$StefanSundin">$StefanSundin</a></li>
         <li>ChangeTip: <a href="https://www.changetip.com/tipme/stefansundin">stefansundin</a></li>
       </ul>
-      Contact me at <a fubar>stefaNStefansundinCom</a> if none of the above work.
+      <p>Contact me at <a fubar>stefaNStefansundinCom</a> if none of the above work.</p>
     </div>
 
 
