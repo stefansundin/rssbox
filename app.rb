@@ -99,15 +99,15 @@ end
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
+  @type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{type}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{@type}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
-  @title += "'s #{type}" if type != "posts"
+  @title += "'s #{@type}" if @type != "posts"
   @title += " on Facebook"
 
   headers "Content-Type" => "application/atom+xml;charset=utf-8"

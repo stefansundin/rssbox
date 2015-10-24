@@ -15,6 +15,8 @@ if post["message"]
   post["message"].to_line.truncate(120)
 elsif post["type"] == "link"
   "Link: #{post["link"]}"
+elsif post["type"] == "event"
+  "Event: #{post["name"]}"
 elsif post["name"]
   post["name"]
 else
@@ -26,16 +28,31 @@ end
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
 &lt;pre><%= post["message"] || post["description"] %>&lt;/pre>
-
-<%= post["embed_html"].gsub("<","&lt;") if post["embed_html"] %>
-<%= "&lt;img src='#{post["source"]}'>" if post["source"] %>
 <%=
-if post["type"] == "video"
-  "&lt;iframe src='https://www.facebook.com/video/embed?video_id=#{post["object_id"]}' width='1280' height='720' frameborder='0' scrolling='no' allowfullscreen>&lt;/iframe>"
-elsif post["type"] == "photo"
-  "&lt;img src='#{post["picture"]}'>"
+if /(?:youtu\.be\/(?<video_id>[^\?&#]+)|youtube\.com\/)(?:.*?[\?&#](v=(?<video_id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+/ =~ post["link"]
+  # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
+  embed_url = "https://www.youtube.com/embed/#{video_id}?rel=0"
+  embed_url += "&list=#{list}" if list
+  if t and /(?:(?<h>\d+)h|(?<m>\d+)m|(?<s>\d+)s)+/ =~ t
+    # https://youtu.be/wZZ7oFKsKzY?t=3h44m34s => start=13474
+    start = 60*60*h.to_i + 60*m.to_i + s.to_i
+    embed_url += "&start=#{start}"
+  end
+  "<iframe width='640' height='360' src='#{embed_url}' frameborder='0' scrolling='no' allowfullscreen></iframe>".esc
 end
 %>
+<%= post["embed_html"].esc if post["embed_html"] %>
+<%=
+if @type == "photos" and post["source"]
+  "<img src='#{post["source"]}'>".esc
+elsif post["type"] == "video" and post["object_id"]
+  "<iframe src='https://www.facebook.com/video/embed?video_id=#{post["object_id"]}' width='1280' height='720' frameborder='0' scrolling='no' allowfullscreen></iframe>".esc
+elsif post["type"] == "photo"
+  "<img src='#{post["picture"]}'>".esc
+end
+%>
+<%= "<p>Link: <a href='#{post["link"]}'>#{post["link"]}</a></p>".esc if post["link"] %>
+<%= "<p>Post: <a href='https://www.facebook.com/#{post["id"]}'>https://www.facebook.com/#{post["id"]}</a></p>".esc %>
     </content>
   </entry>
 <%- end -%>
