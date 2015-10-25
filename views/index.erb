@@ -83,10 +83,10 @@ $(document).ready(function() {
     form.find("[name=type]").val($(this).attr("data-submit-type"));
     form.find("[type=submit]").click();
   });
-  $("[data-soundcloud-download]").click(function() {
+  $("[data-download]").click(function() {
     form = $(this).parents("form");
     url = form.find("input[name=q]").val();
-    window.location = "soundcloud/download?url="+url;
+    window.location = form.attr("action")+"/download?url="+url;
   });
 });
 $(window).bind("pageshow", function(e) {
@@ -123,6 +123,7 @@ $(window).bind("pageshow", function(e) {
           <li><a data-submit-type="posts">All posts (default)</a></li>
           <li><a data-submit-type="videos">Videos</a></li>
           <li><a data-submit-type="photos">Photos</a></li>
+          <li><a data-download>Download video</a></li>
         </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -140,6 +141,7 @@ $(window).bind("pageshow", function(e) {
           <li><a data-submit-type="posts">All posts (default)</a></li>
           <li><a data-submit-type="videos">Videos</a></li>
           <li><a data-submit-type="photos">Photos</a></li>
+          <li><a data-download>Download post</a></li>
         </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -153,7 +155,7 @@ $(window).bind("pageshow", function(e) {
       <span class="input-group-btn">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
         <ul class="dropdown-menu">
-          <li><a data-soundcloud-download>Download track</a></li>
+          <li><a data-download>Download track</a></li>
         </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>

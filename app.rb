@@ -96,6 +96,19 @@ get "/facebook" do
   redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
+get "/facebook/download" do
+  if /\/(?<id>\d+)/ =~ params[:url]
+    # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
+    # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
+  else
+    id = params[:q]
+  end
+
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
+  return "Video not found." if !response.success? or !response.parsed_response["source"]
+  redirect response.parsed_response["source"]
+end
+
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
@@ -138,6 +151,17 @@ get "/instagram" do
     redirect "/instagram/#{user["id"]}/#{user["username"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   else
     "Can't find a user with that name. Sorry."
+  end
+end
+
+get "/instagram/download" do
+  if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:url]
+    # https://instagram.com/p/4KaPsKSjni/
+    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
+    data = response.parsed_response["data"]
+    redirect data["videos"] && data["videos"]["standard_resolution"]["url"] || data["images"]["standard_resolution"]["url"]
+  else
+    return "Please use a URL directly to a post."
   end
 end
 
@@ -192,11 +216,11 @@ get "/soundcloud/download" do
   response = HTTParty.get("https://api.soundcloud.com/resolve?url=#{params[:url]}&client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", follow_redirects: false)
   return "URL does not resolve." if response.code == 404
   raise SoundcloudError.new(response) if response.code != 302
-  uri = URI.parse response["location"]
+  uri = URI.parse response.parsed_response["location"]
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
   response = HTTParty.get("#{uri.scheme}://#{uri.host}#{uri.path}/stream?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", follow_redirects: false)
   raise SoundcloudError.new(response) if response.code != 302
-  redirect response["location"]
+  redirect response.parsed_response["location"]
 end
 
 get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
