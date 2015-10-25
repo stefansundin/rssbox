@@ -16,6 +16,10 @@ gem "clogger"
 gem "heroku-env"
 gem "activesupport"
 
+# dilbert feed
+gem "feedjira"
+gem "opengraph_parser"
+
 group :development do
   gem "rake"
   gem "sinatra-reloader"

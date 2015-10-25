@@ -237,6 +237,30 @@ get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   erb :soundcloud_feed
 end
 
+get "/dilbert" do
+  @feed = Feedjira::Feed.fetch_and_parse "http://feeds.dilbert.com/DilbertDailyStrip"
+  @entries = @feed.entries.map do |entry|
+    data = $redis.get "dilbert:#{entry.id}"
+    if data
+      data = JSON.parse data
+    else
+      og = OpenGraph.new("http://dilbert.com/strip/#{entry.id}")
+      data = {
+        "image" => og.images.first,
+        "title" => og.title,
+        "description" => og.description
+      }
+      $redis.setex "dilbert:#{entry.id}", 60*60*24*30, data.to_json
+    end
+    data.merge({
+      "id" => entry.id
+    })
+  end
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :dilbert
+end
+
 get "/favicon.ico" do
   redirect "/img/icon32.png"
 end
