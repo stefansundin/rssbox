@@ -280,3 +280,8 @@ error InstagramError do |e|
   status 503
   "There was a problem talking to Instagram."
 end
+
+error SoundcloudError do |e|
+  status 503
+  "There was a problem talking to Soundcloud."
+end
