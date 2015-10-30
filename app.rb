@@ -31,6 +31,7 @@ get "/youtube" do
     # https://www.youtube.com/user/khanacademy/videos
   elsif /youtube\.com\/c\/(?<user>[^\/\?#]+)/ =~ params[:q]
     # https://www.youtube.com/c/khanacademy/videos
+    # this query might return the wrong user, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels.
   elsif /youtube\.com\/.*[\?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[\?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
