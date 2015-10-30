@@ -48,7 +48,7 @@ get "/youtube" do
   end
 
   if user
-    response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=#{user}&key=#{ENV["GOOGLE_API_KEY"]}", format: :json)
+    response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels", query: { part: "id", forUsername: user, key: ENV["GOOGLE_API_KEY"] }, format: :json)
     raise YoutubeError.new(response) if !response.success?
 
     if response.parsed_response["items"].length > 0
@@ -57,7 +57,7 @@ get "/youtube" do
   end
 
   if video_id
-    response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id=#{video_id}&key=#{ENV["GOOGLE_API_KEY"]}", format: :json)
+    response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos", query: { part: "snippet", id: video_id, key: ENV["GOOGLE_API_KEY"] }, format: :json)
     raise YoutubeError.new(response) if !response.success?
 
     if response.parsed_response["items"].length > 0
