@@ -89,7 +89,7 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}", query: { access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}" }, format: :json)
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
 
@@ -105,7 +105,7 @@ get "/facebook/download" do
     id = params[:q]
   end
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}", query: { access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}" }, format: :json)
   return "Video not found." if !response.success? or !response.parsed_response["source"]
   redirect response.parsed_response["source"]
 end
@@ -115,7 +115,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   @type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{@type}?access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}", format: :json)
+  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{@type}", query: { access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}" }, format: :json)
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
