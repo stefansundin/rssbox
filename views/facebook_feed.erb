@@ -5,7 +5,7 @@
   <icon>https://www.facebook.com/favicon.ico</icon>
   <link href="<%= request.original_url %>" rel="self" />
   <link href="https://www.facebook.com/<%= @id %>" rel="alternate" />
-  <updated><%= @data[0]["updated_time"] if @data[0] %></updated>
+  <updated><%= Time.parse(@data[0]["updated_time"]) if @data[0] %></updated>
 <%- @data.each do |post| -%>
 
   <entry>
@@ -28,10 +28,10 @@ elsif @type
 end
 %></title>
     <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
-    <updated><%= post["updated_time"] %></updated>
+    <updated><%= Time.parse(post["updated_time"]) %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
-&lt;pre><%= post["message"] || post["description"] %>&lt;/pre>
+&lt;pre><%= post["message"].esc || post["description"].esc %>&lt;/pre>
 <%=
 if /(?:youtu\.be\/(?<video_id>[^\?&#]+)|youtube\.com\/)(?:.*?[\?&#](v=(?<video_id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+/ =~ post["link"]
   # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s

@@ -19,7 +19,7 @@
 
 <%= "<img src='#{track["artwork_url"]}'>".esc if track["artwork_url"] %>
 
-&lt;pre><%= track["description"] %>&lt;/pre>
+&lt;pre><%= track["description"].esc %>&lt;/pre>
 
 &lt;a href="<%= request.root_url %>/soundcloud/download?url=<%= track["permalink_url"] %>">Download track&lt;/a>
     </content>

@@ -17,7 +17,7 @@
     <content type="html">
 &lt;iframe width="480" height="270" scrolling="no" frameborder="no" src="http://www.ustream.tv/embed/recorded/<%= video["id"] %>?html5ui" allowfullscreen>&lt;/iframe>
 
-&lt;pre><%= video["description"] %>&lt;/pre>
+&lt;pre><%= video["description"].esc %>&lt;/pre>
 
 &lt;a href="<%= request.root_url %>/ustream/download?url=<%= video["url"] %>">Download video&lt;/a>
     </content>
