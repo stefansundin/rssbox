@@ -4,6 +4,6 @@ class String
   end
 
   def esc
-    self.gsub("<","&lt;")
+    self.gsub("<","&lt;").gsub("&","&amp;")
   end
 end

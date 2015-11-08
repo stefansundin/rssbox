@@ -12,15 +12,19 @@
     <id>facebook:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["message"] || "" rescue "")) %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%=
 if post["message"]
-  post["message"].to_line.truncate(120)
+  post["message"].to_line.truncate(120).esc
 elsif post["type"] == "link"
-  "Link: #{post["link"]}"
+  "Link: #{post["link"].esc}"
 elsif post["type"] == "event"
-  "Event: #{post["name"]}"
+  "Event: #{post["name"].esc}"
+elsif post["description"]
+  post["description"].to_line.truncate(120).esc
 elsif post["name"]
-  post["name"]
-else
-  post["type"]
+  post["name"].to_line.esc
+elsif post["type"]
+  post["type"].camelize
+elsif @type
+  @type[0..-2].camelize
 end
 %></title>
     <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
