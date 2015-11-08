@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>ustream:<%= @id %></id>
+  <title><%= @user %> on Ustream</title>
+  <icon>http://static-cdn1.ustream.tv/images/favicon:1.ico</icon>
+  <link href="<%= request.original_url %>" rel="self" />
+  <link href="http://ustream.com/channel/<%= @id %>" rel="alternate" />
+  <updated><%= Time.at(@data[0]["created_at"]) if @data[0] %></updated>
+<%- @data.each do |video| -%>
+
+  <entry>
+    <id>ustream:video:<%= video["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= video["title"] %></title>
+    <link href="<%= video["url"] %>" />
+    <updated><%= Time.at(video["created_at"]) %></updated>
+    <author><name><%= video["owner"]["username"] %></name></author>
+    <content type="html">
+&lt;iframe width="480" height="270" scrolling="no" frameborder="no" src="http://www.ustream.tv/embed/recorded/<%= video["id"] %>?html5ui" allowfullscreen>&lt;/iframe>
+
+&lt;pre><%= video["description"] %>&lt;/pre>
+
+&lt;a href="<%= request.root_url %>/ustream/download?url=<%= video["url"] %>">Download video&lt;/a>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

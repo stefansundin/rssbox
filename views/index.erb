@@ -162,6 +162,17 @@ $(window).bind("pageshow", function(e) {
     </form>
 <% end %>
 
+    <form class="input-group" method="get" action="ustream" target="_self">
+      <div class="input-group-addon"><label for="ustream_q">Ustream</label></div>
+      <input class="form-control" type="search" name="q" id="ustream_q" placeholder="Enter a Ustream channel name or a url." required>
+      <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-download>Download video</a></li>
+        </ul>
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
 
     <h2>About</h2>
 

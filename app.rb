@@ -238,6 +238,57 @@ get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   erb :soundcloud_feed
 end
 
+get "/ustream" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  url = if /^https?:\/\/(www\.)?ustream\.tv\// =~ params[:q]
+    # http://www.ustream.tv/recorded/74562214
+    # http://www.ustream.tv/githubuniverse
+    params[:q]
+  else
+    "http://www.ustream.tv/#{params[:q]}"
+  end
+  begin
+    doc = Nokogiri::HTML(open(url))
+    channel_id = doc.at("meta[name='ustream:channel_id']")["content"].to_i
+  rescue
+    return "Could not find the channel."
+  end
+
+  response = UstreamParty.get("/channels/#{channel_id}.json")
+  raise UstreamError.new(response) if !response.success?
+  channel = response.parsed_response["channel"]
+  response = HTTParty.get("http://www.ustream.tv/channel/#{channel["url"]}", follow_redirects: false)
+  channel_name = response.headers["location"][1..-1]
+
+  redirect "/ustream/#{channel_id}/#{channel_name}"
+end
+
+get %r{/ustream/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @id = id
+  @user = username
+
+  response = UstreamParty.get("/channels/#{id}/videos.json")
+  raise UstreamError.new(response) if !response.success?
+  @data = response.parsed_response["videos"]
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :ustream_feed
+end
+
+get "/ustream/download" do
+  if /ustream\.tv\/recorded\/(?<id>\d+)/ =~ params[:url]
+    # http://www.ustream.tv/recorded/74562214
+  else
+    return "Please use a link directly to a video."
+  end
+
+  response = UstreamParty.get("/videos/#{id}.json")
+  return "Video does not exist." if response.code == 404
+  raise UstreamError.new(response) if !response.success?
+  redirect response.parsed_response["video"]["media_urls"]["flv"]
+end
+
 get "/dilbert" do
   @feed = Feedjira::Feed.fetch_and_parse "http://feeds.dilbert.com/DilbertDailyStrip"
   @entries = @feed.entries.map do |entry|

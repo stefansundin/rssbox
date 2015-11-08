@@ -116,6 +116,7 @@ DEPENDENCIES
   github-release-party
   heroku-env
   httparty
+  nokogiri
   opengraph_parser
   powder
   pry-remote

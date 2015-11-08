@@ -15,6 +15,7 @@ gem "rack-ssl-enforcer"
 gem "clogger"
 gem "heroku-env"
 gem "activesupport"
+gem "nokogiri"
 
 # dilbert feed
 gem "feedjira"
