@@ -1,4 +1,3 @@
-
 class PartyError < StandardError
   def initialize(request)
     @request = request

@@ -34,7 +34,7 @@ GEM
       faraday_middleware (~> 0.9)
       loofah (~> 2.0)
       sax-machine (~> 1.0)
-    github-release-party (0.0.3)
+    github-release-party (0.0.4)
       httparty (~> 0.13)
     heroku-env (0.1.2)
     httparty (0.13.7)
