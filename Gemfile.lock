@@ -11,7 +11,7 @@ GEM
     airbrake (4.3.3)
       builder
       multi_json
-    backports (3.6.6)
+    backports (3.6.7)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
       erubis (>= 2.6.6)
@@ -47,7 +47,7 @@ GEM
       nokogiri (>= 1.5.9)
     method_source (0.8.2)
     mini_portile (0.6.2)
-    minitest (5.8.1)
+    minitest (5.8.2)
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
@@ -96,7 +96,7 @@ GEM
     tilt (2.0.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unicorn (4.9.0)
+    unicorn (5.0.0)
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)

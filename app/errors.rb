@@ -17,11 +17,6 @@ class PartyError < StandardError
   end
 end
 
-class YoutubeError < PartyError; end
-class FacebookError < PartyError; end
-class InstagramError < PartyError; end
-class SoundcloudError < PartyError; end
-
 def httparty_error(r)
   "#{r.request.path.to_s}: #{r.code} #{r.message}: #{r.body}. #{r.headers.to_h.to_json}"
 end

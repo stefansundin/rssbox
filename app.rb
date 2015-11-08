@@ -48,7 +48,7 @@ get "/youtube" do
   end
 
   if user
-    response = HTTParty.get("https://www.googleapis.com/youtube/v3/channels", query: { part: "id", forUsername: user, key: ENV["GOOGLE_API_KEY"] }, format: :json)
+    response = YoutubeParty.get("/channels", query: { part: "id", forUsername: user })
     raise YoutubeError.new(response) if !response.success?
 
     if response.parsed_response["items"].length > 0
@@ -57,7 +57,7 @@ get "/youtube" do
   end
 
   if video_id
-    response = HTTParty.get("https://www.googleapis.com/youtube/v3/videos", query: { part: "snippet", id: video_id, key: ENV["GOOGLE_API_KEY"] }, format: :json)
+    response = YoutubeParty.get("/videos", query: { part: "snippet", id: video_id })
     raise YoutubeError.new(response) if !response.success?
 
     if response.parsed_response["items"].length > 0
@@ -89,7 +89,7 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}", query: { access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}" }, format: :json)
+  response = FacebookParty.get("/#{id}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
 
@@ -105,7 +105,7 @@ get "/facebook/download" do
     id = params[:q]
   end
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}", query: { access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}" }, format: :json)
+  response = FacebookParty.get("/#{id}")
   return "Video not found." if !response.success? or !response.parsed_response["source"]
   redirect response.parsed_response["source"]
 end
@@ -115,7 +115,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   @type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
 
-  response = HTTParty.get("https://graph.facebook.com/v2.3/#{id}/#{@type}", query: { access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}" }, format: :json)
+  response = FacebookParty.get("/#{id}/#{@type}")
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
@@ -133,7 +133,7 @@ get "/instagram" do
 
   if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
     # https://instagram.com/p/4KaPsKSjni/
-    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
+    response = InstagramParty.get("/media/shortcode/#{post_id}")
     return response.parsed_response["meta"]["error_message"] if !response.success?
     user = response.parsed_response["data"]["user"]
   elsif /instagram\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
@@ -143,7 +143,7 @@ get "/instagram" do
   end
 
   if name
-    response = HTTParty.get("https://api.instagram.com/v1/users/search?q=#{name}&client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
+    response = InstagramParty.get("/users/search", query: { q: name })
     raise InstagramError.new(response) if !response.success?
     user = response.parsed_response["data"].find { |user| user["username"] == name }
   end
@@ -158,7 +158,7 @@ end
 get "/instagram/download" do
   if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:url]
     # https://instagram.com/p/4KaPsKSjni/
-    response = HTTParty.get("https://api.instagram.com/v1/media/shortcode/#{post_id}?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
+    response = InstagramParty.get("/media/shortcode/#{post_id}")
     data = response.parsed_response["data"]
     redirect data["videos"] && data["videos"]["standard_resolution"]["url"] || data["images"]["standard_resolution"]["url"]
   else
@@ -169,7 +169,7 @@ end
 get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   @user_id = user_id
 
-  response = HTTParty.get("https://api.instagram.com/v1/users/#{user_id}/media/recent?client_id=#{ENV["INSTAGRAM_CLIENT_ID"]}&client_secret=#{ENV["INSTAGRAM_CLIENT_SECRET"]}", format: :json)
+  response = InstagramParty.get("/users/#{user_id}/media/recent")
   if response.code == 400
     # user no longer exists or is private, show the error in the feed
     @meta = response.parsed_response["meta"]
@@ -205,7 +205,7 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = HTTParty.get("https://api.soundcloud.com/users?q=#{username}&client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", format: :json)
+  response = SoundcloudParty.get("/users", query: { q: username })
   raise SoundcloudError.new(response) if !response.success?
   data = response.parsed_response.first
   return "Can't find a user with that name. Sorry." if !data
@@ -214,12 +214,12 @@ get "/soundcloud" do
 end
 
 get "/soundcloud/download" do
-  response = HTTParty.get("https://api.soundcloud.com/resolve?url=#{params[:url]}&client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", follow_redirects: false)
+  response = SoundcloudParty.get("/resolve", query: { url: params[:url] }, follow_redirects: false)
   return "URL does not resolve." if response.code == 404
   raise SoundcloudError.new(response) if response.code != 302
   uri = URI.parse response.parsed_response["location"]
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
-  response = HTTParty.get("#{uri.scheme}://#{uri.host}#{uri.path}/stream?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", follow_redirects: false)
+  response = SoundcloudParty.get("#{uri.path}/stream", follow_redirects: false)
   raise SoundcloudError.new(response) if response.code != 302
   redirect response.parsed_response["location"]
 end
@@ -227,7 +227,7 @@ end
 get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  response = HTTParty.get("https://api.soundcloud.com/users/#{id}/tracks?client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}", format: :json)
+  response = SoundcloudParty.get("/users/#{id}/tracks")
   raise SoundcloudError.new(response) if !response.success?
 
   @data = response.parsed_response
@@ -289,24 +289,4 @@ end
 error do |e|
   status 500
   "Sorry, a nasty error occurred: #{e}"
-end
-
-error YoutubeError do |e|
-  status 503
-  "There was a problem talking to YouTube."
-end
-
-error FacebookError do |e|
-  status 503
-  "There was a problem talking to Facebook."
-end
-
-error InstagramError do |e|
-  status 503
-  "There was a problem talking to Instagram."
-end
-
-error SoundcloudError do |e|
-  status 503
-  "There was a problem talking to Soundcloud."
 end
