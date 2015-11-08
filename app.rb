@@ -17,6 +17,8 @@ get "/go" do
     redirect "/instagram?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
     redirect "/soundcloud?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?ustream\.tv/ =~ params[:q]
+    redirect "/ustream?#{params.to_querystring}"
   else
     "Unknown service"
   end
@@ -264,7 +266,11 @@ get "/ustream" do
   raise UstreamError.new(response) if !response.success?
   channel = response.parsed_response["channel"]
   response = HTTParty.get("http://www.ustream.tv/channel/#{channel["url"]}", follow_redirects: false)
-  channel_name = response.headers["location"][1..-1]
+  channel_name = if response.headers["location"]
+    response.headers["location"][1..-1]
+  else
+    channel["url"]
+  end
 
   redirect "/ustream/#{channel_id}/#{channel_name}"
 end
