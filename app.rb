@@ -92,8 +92,13 @@ get "/facebook" do
   response = FacebookParty.get("/#{id}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
-
   data = response.parsed_response
+  if data["from"]
+    response = FacebookParty.get("/#{data["from"]["id"]}")
+    raise FacebookError.new(response) if !response.success?
+    data = response.parsed_response
+  end
+
   redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
@@ -102,7 +107,7 @@ get "/facebook/download" do
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
   else
-    id = params[:q]
+    id = params[:url]
   end
 
   response = FacebookParty.get("/#{id}")
