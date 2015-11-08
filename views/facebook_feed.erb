@@ -31,7 +31,7 @@ end
     <updated><%= Time.parse(post["updated_time"]) %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
-&lt;pre><%= (post["message"] || post["description"]).esc %>&lt;/pre>
+&lt;pre><%= post["message"].esc || post["description"].esc %>&lt;/pre>
 <%=
 if /(?:youtu\.be\/(?<video_id>[^\?&#]+)|youtube\.com\/)(?:.*?[\?&#](v=(?<video_id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+/ =~ post["link"]
   # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
