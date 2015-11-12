@@ -1,1 +1,2 @@
-Dotenv.load ".env"
+# Make dotenv override old values on reload
+Dotenv.overload
