@@ -46,7 +46,7 @@ common: &default_settings
   # See https://newrelic.com/docs/site/renaming-applications for more details
   # on renaming your New Relic applications.
   #
-  app_name: RSS Box
+  app_name: <%= ENV["NEW_RELIC_APP_NAME"] %>
 
   # When "true", the agent collects performance data about your
   # application and reports this data to the New Relic service at
@@ -72,22 +72,15 @@ common: &default_settings
   # Optionally set the name of the log file, defaults to 'newrelic_agent.log'
   # log_file_name: 'newrelic_agent.log'
 
-  # The newrelic agent communicates with the service via https by default.  This
-  # prevents eavesdropping on the performance metrics transmitted by the agent.
-  # The encryption required by SSL introduces a nominal amount of CPU overhead,
-  # which is performed asynchronously in a background thread.  If you'd prefer
-  # to send your metrics over http uncomment the following line.
-  # ssl: false
-
   #============================== Browser Monitoring ===============================
   # New Relic Real User Monitoring gives you insight into the performance real users are
   # experiencing with your website. This is accomplished by measuring the time it takes for
   # your users' browsers to download and render your web pages by injecting a small amount
   # of JavaScript code into the header and footer of each page.
   browser_monitoring:
-      # By default the agent automatically injects the monitoring JavaScript
-      # into web pages. Set this attribute to false to turn off this behavior.
-      auto_instrument: false
+    # By default the agent automatically injects the monitoring JavaScript
+    # into web pages. Set this attribute to false to turn off this behavior.
+    auto_instrument: false
 
   # Proxy settings for connecting to the New Relic server.
   #
@@ -113,61 +106,7 @@ common: &default_settings
   # Java: create a config setting called "ignored_params" and set it to
   #     a comma separated list of HTTP parameter names.
   #     ex: ignored_params: credit_card, ssn, password
-  capture_params: false
-
-  # Transaction tracer captures deep information about slow
-  # transactions and sends this to the New Relic service once a
-  # minute. Included in the transaction is the exact call sequence of
-  # the transactions including any SQL statements issued.
-  transaction_tracer:
-
-    # Transaction tracer is enabled by default. Set this to false to
-    # turn it off. This feature is only available at the Professional
-    # and above product levels.
-    enabled: true
-
-    # Threshold in seconds for when to collect a transaction
-    # trace. When the response time of a controller action exceeds
-    # this threshold, a transaction trace will be recorded and sent to
-    # New Relic. Valid values are any float value, or (default) "apdex_f",
-    # which will use the threshold for an dissatisfying Apdex
-    # controller action - four times the Apdex T value.
-    transaction_threshold: apdex_f
-
-    # When transaction tracer is on, SQL statements can optionally be
-    # recorded. The recorder has three modes, "off" which sends no
-    # SQL, "raw" which sends the SQL statement in its original form,
-    # and "obfuscated", which strips out numeric and string literals.
-    record_sql: obfuscated
-
-    # Threshold in seconds for when to collect stack trace for a SQL
-    # call. In other words, when SQL statements exceed this threshold,
-    # then capture and send to New Relic the current stack trace. This is
-    # helpful for pinpointing where long SQL calls originate from.
-    stack_trace_threshold: 0.500
-
-    # Determines whether the agent will capture query plans for slow
-    # SQL queries.  Only supported in mysql and postgres.  Should be
-    # set to false when using other adapters.
-    # explain_enabled: true
-
-    # Threshold for query execution time below which query plans will
-    # not be captured.  Relevant only when `explain_enabled` is true.
-    # explain_threshold: 0.5
-
-  # Error collector captures information about uncaught exceptions and
-  # sends them to New Relic for viewing
-  error_collector:
-
-    # Error collector is enabled by default. Set this to false to turn
-    # it off. This feature is only available at the Professional and above
-    # product levels.
-    enabled: true
-
-    # To stop specific errors from reporting to New Relic, set this property
-    # to comma-separated values.  Default is to ignore routing errors,
-    # which are how 404's get triggered.
-    ignore_errors: ""
+  capture_params: true
 
   # If you're interested in capturing memcache keys as though they
   # were SQL uncomment this flag. Note that this does increase
@@ -189,7 +128,6 @@ development:
   <<: *default_settings
   # Turn on communication to New Relic service in development mode
   monitor_mode: true
-  app_name: RSS Box (Development)
 
   # Rails Only - when running in Developer Mode, the New Relic Agent will
   # present performance information on the last 100 transactions you have
@@ -218,4 +156,3 @@ production:
 staging:
   <<: *default_settings
   monitor_mode: true
-  app_name: RSS Box (Staging)
