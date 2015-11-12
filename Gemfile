@@ -11,7 +11,7 @@ gem "redis"
 gem "redis-namespace"
 gem "httparty"
 gem "airbrake"
-gem "newrelic_rpm"
+gem "newrelic_rpm", require: false
 gem "rack-ssl-enforcer"
 gem "clogger"
 gem "heroku-env"
