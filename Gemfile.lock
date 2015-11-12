@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.4)
+    activesupport (4.2.5)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -51,6 +51,7 @@ GEM
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
+    newrelic_rpm (3.14.0.305)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     opengraph_parser (0.2.3)
@@ -116,6 +117,7 @@ DEPENDENCIES
   github-release-party
   heroku-env
   httparty
+  newrelic_rpm
   nokogiri
   opengraph_parser
   powder
