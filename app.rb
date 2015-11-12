@@ -31,9 +31,9 @@ get "/youtube" do
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
   elsif /youtube\.com\/user\/(?<user>[^\/\?#]+)/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
-  elsif /youtube\.com\/c\/(?<user>[^\/\?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/c\/(?<channel_title>[^\/\?#]+)/ =~ params[:q]
     # https://www.youtube.com/c/khanacademy/videos
-    # this query might return the wrong user, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels.
+    # note that channel_title != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
   elsif /youtube\.com\/.*[\?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[\?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
@@ -52,16 +52,22 @@ get "/youtube" do
   if user
     response = YoutubeParty.get("/channels", query: { part: "id", forUsername: user })
     raise YoutubeError.new(response) if !response.success?
-
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["id"]
+    end
+  end
+
+  if channel_title
+    response = YoutubeParty.get("/search", query: { part: "id", q: channel_title })
+    raise YoutubeError.new(response) if !response.success?
+    if response.parsed_response["items"].length > 0
+      channel_id = response.parsed_response["items"][0]["id"]["channelId"]
     end
   end
 
   if video_id
     response = YoutubeParty.get("/videos", query: { part: "snippet", id: video_id })
     raise YoutubeError.new(response) if !response.success?
-
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["snippet"]["channelId"]
     end
