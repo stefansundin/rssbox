@@ -7,10 +7,10 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    addressable (2.3.8)
-    airbrake (4.3.4)
-      builder
-      multi_json
+    addressable (2.4.0)
+    airbrake (5.0.0)
+      airbrake-ruby (~> 1.0)
+    airbrake-ruby (1.0.0)
     backports (3.6.7)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
@@ -18,7 +18,6 @@ GEM
       rack (>= 0.9.0)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
-    builder (3.2.2)
     clogger (2.0.2)
       rack (~> 1.0)
     coderay (1.1.0)
@@ -51,8 +50,8 @@ GEM
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
-    newrelic_rpm (3.14.0.305)
-    nokogiri (1.6.7)
+    newrelic_rpm (3.14.1.311)
+    nokogiri (1.6.7.1)
       mini_portile2 (~> 2.0.0.rc2)
     opengraph_parser (0.2.3)
       addressable
