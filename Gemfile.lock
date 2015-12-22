@@ -8,7 +8,7 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     addressable (2.4.0)
-    airbrake (5.0.0)
+    airbrake (5.0.1)
       airbrake-ruby (~> 1.0)
     airbrake-ruby (1.0.0)
     backports (3.6.7)
