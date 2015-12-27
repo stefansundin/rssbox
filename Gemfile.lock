@@ -10,7 +10,7 @@ GEM
     addressable (2.4.0)
     airbrake (5.0.1)
       airbrake-ruby (~> 1.0)
-    airbrake-ruby (1.0.0)
+    airbrake-ruby (1.0.1)
     backports (3.6.7)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
@@ -131,4 +131,4 @@ DEPENDENCIES
   unicorn
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

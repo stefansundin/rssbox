@@ -6,7 +6,7 @@
 # docker run -d --name=rssbox-redis redis redis-server --appendonly yes
 # docker run -d --name=rssbox --env-file=.dockerenv --link=rssbox-redis:redis -P stefansundin/rssbox
 
-FROM stefansundin/rbenv:2.2.3
+FROM stefansundin/rbenv:2.3.0
 MAINTAINER stefansundin https://stefansundin.com
 
 ADD Gemfile /app/Gemfile
