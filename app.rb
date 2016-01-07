@@ -270,20 +270,14 @@ get "/ustream" do
 
   response = UstreamParty.get("/channels/#{channel_id}.json")
   raise UstreamError.new(response) if !response.success?
-  channel = response.parsed_response["channel"]
-  response = HTTParty.get("http://www.ustream.tv/channel/#{channel["url"]}", follow_redirects: false)
-  channel_name = if response.headers["location"]
-    response.headers["location"][1..-1]
-  else
-    channel["url"]
-  end
+  channel_title = response.parsed_response["channel"]["title"]
 
-  redirect "/ustream/#{channel_id}/#{channel_name}"
+  redirect "/ustream/#{channel_id}/#{channel_title}"
 end
 
-get %r{/ustream/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/ustream/(?<id>\d+)(/(?<title>.+))?} do |id, title|
   @id = id
-  @user = username
+  @user = title
 
   response = UstreamParty.get("/channels/#{id}/videos.json")
   raise UstreamError.new(response) if !response.success?
