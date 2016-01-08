@@ -1,6 +1,4 @@
-# Ustream API docs here: http://ustream.github.io/api-docs/channel.html
-
-require "open-uri"
+# http://ustream.github.io/api-docs/broadcasting-api/channel.html
 
 class UstreamParty
   include HTTParty

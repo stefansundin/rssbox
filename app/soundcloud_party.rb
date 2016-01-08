@@ -1,3 +1,5 @@
+# https://developers.soundcloud.com/docs/api/reference
+
 class SoundcloudParty
   include HTTParty
   base_uri "https://api.soundcloud.com"

@@ -1,3 +1,5 @@
+# https://www.instagram.com/developer/endpoints/
+
 class InstagramParty
   include HTTParty
   base_uri "https://api.instagram.com/v1"

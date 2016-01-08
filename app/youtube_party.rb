@@ -1,3 +1,5 @@
+# https://developers.google.com/youtube/v3/docs/
+
 class YoutubeParty
   include HTTParty
   base_uri "https://www.googleapis.com/youtube/v3"

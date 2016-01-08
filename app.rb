@@ -1,6 +1,7 @@
 require "sinatra"
 require "./config/application"
 require "active_support/core_ext/string"
+require "open-uri"
 
 get "/" do
   erb :index

@@ -1,3 +1,5 @@
+# https://developers.facebook.com/docs/graph-api/reference/
+
 class FacebookParty
   include HTTParty
   base_uri "https://graph.facebook.com/v2.3"
