@@ -10,7 +10,7 @@
 
   <entry>
     <id>ustream:video:<%= video["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= video["title"].esc %></title>
+    <title>[<%= video["length"].to_i.to_duration %>] <%= video["title"].esc %></title>
     <link href="<%= video["url"] %>" />
     <updated><%= Time.at(video["created_at"]) %></updated>
     <author><name><%= video["owner"]["username"] %></name></author>

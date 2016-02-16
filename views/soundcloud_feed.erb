@@ -6,22 +6,11 @@
   <link href="<%= request.original_url %>" rel="self" />
   <link href="https://soundcloud.com/<%= @user %>" rel="alternate" />
   <updated><%= Time.parse(@data[0]["created_at"]) if @data[0] %></updated>
-<%-
-@data.each do |track|
-  t = track["duration"] / 1000
-  seconds = t % 60
-  minutes = (t / 60) % 60
-  hours = t / 3600
-  if hours > 0
-    duration = sprintf("%d:%02d:%02d", hours, minutes, seconds)
-  else
-    duration = sprintf("%d:%02d", minutes, seconds)
-  end
--%>
+<%- @data.each do |track| -%>
 
   <entry>
     <id>soundcloud:track:<%= track["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= duration %>] <%= track["title"].esc %></title>
+    <title>[<%= (track["duration"] / 1000).to_duration %>] <%= track["title"].esc %></title>
     <link href="<%= track["permalink_url"] %>" />
     <updated><%= Time.parse(track["created_at"]) %></updated>
     <author><name><%= track["user"]["username"] %></name></author>

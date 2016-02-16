@@ -1,6 +1,5 @@
 begin
   $redis = Redis::Namespace.new :rssbox
-rescue => e
+rescue
   puts "Failed to connect to redis!"
-  puts e.backtrace
 end

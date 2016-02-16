@@ -53,8 +53,7 @@ after_fork do |server, worker|
   end
   begin
     $redis.client.reconnect
-  rescue => e
+  rescue
     puts "Failed to reconnect to redis!"
-    puts e.backtrace
   end
 end

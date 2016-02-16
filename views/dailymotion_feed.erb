@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>dailymotion:<%= @user_id %></id>
+  <title><%= @screenname %> on Dailymotion</title>
+  <icon>https://static1.dmcdn.net/images/favicons/favicon-32x32.png</icon>
+  <link href="<%= request.original_url %>" rel="self" />
+  <link href="https://dailymotion.com/<%= @screenname %>" rel="alternate" />
+  <updated><%= Time.at(@data[0]["created_time"]) if @data[0] %></updated>
+<%- @data.each do |video| -%>
+
+  <entry>
+    <id>dailymotion:video:<%= video["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title>[<%= video["duration"].to_duration %>] <%= video["title"].esc %></title>
+    <link href="https://www.dailymotion.com/video/<%= video["id"] %>" />
+    <updated><%= Time.at(video["created_time"]) %></updated>
+    <author><name><%= @screenname %></name></author>
+    <content type="html">
+<%= <<-EOF.esc
+<iframe width="480" height="270" scrolling="no" frameborder="no" src="https://www.dailymotion.com/embed/video/#{video["id"]}" allowfullscreen></iframe>
+
+<p>#{video["description"]}</p>
+EOF
+-%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

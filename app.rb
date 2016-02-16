@@ -20,6 +20,8 @@ get "/go" do
     redirect "/soundcloud?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?ustream\.tv/ =~ params[:q]
     redirect "/ustream?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?dailymotion\.com/ =~ params[:q]
+    redirect "/dailymotion?#{params.to_querystring}"
   else
     "Unknown service"
   end
@@ -299,6 +301,57 @@ get "/ustream/download" do
   return "Video does not exist." if response.code == 404
   raise UstreamError.new(response) if !response.success?
   redirect response.parsed_response["video"]["media_urls"]["flv"]
+end
+
+get "/dailymotion" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /dailymotion\.com\/video\/(?<video_id>[a-z0-9]+)/ =~ params[:q]
+    # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
+  elsif /dailymotion\.com\/playlist\/(?<playlist_id>[a-z0-9]+)/ =~ params[:q]
+    # http://www.dailymotion.com/playlist/x4bnhu_GeneralGrin_fair-use-recuts/1
+  elsif /dailymotion\.com\/((followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/\?#]+)/ =~ params[:q]
+    # http://www.dailymotion.com/followers/GeneralGrin/1
+    # http://www.dailymotion.com/subscriptions/GeneralGrin/1
+    # http://www.dailymotion.com/playlists/user/GeneralGrin/1
+    # http://www.dailymotion.com/user/GeneralGrin/1
+    # http://www.dailymotion.com/GeneralGrin
+  else
+    # it's probably a user name
+    user = params[:q]
+  end
+
+  if video_id
+    response = DailymotionParty.get("/video/#{video_id}")
+    raise DailymotionError.new(response) if !response.success?
+    user = response.parsed_response["owner"]
+  elsif playlist_id
+    response = DailymotionParty.get("/playlist/#{playlist_id}")
+    raise DailymotionError.new(response) if !response.success?
+    user = response.parsed_response["owner"]
+  end
+
+  response = DailymotionParty.get("/user/#{user}")
+  if response.success?
+    user_id = response.parsed_response["id"]
+    screenname = response.parsed_response["screenname"]
+    redirect "/dailymotion/#{user_id}/#{screenname}"
+  else
+    headers "Content-Type" => "text/plain;charset=utf-8"
+    "Could not find a user with the name #{user}. Sorry."
+  end
+end
+
+get %r{/dailymotion/(?<user_id>[a-z0-9]+)(/(?<screenname>.+))?} do |user_id, screenname|
+  @user_id = user_id
+  @screenname = screenname
+
+  response = DailymotionParty.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
+  raise DailymotionError.new(response) if !response.success?
+  @data = response.parsed_response["list"]
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :dailymotion_feed
 end
 
 get "/dilbert" do
