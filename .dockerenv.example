@@ -7,6 +7,11 @@ AIRBRAKE_KEY=
 
 GOOGLE_API_KEY=
 
+VIMEO_CLIENT_ID=
+VIMEO_CLIENT_SECRET=
+# Set this to avoid looking it up on every start. The value is printed on server start.
+# VIMEO_ACCESS_TOKEN=
+
 FACEBOOK_APP_ID=
 FACEBOOK_APP_SECRET=
 

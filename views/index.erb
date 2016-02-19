@@ -112,6 +112,16 @@ $(window).bind("pageshow", function(e) {
     </form>
 <% end %>
 
+<% if ENV["VIMEO_ACCESS_TOKEN"] %>
+    <form class="input-group" method="get" action="vimeo" target="_self">
+      <div class="input-group-addon"><label for="vimeo_q">Vimeo</label></div>
+      <input class="form-control" type="search" name="q" id="vimeo_q" placeholder="Enter a Vimeo channel name, video id, or a url to a channel or video." required>
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+<% end %>
+
 <% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
     <form class="input-group" method="get" action="facebook" target="_self">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
@@ -186,6 +196,7 @@ $(window).bind("pageshow", function(e) {
 
     <ul>
       <li>YouTube lets you subscribe to a channel's recent videos, but it is difficult to find the url. Playlists also work.</li>
+      <li>Vimeo also has RSS feeds, but are easier to find than YouTube's feeds.</li>
       <li>The other platforms don't have native feeds, so this website builds a feed from their API.</li>
     </ul>
 

@@ -22,6 +22,8 @@ get "/go" do
     redirect "/ustream?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?dailymotion\.com/ =~ params[:q]
     redirect "/dailymotion?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?vimeo\.com/ =~ params[:q]
+    redirect "/vimeo?#{params.to_querystring}"
   else
     "Unknown service"
   end
@@ -80,6 +82,33 @@ get "/youtube" do
     redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
   elsif playlist_id
     redirect "https://www.youtube.com/feeds/videos.xml?playlist_id=#{playlist_id}"
+  else
+    "Could not find the channel. Sorry."
+  end
+end
+
+get "/vimeo" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /vimeo\.com\/user(?<user_id>\d+)/ =~ params[:q]
+    # https://vimeo.com/user7103699
+  elsif /vimeo\.com\/(?<video_id>\d+)/ =~ params[:q]
+    # https://vimeo.com/155672086
+    response = VimeoParty.get("/videos/#{video_id}")
+    raise VimeoError.new(response) if !response.success?
+    user_id = response.parsed_response["user"]["uri"].gsub("/users/","").to_i
+  else
+    # it's probably a channel name
+    user = params[:q]
+    response = VimeoParty.get("/users", params: { query: user })
+    raise VimeoError.new(response) if !response.success?
+    if response.parsed_response["data"].length > 0
+      user_id = response.parsed_response["data"][0]["uri"].gsub("/users/","").to_i
+    end
+  end
+
+  if user_id
+    redirect "https://vimeo.com/user#{user_id}/videos/rss"
   else
     "Could not find the channel. Sorry."
   end
