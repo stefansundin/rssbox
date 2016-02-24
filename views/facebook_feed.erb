@@ -17,9 +17,9 @@ elsif post["type"] == "link"
   "Link: #{post["link"].esc}"
 elsif post["type"] == "event"
   "Event: #{post["name"].esc}"
-elsif post["description"]
+elsif post["description"] and post["description"].ustrip != ""
   post["description"].to_line.truncate(120).esc
-elsif post["name"]
+elsif post["name"] and post["name"].ustrip != ""
   post["name"].to_line.esc
 elsif post["type"]
   post["type"].camelize
