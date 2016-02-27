@@ -33,7 +33,7 @@ end
     <content type="html">
 &lt;pre><%= post["message"].esc || post["description"].esc %>&lt;/pre>
 <%=
-if /(?:youtu\.be\/(?<video_id>[^\?&#]+)|youtube\.com\/)(?:.*?[\?&#](v=(?<video_id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+/ =~ post["link"]
+if /(?:youtu\.be\/(?<video_id>[^\?&#]+)|youtube\.com\/)(?:.*?[\?&#](v=(?<video_id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*/ =~ post["link"]
   # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
   embed_url = "https://www.youtube.com/embed/#{video_id}?rel=0"
   embed_url += "&list=#{list}" if list
