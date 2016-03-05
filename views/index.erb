@@ -158,6 +158,18 @@ $(window).bind("pageshow", function(e) {
     </form>
 <% end %>
 
+    <form class="input-group" method="get" action="vine" target="_self">
+      <div class="input-group-addon"><label for="vine_q">Vine</label></div>
+      <input class="form-control" type="search" name="q" id="vine_q" placeholder="Enter a Vine username or a url." required>
+      <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-download>Download video</a></li>
+        </ul>
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+
 <% if ENV["SOUNDCLOUD_CLIENT_ID"] %>
     <form class="input-group" method="get" action="soundcloud" target="_self">
       <div class="input-group-addon"><label for="soundcloud_q">SoundCloud</label></div>

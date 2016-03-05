@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>vine:<%= @id %></id>
+  <title><%= @user %> on Vine</title>
+  <icon>https://v.cdn.vine.co/w/a0e7f0dc-assets/images/favicon.ico</icon>
+  <link href="<%= request.original_url %>" rel="self" />
+  <link href="https://vine.co/<%= @username %>" rel="alternate" />
+  <updated><%= Time.parse(@data[0]["created"]) if @data[0] %></updated>
+<%-
+@data.each do |post|
+  if post["repost"]
+    title = "Revine #{post["username"]}: #{post["description"]}"
+  else
+    title = post["description"]
+  end
+-%>
+
+  <entry>
+    <id>vine:post:<%= post["postId"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= title.esc %></title>
+    <link href="<%= post["shareUrl"] %>" />
+    <updated><%= Time.parse(post["created"]) %></updated>
+    <author><name><%= post["username"] %></name></author>
+    <content type="html">
+<%= <<-EOF.esc
+<iframe width="600" height="600" scrolling="no" frameborder="no" src="#{post["postId"]}/embed/simple" allowfullscreen></iframe>
+
+<p>#{post["description"]}</p>
+
+<a href="#{request.root_url}/vine/download?url=#{post["shareUrl"]}">Download video</a>
+EOF
+-%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

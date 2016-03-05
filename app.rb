@@ -129,7 +129,7 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = FacebookParty.get("/#{id}")
+  response = FacebookParty.get("/#{URI.encode(id)}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
   data = response.parsed_response
@@ -239,6 +239,75 @@ get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
 
   headers "Content-Type" => "application/atom+xml;charset=utf-8"
   erb :instagram_feed
+end
+
+get "/vine" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /vine\.co\/u\/(?<user_id>[^\/\?#]+)/ =~ params[:q]
+    # https://vine.co/u/916394797705605120
+  elsif /vine\.co\/v\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
+    # https://vine.co/v/iJgLDBPKO3I
+  elsif /vine\.co\/(?<username>[^\/\?#]+)/ =~ params[:q]
+    # https://vine.co/nasa
+  else
+    username = params[:q]
+  end
+
+  if user_id
+    response = VineParty.get("/users/profiles/#{user_id}")
+    raise VineError.new(response) if !response.success?
+    username = response.parsed_response["data"]["username"]
+  elsif post_id
+    response = VineParty.get("/timelines/posts/s/#{post_id}")
+    return "That post does not exist." if response.code == 404
+    raise VineError.new(response) if !response.success?
+    data = response.parsed_response["data"]["records"][0]
+    user_id = data["userId"]
+    username = data["vanityUrls"][0] || data["username"]
+  elsif username
+    response = VineParty.get("/users/profiles/vanity/#{URI.encode(username)}")
+    return "That username does not exist." if response.code == 404
+    raise VineError.new(response) if !response.success?
+    data = response.parsed_response["data"]
+    user_id = data["userId"]
+    username = data["vanityUrls"][0] || data["username"]
+  end
+
+  redirect "/vine/#{user_id}/#{username}"
+end
+
+get %r{/vine/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @id = id
+  @username = username
+
+  response = VineParty.get("/timelines/users/#{id}")
+  raise VineError.new(response) if !response.success?
+  @data = response.parsed_response["data"]["records"]
+
+  @user = if !@data.first
+    @username
+  elsif @data.first["repost"]
+    @data.first["repost"]["user"]["username"]
+  else
+    @data.first["username"]
+  end
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :vine_feed
+end
+
+get "/vine/download" do
+  if /vine\.co\/v\/(?<post_id>[a-zA-Z0-9]+)/ =~ params[:url]
+    # https://vine.co/v/iJgLDBPKO3I
+  else
+    return "Please use a link directly to a post."
+  end
+
+  response = VineParty.get("/timelines/posts/s/#{post_id}")
+  return "Post does not exist." if response.code == 404
+  raise VineError.new(response) if !response.success?
+  redirect response.parsed_response["data"]["records"][0]["videoUrls"][0]["videoUrl"]
 end
 
 get "/soundcloud" do
@@ -360,7 +429,7 @@ get "/dailymotion" do
     user = response.parsed_response["owner"]
   end
 
-  response = DailymotionParty.get("/user/#{user}")
+  response = DailymotionParty.get("/user/#{URI.encode(user)}")
   if response.success?
     user_id = response.parsed_response["id"]
     screenname = response.parsed_response["screenname"]
