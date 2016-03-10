@@ -11,4 +11,8 @@ class String
     # remove extra unicode crap
     self.gsub(/[\u00a0\u3000]/,"").strip
   end
+
+  def numeric?
+     self =~ /^\d+$/
+  end
 end

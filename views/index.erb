@@ -110,6 +110,14 @@ $(window).bind("pageshow", function(e) {
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
+
+    <form class="input-group" method="get" action="googleplus" target="_self">
+      <div class="input-group-addon"><label for="googleplus_q">Google+</label></div>
+      <input class="form-control" type="search" name="q" id="googleplus_q" placeholder="Enter a Google+ name or a url." required>
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
 <% end %>
 
 <% if ENV["VIMEO_ACCESS_TOKEN"] %>

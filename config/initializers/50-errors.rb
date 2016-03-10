@@ -13,6 +13,8 @@ class PartyError < StandardError
 
   def message
     @request.to_s
+  rescue
+    "#{@request.code} #{@request.body}"
   end
 end
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>googleplus:<%= @id %></id>
+  <title><%= @user %> on Google+</title>
+  <icon>https://ssl.gstatic.com/images/branding/product/ico/google_plus_alldp.ico</icon>
+  <link href="<%= request.original_url %>" rel="self" />
+  <link href="https://plus.google.com/<%= @id %>" rel="alternate" />
+  <updated><%= Time.parse(@data["updated"]) if @data %></updated>
+<%- @data["items"].each do |post| -%>
+
+  <entry>
+    <id>googleplus:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= post["title"].esc %></title>
+    <link href="<%= post["url"] %>" />
+    <updated><%= Time.parse(post["updated"]) %></updated>
+    <author><name><%= post["actor"]["displayName"] %></name></author>
+    <content type="html">
+&lt;pre><%= post["object"]["content"].esc %>&lt;/pre>
+<%- if post["object"]["attachments"] -%>
+Attachments:
+&lt;ul>
+<%- post["object"]["attachments"].each do |attachment| -%>
+  &lt;li>&lt;a href="<%= attachment["url"] %>"><%= attachment["url"] %>&lt;/a>&lt;/li>
+<%- end -%>
+&lt;/ul>
+<%- end -%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

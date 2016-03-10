@@ -12,6 +12,8 @@ get "/go" do
 
   if /^https?:\/\/(www\.)?youtu(\.?be|be\.com)/ =~ params[:q]
     redirect "/youtube?#{params.to_querystring}"
+  elsif /^https?:\/\/plus\.google\.com/ =~ params[:q]
+    redirect "/googleplus?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?facebook\.com/ =~ params[:q]
     redirect "/facebook?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?instagram\.com/ =~ params[:q]
@@ -57,24 +59,24 @@ get "/youtube" do
   end
 
   if user
-    response = YoutubeParty.get("/channels", query: { part: "id", forUsername: user })
-    raise YoutubeError.new(response) if !response.success?
+    response = GoogleParty.get("/youtube/v3/channels", query: { part: "id", forUsername: user })
+    raise GoogleError.new(response) if !response.success?
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["id"]
     end
   end
 
   if channel_title
-    response = YoutubeParty.get("/search", query: { part: "id", q: channel_title })
-    raise YoutubeError.new(response) if !response.success?
+    response = GoogleParty.get("/youtube/v3/search", query: { part: "id", q: channel_title })
+    raise GoogleError.new(response) if !response.success?
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["id"]["channelId"]
     end
   end
 
   if video_id
-    response = YoutubeParty.get("/videos", query: { part: "snippet", id: video_id })
-    raise YoutubeError.new(response) if !response.success?
+    response = GoogleParty.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
+    raise GoogleError.new(response) if !response.success?
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["snippet"]["channelId"]
     end
@@ -87,6 +89,50 @@ get "/youtube" do
   else
     "Could not find the channel. Sorry."
   end
+end
+
+get "/googleplus" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /plus\.google\.com\/(u\/\d+\/)?(?<user>\+[a-zA-Z0-9]+)/ =~ params[:q]
+    # https://plus.google.com/+TIME
+  elsif /plus\.google\.com\/(u\/\d+\/)?(?<user>\d+)/ =~ params[:q]
+    # https://plus.google.com/112161921284629501085
+  else
+    # it's probably a channel name
+    user = params[:q]
+    user = "+#{user}" if user[0] != "+" and !user.numeric?
+  end
+
+  response = GoogleParty.get("/plus/v1/people/#{URI.encode(user)}")
+  return "Can't find a page with that name. Sorry." if response.code == 404
+  raise GoogleError.new(response) if !response.success?
+  data = response.parsed_response
+  user_id = data["id"]
+  if /\/\+(?<user>[a-zA-Z0-9]+)$/ =~ data["url"]
+    username = user
+  else
+    username = data["displayName"]
+  end
+
+  redirect "/googleplus/#{user_id}/#{username}"
+end
+
+get %r{/googleplus/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @id = id
+
+  response = GoogleParty.get("/plus/v1/people/#{id}/activities/public")
+  raise GoogleError.new(response) if !response.success?
+  @data = response.parsed_response
+
+  @user = if @data["items"][0]
+    @data["items"][0]["actor"]["displayName"]
+  else
+    username
+  end
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :googleplus_feed
 end
 
 get "/vimeo" do
