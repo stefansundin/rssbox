@@ -8,11 +8,15 @@ You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.c
 
 ### Configuration
 
-You need to get API keys for the respective services and populate the environment variables, e.g. by using a [.env](.env.example) file.
+You need to get API keys for the respective services and populate the environment variables, e.g. by using an [.env](.env.example) file.
 
 #### Google
 
-Go to the [Google Developer Console](https://console.developers.google.com/), create an app and a server key. Copy the server key.
+Go to the [Google Developer Console](https://console.developers.google.com/), create a project and a server key. Copy the server key.
+
+Enable the following APIs in the project:
+- YouTube Data API v3
+- Google+ API
 
 #### Facebook
 
