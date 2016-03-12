@@ -93,13 +93,14 @@ end
 
 get "/googleplus" do
   return "Insufficient parameters" if params[:q].empty?
+  params[:q] = params[:q].gsub(" ", "+") # spaces in urls is a mess
 
   if /plus\.google\.com\/(u\/\d+\/)?(?<user>\+[a-zA-Z0-9]+)/ =~ params[:q]
     # https://plus.google.com/+TIME
   elsif /plus\.google\.com\/(u\/\d+\/)?(?<user>\d+)/ =~ params[:q]
     # https://plus.google.com/112161921284629501085
   else
-    # it's probably a channel name
+    # it's probably a user name
     user = params[:q]
     user = "+#{user}" if user[0] != "+" and !user.numeric?
   end
