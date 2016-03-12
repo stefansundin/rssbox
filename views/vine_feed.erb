@@ -18,12 +18,12 @@
   <entry>
     <id>vine:post:<%= post["postId"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= title.to_line.esc %></title>
-    <link href="<%= post["shareUrl"] %>" />
+    <link href="<%= post["permalinkUrl"] %>" />
     <updated><%= Time.parse(post["created"]) %></updated>
     <author><name><%= post["username"] %></name></author>
     <content type="html">
 <%= <<-EOF.esc
-<iframe width="600" height="600" scrolling="no" frameborder="no" src="https://vine.co/v/#{post["postId"]}/embed/simple" allowfullscreen></iframe>
+<iframe width="600" height="600" scrolling="no" frameborder="no" src="#{post["permalinkUrl"]}/embed/simple" allowfullscreen></iframe>
 
 <p>#{post["description"]}</p>
 
