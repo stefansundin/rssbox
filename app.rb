@@ -292,7 +292,9 @@ end
 get "/vine" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /vine\.co\/u\/(?<user_id>[^\/\?#]+)/ =~ params[:q]
+  if /vine\.co\/popular-now/ =~ params[:q]
+    redirect "/vine/popular-now"
+  elsif /vine\.co\/u\/(?<user_id>[^\/\?#]+)/ =~ params[:q]
     # https://vine.co/u/916394797705605120
   elsif /vine\.co\/v\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
     # https://vine.co/v/iJgLDBPKO3I
@@ -340,6 +342,19 @@ get %r{/vine/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   else
     @data.first["username"]
   end
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :vine_feed
+end
+
+get "/vine/popular-now" do
+  @id = "popular-now"
+  @username = "popular-now"
+  @user = "Popular Now"
+
+  response = VineParty.get("/timelines/popular")
+  raise VineError.new(response) if !response.success?
+  @data = response.parsed_response["data"]["records"]
 
   headers "Content-Type" => "application/atom+xml;charset=utf-8"
   erb :vine_feed

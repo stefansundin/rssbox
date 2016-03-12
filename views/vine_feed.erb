@@ -17,7 +17,7 @@
 
   <entry>
     <id>vine:post:<%= post["postId"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= title.esc %></title>
+    <title><%= title.to_line.esc %></title>
     <link href="<%= post["shareUrl"] %>" />
     <updated><%= Time.parse(post["created"]) %></updated>
     <author><name><%= post["username"] %></name></author>

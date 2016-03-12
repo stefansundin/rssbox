@@ -10,7 +10,7 @@
 
   <entry>
     <id>googleplus:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= post["title"].esc %></title>
+    <title><%= post["title"].to_line.esc %></title>
     <link href="<%= post["url"] %>" />
     <updated><%= Time.parse(post["updated"]) %></updated>
     <author><name><%= post["actor"]["displayName"] %></name></author>

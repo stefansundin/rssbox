@@ -10,7 +10,7 @@
 
   <entry>
     <id>instagram:post:<%= post["id"] %>:<%= Digest::SHA2.hexdigest((post["caption"]["text"] rescue "")) %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= "Video: " if post["type"] == "video" %><%= post["caption"]["text"].esc rescue "No title" %></title>
+    <title><%= "Video: " if post["type"] == "video" %><%= post["caption"]["text"].to_line.esc rescue "No title" %></title>
     <link href="<%= post["link"] %>" />
     <updated><%= Time.at(post["created_time"].to_i) %></updated>
     <author><name><%= post["user"]["full_name"] %></name></author>

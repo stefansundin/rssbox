@@ -10,7 +10,7 @@
 
   <entry>
     <id>dailymotion:video:<%= video["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= video["duration"].to_duration %>] <%= video["title"].esc %></title>
+    <title>[<%= video["duration"].to_duration %>] <%= video["title"].to_line.esc %></title>
     <link href="https://www.dailymotion.com/video/<%= video["id"] %>" />
     <updated><%= Time.at(video["created_time"]) %></updated>
     <author><name><%= @screenname %></name></author>

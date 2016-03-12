@@ -10,7 +10,7 @@
 
   <entry>
     <id>soundcloud:track:<%= track["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= (track["duration"] / 1000).to_duration %>] <%= track["title"].esc %></title>
+    <title>[<%= (track["duration"] / 1000).to_duration %>] <%= track["title"].to_line.esc %></title>
     <link href="<%= track["permalink_url"] %>" />
     <updated><%= Time.parse(track["created_at"]) %></updated>
     <author><name><%= track["user"]["username"] %></name></author>
