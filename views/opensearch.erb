@@ -1,0 +1,7 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>RSSBox</ShortName>
+  <Description>Enter a url you want a feed from</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="32" height="32" type="image/x-icon"><%= request.root_url %>/img/icon32.png</Image>
+  <Url type="text/html" method="get" template="<%= request.root_url %>/go?q={searchTerms}"/>
+</OpenSearchDescription>

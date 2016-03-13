@@ -119,7 +119,7 @@ get "/youtube/:channel_id/:username" do
     @data = response.parsed_response["items"]
   end
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :youtube_feed
 end
 
@@ -164,7 +164,7 @@ get %r{/googleplus/(?<id>\d+)(/(?<username>.+))?} do |id, username|
     username
   end
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :googleplus_feed
 end
 
@@ -250,7 +250,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @title += "'s #{@type}" if @type != "posts"
   @title += " on Facebook"
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :facebook_feed
 end
 
@@ -299,7 +299,7 @@ get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   if response.code == 400
     # user no longer exists or is private, show the error in the feed
     @meta = response.parsed_response["meta"]
-    headers "Content-Type" => "application/atom+xml;charset=utf-8"
+    content_type :atom
     return erb :instagram_error
   end
   raise InstagramError.new(response) if !response.success?
@@ -318,7 +318,7 @@ get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   @title += "'s #{type}" if type != "posts"
   @title += " on Instagram"
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :instagram_feed
 end
 
@@ -376,7 +376,7 @@ get %r{/vine/(?<id>\d+)(/(?<username>.+))?} do |id, username|
     @data.first["username"]
   end
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :vine_feed
 end
 
@@ -389,7 +389,7 @@ get "/vine/popular-now" do
   raise VineError.new(response) if !response.success?
   @data = response.parsed_response["data"]["records"]
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :vine_feed
 end
 
@@ -444,7 +444,7 @@ get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @username = @data[0]["user"]["permalink"] rescue username
   @user = @data[0]["user"]["username"] rescue username
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :soundcloud_feed
 end
 
@@ -480,7 +480,7 @@ get %r{/ustream/(?<id>\d+)(/(?<title>.+))?} do |id, title|
   raise UstreamError.new(response) if !response.success?
   @data = response.parsed_response["videos"]
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :ustream_feed
 end
 
@@ -531,7 +531,7 @@ get "/dailymotion" do
     screenname = response.parsed_response["screenname"]
     redirect "/dailymotion/#{user_id}/#{screenname}"
   else
-    headers "Content-Type" => "text/plain;charset=utf-8"
+    content_type :text
     "Could not find a user with the name #{user}. Sorry."
   end
 end
@@ -544,7 +544,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)(/(?<screenname>.+))?} do |user_id, scr
   raise DailymotionError.new(response) if !response.success?
   @data = response.parsed_response["list"]
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :dailymotion_feed
 end
 
@@ -603,7 +603,7 @@ get "/imgur/:user_id/:username" do
   raise ImgurError.new(response) if !response.success?
   @data = response.parsed_response["data"]
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :imgur_feed
 end
 
@@ -627,7 +627,7 @@ get "/dilbert" do
     })
   end
 
-  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  content_type :atom
   erb :dilbert
 end
 
@@ -637,6 +637,11 @@ end
 
 get %r{^/apple-touch-icon} do
   redirect "/img/icon128.png"
+end
+
+get "/opensearch.xml" do
+  content_type :opensearch
+  erb :opensearch
 end
 
 if ENV["GOOGLE_VERIFICATION_TOKEN"]
@@ -649,7 +654,7 @@ end
 if ENV["LOADERIO_VERIFICATION_TOKEN"]
   /(loaderio-)?(?<loaderio_token>[0-9a-f]+)/ =~ ENV["LOADERIO_VERIFICATION_TOKEN"]
   get Regexp.new("^/loaderio-#{loaderio_token}") do
-    headers "Content-Type" => "text/plain"
+    content_type :text
     "loaderio-#{loaderio_token}"
   end
 end

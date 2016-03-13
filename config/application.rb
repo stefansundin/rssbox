@@ -3,10 +3,15 @@ ENV["RACK_ENV"] ||= "development"
 require "bundler/setup"
 Bundler.require(:default, ENV["RACK_ENV"])
 
-set :erb, trim: "-"
-
 # uncomment to get production error pages in development
 # set :environment, :production
+
+configure do
+  set :erb, trim: "-"
+  # Look up Rack::Mime::MIME_TYPES to see rack defaults
+  mime_type :opensearch, "application/opensearchdescription+xml"
+  settings.add_charset << "application/atom+xml"
+end
 
 # development specific
 configure :development do
