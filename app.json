@@ -32,6 +32,10 @@
     "SOUNDCLOUD_CLIENT_ID": {
       "description": "(Optional) Your SoundCloud client id.",
       "required": false
+    },
+    "IMGUR_CLIENT_ID": {
+      "description": "(Optional) Your Imgur client id.",
+      "required": false
     }
   }
 }

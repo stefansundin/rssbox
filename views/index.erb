@@ -216,6 +216,16 @@ $(window).bind("pageshow", function(e) {
       </span>
     </form>
 
+<% if ENV["IMGUR_CLIENT_ID"] %>
+    <form class="input-group" method="get" action="imgur" target="_self">
+      <div class="input-group-addon"><label for="imgur_q">Imgur</label></div>
+      <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur user name or a url. Or subreddit url." required>
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+<% end %>
+
     <h2>About</h2>
 
     <ul>

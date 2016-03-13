@@ -29,3 +29,7 @@ Go to the [Instagram developer website](http://instagram.com/developer/) and cre
 #### SoundCloud
 
 Go to the [SoundCloud developer website](http://soundcloud.com/you/apps) and create an app. Copy your client id and secret.
+
+#### Imgur
+
+Go to the [Imgur settings](https://imgur.com/account/settings/apps) and create an app. Copy your client id.

@@ -28,6 +28,8 @@ get "/go" do
     redirect "/dailymotion?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?vimeo\.com/ =~ params[:q]
     redirect "/vimeo?#{params.to_querystring}"
+  elsif /^https?:\/\/([a-zA-Z0-9]+\.)?imgur\.com/ =~ params[:q]
+    redirect "/imgur?#{params.to_querystring}"
   else
     "Unknown service"
   end
@@ -544,6 +546,65 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)(/(?<screenname>.+))?} do |user_id, scr
 
   headers "Content-Type" => "application/atom+xml;charset=utf-8"
   erb :dailymotion_feed
+end
+
+get "/imgur" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /imgur\.com\/user\/(?<username>[a-zA-Z0-9]+)/ =~ params[:q]
+    # https://imgur.com/user/thebookofgray
+  elsif /imgur\.com\/a\/(?<album_id>[a-zA-Z0-9]+)/ =~ params[:q]
+    # https://imgur.com/a/IwyIm
+  elsif /imgur\.com\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q] or /reddit\.com\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
+    # https://imgur.com/r/aww
+    # https://www.reddit.com/r/aww
+    redirect "https://imgur.com/r/#{subreddit}/rss"
+  elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] and username != "i"
+    # https://thebookofgray.imgur.com/
+  elsif /imgur\.com\/(gallery\/)?(?<image_id>[a-zA-Z0-9]+)/ =~ params[:q]
+    # https://imgur.com/NdyrgaE
+    # https://imgur.com/gallery/NdyrgaE
+  else
+    # it's probably a username
+    username = params[:q]
+  end
+
+  if image_id
+    response = ImgurParty.get("/gallery/image/#{image_id}")
+    response = ImgurParty.get("/image/#{image_id}") if !response.success?
+    raise ImgurError.new(response) if !response.success?
+    user_id = response.parsed_response["data"]["account_id"]
+    username = response.parsed_response["data"]["account_url"]
+  elsif album_id
+    response = ImgurParty.get("/album/#{album_id}")
+    raise ImgurError.new(response) if !response.success?
+    user_id = response.parsed_response["data"]["account_id"]
+    username = response.parsed_response["data"]["account_url"]
+  elsif username
+    response = ImgurParty.get("/account/#{URI.encode(username)}")
+    raise ImgurError.new(response) if !response.success?
+    user_id = response.parsed_response["data"]["id"]
+    username = response.parsed_response["data"]["url"]
+  end
+
+  if user_id.nil?
+    "This image was probably uploaded anonymously. Sorry."
+  else
+    redirect "/imgur/#{user_id}/#{username}"
+  end
+end
+
+get "/imgur/:user_id/:username" do
+  @user_id = params[:user_id]
+  @username = params[:username]
+
+  # can't use user_id in this request unfortunately
+  response = ImgurParty.get("/account/#{@username}/submissions")
+  raise ImgurError.new(response) if !response.success?
+  @data = response.parsed_response["data"]
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :imgur_feed
 end
 
 get "/dilbert" do

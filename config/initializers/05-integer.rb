@@ -9,4 +9,16 @@ class Integer
       sprintf("%d:%02d", minutes, seconds)
     end
   end
+
+  def to_filesize(digits=2)
+    units = %w[B kB MB GB TB PB EB ZB YB]
+    n = self
+    i = 0
+    while n > 1000 and i < units.length do
+      n = n / 1000.0
+      i += 1
+    end
+    size = i > 0 ? n.round(digits) : n
+    "#{size} #{units[i]}"
+  end
 end
