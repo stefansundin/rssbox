@@ -111,7 +111,7 @@ get "/youtube/:channel_id/:username" do
       query[:eventType] = eventType
       response = GoogleParty.get("/youtube/v3/search", query: query)
       response.parsed_response["items"]
-    end.flatten.sort_by { |v| v["snippet"]["publishedAt"] }.reverse
+    end.flatten.uniq { |v| v["id"]["videoId"] }.sort_by { |v| v["snippet"]["publishedAt"] }.reverse
   else
     response = GoogleParty.get("/youtube/v3/search", query: query)
     @data = response.parsed_response["items"]
