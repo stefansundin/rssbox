@@ -83,12 +83,42 @@ get "/youtube" do
   end
 
   if channel_id
-    redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
+    if params[:type]
+      # it's no longer possible to get usernames using the API
+      og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
+      username = og.url.split("/")[-1]
+      username = og.title if username == channel_id
+      redirect "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
+    else
+      redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
+    end
   elsif playlist_id
     redirect "https://www.youtube.com/feeds/videos.xml?playlist_id=#{playlist_id}"
   else
     "Could not find the channel. Sorry."
   end
+end
+
+get "/youtube/:channel_id/:username" do
+  @channel_id = params[:channel_id]
+  @username = params[:username]
+
+  query = { part: "snippet", type: "video", order: "date", channelId: params[:channel_id], maxResults: 50 }
+  query[:q] = params[:q] if params[:q]
+
+  if params[:eventType]
+    @data = params[:eventType].split(",").map do |eventType|
+      query[:eventType] = eventType
+      response = GoogleParty.get("/youtube/v3/search", query: query)
+      response.parsed_response["items"]
+    end.flatten.sort_by { |v| v["snippet"]["publishedAt"] }.reverse
+  else
+    response = GoogleParty.get("/youtube/v3/search", query: query)
+    @data = response.parsed_response["items"]
+  end
+
+  headers "Content-Type" => "application/atom+xml;charset=utf-8"
+  erb :youtube_feed
 end
 
 get "/googleplus" do

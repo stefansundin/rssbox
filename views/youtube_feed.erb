@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>youtube:<%= @channel_id %></id>
+  <title><%= @username %> on YouTube</title>
+  <icon>https://s.ytimg.com/yts/img/favicon_48-vfl1s0rGh.png</icon>
+  <link href="<%= request.original_url %>" rel="self" />
+  <link href="https://youtube.com/channel/<%= @channel_id %>" rel="alternate" />
+  <updated><%= @data[0]["snippet"]["publishedAt"] if @data[0] %></updated>
+<%- @data.each do |video| -%>
+
+  <entry>
+    <id>youtube:video:<%= video["id"]["videoId"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= video["snippet"]["title"].to_line.esc %></title>
+    <link href="https://youtube.com/watch?v=<%= video["id"]["videoId"] %>" />
+    <updated><%= video["snippet"]["publishedAt"] %></updated>
+    <author><name><%= @username %></name></author>
+    <content type="html">
+<%= <<-EOF.esc
+<iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]["videoId"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen></iframe>
+
+<p>#{video["snippet"]["description"].gsub("\n","<br>\n")}</p>
+EOF
+-%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

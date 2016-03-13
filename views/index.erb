@@ -80,7 +80,8 @@ h2 {
 $(document).ready(function() {
   $("[data-submit-type]").click(function() {
     form = $(this).parents("form");
-    form.find("[name=type]").val($(this).attr("data-submit-type"));
+    val = $(this).attr("data-submit-type");
+    $('<input type="hidden" name="type">').val(val).insertAfter(this);
     form.find("[type=submit]").click();
   });
   $("[data-download]").click(function() {
@@ -90,7 +91,7 @@ $(document).ready(function() {
   });
 });
 $(window).bind("pageshow", function(e) {
-  $("[name=type]").val(""); // clear type when using the back button
+  $("[name=type]").detach(); // remove type inputs which remain when using the back button
 });
   </script>
 </head>
@@ -107,6 +108,10 @@ $(window).bind("pageshow", function(e) {
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
       <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
       <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-submit-type="live">Live</a></li>
+        </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
@@ -134,7 +139,6 @@ $(window).bind("pageshow", function(e) {
     <form class="input-group" method="get" action="facebook" target="_self">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
       <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
-      <input type="hidden" name="type">
       <span class="input-group-btn">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
         <ul class="dropdown-menu">
@@ -152,7 +156,6 @@ $(window).bind("pageshow", function(e) {
     <form class="input-group" method="get" action="instagram" target="_self">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
       <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
-      <input type="hidden" name="type">
       <span class="input-group-btn">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
         <ul class="dropdown-menu">
