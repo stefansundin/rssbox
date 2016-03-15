@@ -13,6 +13,10 @@ class String
   end
 
   def numeric?
-     self =~ /^\d+$/
+    /^\d+$/ === self
+  end
+
+  def tz_offset?
+    /^[-+]?\d+(\.\d+)?$/ === self
   end
 end

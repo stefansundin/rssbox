@@ -83,6 +83,9 @@ $(document).ready(function() {
     form = $(this).parents("form");
     val = $(this).attr("data-submit-type");
     $('<input type="hidden" name="type">').val(val).insertAfter(this);
+    if (form.attr("action") == "youtube") {
+      $('<input type="hidden" name="tz">').val(-new Date().getTimezoneOffset()/60).insertAfter(this);
+    }
     form.find("[type=submit]").click();
   });
   $("[data-download]").click(function() {

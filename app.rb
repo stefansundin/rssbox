@@ -90,7 +90,9 @@ get "/youtube" do
       og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
       username = og.url.split("/")[-1]
       username = og.title if username == channel_id
-      redirect "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
+      url = "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
+      url += "&tz=#{params[:tz]}" if params[:tz]
+      redirect url
     else
       redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
     end
@@ -104,6 +106,7 @@ end
 get "/youtube/:channel_id/:username" do
   @channel_id = params[:channel_id]
   @username = params[:username]
+  @tz = params[:tz]
 
   query = { part: "snippet", type: "video", order: "date", channelId: params[:channel_id], maxResults: 50 }
   query[:q] = params[:q] if params[:q]
@@ -117,6 +120,17 @@ get "/youtube/:channel_id/:username" do
   else
     response = GoogleParty.get("/youtube/v3/search", query: query)
     @data = response.parsed_response["items"]
+  end
+
+  ids = @data.select { |v| %w[upcoming live].include?(v["snippet"]["liveBroadcastContent"]) }.map { |v| v["id"]["videoId"] }
+  if ids.any?
+    request = GoogleParty.get("/youtube/v3/videos", query: { part: "liveStreamingDetails", id: ids.join(",") })
+    if request.success?
+      request.parsed_response["items"].each do |data|
+        i = @data.find_index { |v| v["id"]["videoId"] == data["id"] }
+        @data[i]["liveStreamingDetails"] = data["liveStreamingDetails"]
+      end
+    end
   end
 
   content_type :atom
