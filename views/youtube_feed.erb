@@ -6,26 +6,36 @@
   <link href="<%= request.original_url %>" rel="self" />
   <link href="https://www.youtube.com/channel/<%= @channel_id %>" rel="alternate" />
   <updated><%= @data[0]["snippet"]["publishedAt"] if @data[0] %></updated>
-<%- @data.each do |video| -%>
+<%-
+@data.each do |video|
+  id_extra = content_extra = nil
+  title = video["snippet"]["title"].to_line
+  updated = video["snippet"]["publishedAt"]
+  if video["liveStreamingDetails"]
+    if video["liveStreamingDetails"]["actualStartTime"]
+      updated = Time.parse(video["liveStreamingDetails"]["actualStartTime"])
+      id_extra = ":started:#{updated}"
+      title += " (started)"
+      content_extra = "<p>Live broadcast started at: #{updated.readable(@tz)}.</p>"
+    elsif video["liveStreamingDetails"]["scheduledStartTime"]
+      updated = Time.parse(video["liveStreamingDetails"]["scheduledStartTime"])
+      id_extra = ":scheduled:#{updated}"
+      title += " (scheduled for #{updated.readable(@tz)})"
+      content_extra = "<p>Live broadcast scheduled to start at: #{updated.readable(@tz)}.</p>"
+    end
+  end
+-%>
 
   <entry>
-    <id>youtube:video:<%= video["id"]["videoId"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= video["snippet"]["title"].to_line.esc %></title>
+    <id>youtube:video:<%= video["id"]["videoId"] %><%= id_extra %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= title.esc %></title>
     <link href="https://www.youtube.com/watch?v=<%= video["id"]["videoId"] %>" />
-    <updated><%= video["snippet"]["publishedAt"] %></updated>
+    <updated><%= updated %></updated>
     <author><name><%= @username %></name></author>
     <content type="html">
 <%= <<-EOF.esc
 <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]["videoId"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen></iframe>
-#{
-if video["liveStreamingDetails"]
-  if video["liveStreamingDetails"]["actualStartTime"]
-    "<p>Live broadcast started at: #{Time.parse(video["liveStreamingDetails"]["actualStartTime"]).readable(@tz)}.</p>"
-  elsif video["liveStreamingDetails"]["scheduledStartTime"]
-    "<p>Live broadcast scheduled to start at: #{Time.parse(video["liveStreamingDetails"]["scheduledStartTime"]).readable(@tz)}.</p>"
-  end
-end
-}
+#{content_extra}
 <p>#{video["snippet"]["description"].gsub("\n","<br>\n")}</p>
 EOF
 -%>
