@@ -23,7 +23,7 @@
 <%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "photo" }.each do |attachment| -%>
 <%= "<a href='#{attachment["fullImage"]["url"]}' title='#{attachment["fullImage"]["width"]}x#{attachment["fullImage"]["height"]}'><img src='#{attachment["image"]["url"]}'></a>".esc %>
 <%- end -%>
-Attachments:
+&lt;p>Attachments:&lt;/p>
 &lt;ul>
 <%- post["object"]["attachments"].each do |attachment| -%>
 <%= "  <li><a href='#{attachment["url"]}'>#{attachment["objectType"].capitalize}: #{attachment["url"]}</a></li>".esc %>
