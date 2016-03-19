@@ -230,6 +230,14 @@ $(window).bind("pageshow", function(e) {
     </form>
 <% end %>
 
+    <form class="input-group" method="get" action="svtplay" target="_self">
+      <div class="input-group-addon"><label for="svtplay_q">SVT Play</label></div>
+      <input class="form-control" type="search" name="q" id="svtplay_q" placeholder="Enter a SVT Play program name or a url." required>
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+
     <h2>About</h2>
 
     <ul>

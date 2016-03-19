@@ -621,6 +621,32 @@ get "/imgur/:user_id/:username" do
   erb :imgur_feed
 end
 
+get "/svtplay" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /https?:\/\/(?:www\.)?svtplay\.se\/video\/(?<video_id>.+)/ =~ params[:q]
+    # http://www.svtplay.se/video/7181623/veckans-brott/veckans-brott-sasong-12-avsnitt-10
+  elsif /https?:\/\/(www\.)?svtplay\.se\/(?<program>[^\/]+)/ =~ params[:q]
+    # http://www.svtplay.se/veckans-brott
+  else
+    # it's probably a program name
+    program = params[:q].downcase.gsub(/[:.]/, "").gsub("", "").gsub(" ", "-")
+  end
+
+  if video_id
+    doc = Nokogiri::HTML(open("http://www.svtplay.se/video/#{video_id}"))
+    url = doc.at("link[type='application/atom+xml']")["href"]
+  elsif program
+    url = "http://www.svtplay.se/#{program}/atom.xml"
+  end
+
+  if url
+    redirect url
+  else
+    "Could not find the channel. Sorry."
+  end
+end
+
 get "/dilbert" do
   @feed = Feedjira::Feed.fetch_and_parse "http://feeds.dilbert.com/DilbertDailyStrip"
   @entries = @feed.entries.map do |entry|
