@@ -15,12 +15,18 @@
     <updated><%= Time.parse(post["updated"]) %></updated>
     <author><name><%= post["actor"]["displayName"] %></name></author>
     <content type="html">
-&lt;pre><%= post["object"]["content"].esc %>&lt;/pre>
+<%= post["object"]["content"].split(/<br[ \/]*>/).map { |line| "<p>#{line}</p>" }.join("\n").esc %>
 <%- if post["object"]["attachments"] -%>
+<%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "video" }.each do |attachment| -%>
+<%= "<a href='#{attachment["url"]}'><img src='#{attachment["image"]["url"]}'></a>".esc %>
+<%- end -%>
+<%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "photo" }.each do |attachment| -%>
+<%= "<a href='#{attachment["fullImage"]["url"]}' title='#{attachment["fullImage"]["width"]}x#{attachment["fullImage"]["height"]}'><img src='#{attachment["image"]["url"]}'></a>".esc %>
+<%- end -%>
 Attachments:
 &lt;ul>
 <%- post["object"]["attachments"].each do |attachment| -%>
-  &lt;li>&lt;a href="<%= attachment["url"] %>"><%= attachment["url"] %>&lt;/a>&lt;/li>
+<%= "  <li><a href='#{attachment["url"]}'>#{attachment["objectType"].capitalize}: #{attachment["url"]}</a></li>".esc %>
 <%- end -%>
 &lt;/ul>
 <%- end -%>
