@@ -6,25 +6,41 @@
   <link href="<%= request.original_url %>" rel="self" />
   <link href="https://imgur.com/user/<%= @username %>" rel="alternate" />
   <updated><%= Time.at(@data[0]["datetime"].to_i) if @data[0] %></updated>
-<%- @data.each do |image| -%>
+<%-
+@data.each do |image|
+  if image["is_album"]
+    id = "imgur:album:#{image["id"]}"
+    title = "Album: #{image["title"]} (#{image["images_count"]} images)"
+    link = "https://imgur.com/a/#{image["id"]}"
+    body = <<-EOF.esc
+<a href="#{link}"><img src="https://i.imgur.com/#{image["cover"]}h.jpg"></a>
 
-  <entry>
-    <id>imgur:image:<%= image["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= image["title"].to_line.esc %> [<%= "#{image["width"]}x#{image["height"]}" %>]</title>
-    <link href="https://imgur.com/<%= image["id"] %>" />
-    <updated><%= Time.at(image["datetime"].to_i) %></updated>
-    <author><name><%= @username %></name></author>
-    <content type="html">
-<%=
-ext = image["type"].split("/")[1]
-<<-EOF.esc
-<a href="https://i.imgur.com/#{image["id"]}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
+<p>#{image["description"]}</p>
+<p><a href="http://s.imgur.com/a/#{image["id"]}/zip">Download album</a></p>
+EOF
+  else
+    id = "imgur:image:#{image["id"]}"
+    title = "#{image["title"]} [#{image["width"]}x#{image["height"]}]"
+    link = "https://imgur.com/#{image["id"]}"
+    ext = image["type"].split("/")[1]
+    body = <<-EOF.esc
+<a href="#{link}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
 
 <p>#{image["description"]}</p>
 <p><a href="https://imgur.com/download/#{image["id"]}/#{URI.encode(image["title"])}">Download</a></p>
 <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
 EOF
+  end
 -%>
+
+  <entry>
+    <id><%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= title.to_line.esc %></title>
+    <link href="<%= link %>" />
+    <updated><%= Time.at(image["datetime"].to_i) %></updated>
+    <author><name><%= @username %></name></author>
+    <content type="html">
+<%= body -%>
     </content>
   </entry>
 <%- end -%>
