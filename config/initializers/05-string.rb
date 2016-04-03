@@ -3,6 +3,10 @@ class String
     self.gsub("\n", " ")
   end
 
+  def to_paragraphs(split="\n")
+    self.split(split).reject { |line| line.ustrip == "" }.map { |line| "<p>#{line}</p>" }.join("\n")
+  end
+
   def esc
     self.gsub("&","&amp;").gsub("<","&lt;")
   end

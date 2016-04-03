@@ -15,7 +15,7 @@
     body = <<-EOF.esc
 <a href="#{link}"><img src="https://i.imgur.com/#{image["cover"]}h.jpg"></a>
 
-<p>#{image["description"]}</p>
+#{image["description"].to_paragraphs}
 <p><a href="http://s.imgur.com/a/#{image["id"]}/zip">Download album</a></p>
 EOF
   else
@@ -26,7 +26,7 @@ EOF
     body = <<-EOF.esc
 <a href="#{link}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
 
-<p>#{image["description"]}</p>
+#{image["description"].to_paragraphs}
 <p><a href="https://imgur.com/download/#{image["id"]}/#{URI.encode(image["title"])}">Download</a></p>
 <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
 EOF

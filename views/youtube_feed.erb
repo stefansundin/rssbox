@@ -36,7 +36,7 @@
 <%= <<-EOF.esc
 <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]["videoId"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen></iframe>
 #{content_extra}
-<p>#{video["snippet"]["description"].gsub("\n","<br>\n")}</p>
+#{video["snippet"]["description"].to_paragraphs}
 EOF
 -%>
     </content>
