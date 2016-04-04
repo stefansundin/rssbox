@@ -30,6 +30,8 @@ get "/go" do
     redirect "/vimeo?#{params.to_querystring}"
   elsif /^https?:\/\/([a-zA-Z0-9]+\.)?imgur\.com/ =~ params[:q]
     redirect "/imgur?#{params.to_querystring}"
+  elsif /^https?:\/\/twitter\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
+    redirect "https://stefansundin.com/@#{user}"
   else
     "Unknown service"
   end
