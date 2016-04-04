@@ -38,22 +38,22 @@ end
 get "/youtube" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /youtube\.com\/channel\/(?<channel_id>UC[^\/\?#]+)/ =~ params[:q]
+  if /youtube\.com\/channel\/(?<channel_id>UC[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
-  elsif /youtube\.com\/user\/(?<user>[^\/\?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/user\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
-  elsif /youtube\.com\/c\/(?<channel_title>[^\/\?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/c\/(?<channel_title>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/c/khanacademy/videos
     # note that channel_title != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
-  elsif /youtube\.com\/.*[\?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
+  elsif /youtube\.com\/.*[?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
-  elsif /youtube\.com\/.*[\?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
+  elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
-  elsif /youtube\.com\/(?<user>[^\/\?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
-  elsif /youtu\.be\/(?<video_id>[^\?#]+)/ =~ params[:q]
+  elsif /youtu\.be\/(?<video_id>[^?#]+)/ =~ params[:q]
     # https://youtu.be/vVXbgbMp0oY?t=1s
-  elsif /(?<channel_id>UC[^\/\?#]+)/ =~ params[:q]
+  elsif /(?<channel_id>UC[^\/?#]+)/ =~ params[:q]
     # it's a channel id
   else
     # it's probably a channel name
@@ -218,7 +218,7 @@ get "/facebook" do
     # https://www.facebook.com/groups/223764997793315
   elsif /facebook\.com\/[^\/]+-(?<id>[\d]+)/ =~ params[:q]
     # https://www.facebook.com/TNG-Recuts-867357396651373/
-  elsif /facebook\.com\/(?<id>[^\/\?#]+)/ =~ params[:q]
+  elsif /facebook\.com\/(?<id>[^\/?#]+)/ =~ params[:q]
     # https://www.facebook.com/celldweller/info?tab=overview
   else
     id = params[:q]
@@ -271,12 +271,12 @@ end
 get "/instagram" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
+  if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://instagram.com/p/4KaPsKSjni/
     response = InstagramParty.get("/media/shortcode/#{post_id}")
     return response.parsed_response["meta"]["error_message"] if !response.success?
     user = response.parsed_response["data"]["user"]
-  elsif /instagram\.com\/(?<name>[^\/\?#]+)/ =~ params[:q]
+  elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://instagram.com/infectedmushroom/
   else
     name = params[:q]
@@ -296,7 +296,7 @@ get "/instagram" do
 end
 
 get "/instagram/download" do
-  if /instagram\.com\/p\/(?<post_id>[^\/\?#]+)/ =~ params[:url]
+  if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:url]
     # https://instagram.com/p/4KaPsKSjni/
     response = InstagramParty.get("/media/shortcode/#{post_id}")
     data = response.parsed_response["data"]
@@ -341,11 +341,11 @@ get "/vine" do
 
   if /vine\.co\/popular-now/ =~ params[:q]
     redirect "/vine/popular-now"
-  elsif /vine\.co\/u\/(?<user_id>[^\/\?#]+)/ =~ params[:q]
+  elsif /vine\.co\/u\/(?<user_id>[^\/?#]+)/ =~ params[:q]
     # https://vine.co/u/916394797705605120
-  elsif /vine\.co\/v\/(?<post_id>[^\/\?#]+)/ =~ params[:q]
+  elsif /vine\.co\/v\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://vine.co/v/iJgLDBPKO3I
-  elsif /vine\.co\/(?<username>[^\/\?#]+)/ =~ params[:q]
+  elsif /vine\.co\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://vine.co/nasa
   else
     username = params[:q]
@@ -423,7 +423,7 @@ end
 get "/soundcloud" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /soundcloud\.com\/(?<username>[^\/\?#]+)/ =~ params[:q]
+  if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
   else
     username = params[:q]
@@ -518,7 +518,7 @@ get "/dailymotion" do
     # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
   elsif /dailymotion\.com\/playlist\/(?<playlist_id>[a-z0-9]+)/ =~ params[:q]
     # http://www.dailymotion.com/playlist/x4bnhu_GeneralGrin_fair-use-recuts/1
-  elsif /dailymotion\.com\/((followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/\?#]+)/ =~ params[:q]
+  elsif /dailymotion\.com\/((followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/?#]+)/ =~ params[:q]
     # http://www.dailymotion.com/followers/GeneralGrin/1
     # http://www.dailymotion.com/subscriptions/GeneralGrin/1
     # http://www.dailymotion.com/playlists/user/GeneralGrin/1
