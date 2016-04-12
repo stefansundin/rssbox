@@ -4,7 +4,7 @@
   <title><%= @user %> on Ustream</title>
   <icon>http://static-cdn1.ustream.tv/images/favicon:1.ico</icon>
   <link href="<%= request.original_url %>" rel="self" />
-  <link href="http://ustream.com/channel/<%= @id %>" rel="alternate" />
+  <link href="http://www.ustream.tv/channel/<%= @id %>" rel="alternate" />
   <updated><%= Time.at(@data[0]["created_at"]) if @data[0] %></updated>
 <%- @data.each do |video| -%>
 
