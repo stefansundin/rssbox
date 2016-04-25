@@ -27,7 +27,7 @@ EOF
 <a href="#{link}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
 
 #{image["description"].to_paragraphs}
-<p><a href="https://imgur.com/download/#{image["id"]}/#{URI.encode(image["title"])}">Download</a></p>
+<p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}">Download</a></p>
 <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
 EOF
   end

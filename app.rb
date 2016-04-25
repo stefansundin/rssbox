@@ -155,7 +155,7 @@ get "/googleplus" do
     user = "+#{user}" if user[0] != "+" and !user.numeric?
   end
 
-  response = GoogleParty.get("/plus/v1/people/#{URI.encode(user)}")
+  response = GoogleParty.get("/plus/v1/people/#{CGI.escape(user)}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise GoogleError.new(response) if !response.success?
   data = response.parsed_response
@@ -228,7 +228,7 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = FacebookParty.get("/#{URI.encode(id)}")
+  response = FacebookParty.get("/#{CGI.escape(id)}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
   data = response.parsed_response
@@ -367,7 +367,7 @@ get "/vine" do
     user_id = data["userId"]
     username = data["vanityUrls"][0] || data["username"]
   elsif username
-    response = VineParty.get("/users/profiles/vanity/#{URI.encode(username)}")
+    response = VineParty.get("/users/profiles/vanity/#{CGI.escape(username)}")
     return "That username does not exist." if response.code == 404
     raise VineError.new(response) if !response.success?
     data = response.parsed_response["data"]
@@ -543,7 +543,7 @@ get "/dailymotion" do
     user = response.parsed_response["owner"]
   end
 
-  response = DailymotionParty.get("/user/#{URI.encode(user)}")
+  response = DailymotionParty.get("/user/#{CGI.escape(user)}")
   if response.success?
     user_id = response.parsed_response["id"]
     screenname = response.parsed_response["screenname"]
@@ -599,7 +599,7 @@ get "/imgur" do
     user_id = response.parsed_response["data"]["account_id"]
     username = response.parsed_response["data"]["account_url"]
   elsif username
-    response = ImgurParty.get("/account/#{URI.encode(username)}")
+    response = ImgurParty.get("/account/#{CGI.escape(username)}")
     raise ImgurError.new(response) if !response.success?
     user_id = response.parsed_response["data"]["id"]
     username = response.parsed_response["data"]["url"]
