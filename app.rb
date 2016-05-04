@@ -10,7 +10,7 @@ end
 get "/go" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /^https?:\/\/(www\.)?youtu(\.?be|be\.com)/ =~ params[:q]
+  if /^https?:\/\/(www\.|gaming\.)?youtu(\.?be|be\.com)/ =~ params[:q]
     redirect "/youtube?#{params.to_querystring}"
   elsif /^https?:\/\/plus\.google\.com/ =~ params[:q]
     redirect "/googleplus?#{params.to_querystring}"
