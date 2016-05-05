@@ -196,10 +196,9 @@ get "/vimeo" do
     response = VimeoParty.get("/videos/#{video_id}")
     raise VimeoError.new(response) if !response.success?
     user_id = response.parsed_response["user"]["uri"].gsub("/users/","").to_i
-  else
+  elsif /vimeo\.com\/(?<user>[^\/]+)/ =~ params[:q] or user = params[:q]
     # it's probably a channel name
-    user = params[:q]
-    response = VimeoParty.get("/users", params: { query: user })
+    response = VimeoParty.get("/users", query: { query: user })
     raise VimeoError.new(response) if !response.success?
     if response.parsed_response["data"].length > 0
       user_id = response.parsed_response["data"][0]["uri"].gsub("/users/","").to_i
