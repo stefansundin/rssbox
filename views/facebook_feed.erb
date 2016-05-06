@@ -11,26 +11,33 @@
   <entry>
     <id>facebook:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%=
-if post["message"]
+prefix = if %w[link video photo event].include?(post["type"])
+  post["type"].camelize
+elsif @type
+  @type[0..-2].camelize
+end
+
+suffix = if post["message"]
   post["message"].to_line.truncate(120).esc
 elsif post["type"] == "link"
-  "Link: #{post["link"].esc}"
-elsif post["type"] == "event"
-  "Event: #{post["name"].esc}"
+  post["link"].esc
 elsif post["name"]
   post["name"].to_line.esc
 elsif post["description"]
   post["description"].to_line.truncate(120).esc
-elsif post["type"]
-  post["type"].camelize
-elsif @type
-  @type[0..-2].camelize
+end
+
+if prefix and suffix
+  "#{prefix}: #{suffix}"
+else
+  suffix || prefix
 end
 %></title>
     <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
     <updated><%= Time.parse(post["updated_time"]) %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
+<%= "<em>#{post["story"]}</em>".esc if post["story"] %>
 <%= (post["message"] || post["description"]).to_paragraphs.esc %>
 <%=
 if /^https?:\/\/[a-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+\.gif/i =~ post["link"]
