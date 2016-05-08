@@ -10,6 +10,7 @@ configure do
   use Rack::SslEnforcer, only_hosts: /\.herokuapp\.com$/
   use SecureHeaders::Middleware
   set :erb, trim: "-"
+  set :static_cache_control, [:public, :max_age => 86400]
   # Look up Rack::Mime::MIME_TYPES to see rack defaults
   mime_type :opensearch, "application/opensearchdescription+xml"
   settings.add_charset << "application/atom+xml"
