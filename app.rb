@@ -257,15 +257,23 @@ get "/facebook/download" do
     id = params[:url]
   end
 
-  response = FacebookParty.get("/", query: { id: id, fields: "source" })
-  return "Video not found." if !response.success? or !response.parsed_response["source"]
-  redirect response.parsed_response["source"]
+  response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description" })
+  data = response.parsed_response
+
+  if env["HTTP_ACCEPT"] == "application/json"
+    content_type :json
+    status response.code
+    return response.body
+  end
+
+  return "Video not found." if !response.success? or !data["source"]
+  redirect data["source"]
 end
 
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  @type = %w[videos photos].find(params[:type]) || "posts"
+  @type = %w[videos photos].pick(params[:type]) || "posts"
   fields = {
     "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture",
     "videos" => "updated_time,from,title,description,embeddable,embed_html",
