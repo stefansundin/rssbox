@@ -1,0 +1,61 @@
+body {
+  padding: 0 15px;
+  margin-bottom: 100px;
+}
+a {
+  cursor: pointer;
+}
+.container {
+  padding: 0;
+}
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+header {
+  margin-top: 25px;
+  text-align: center;
+}
+header h1 {
+  font-size: 4em;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+header h2 {
+  border: none;
+  margin-top: 1em;
+  font-size: 1.5em;
+  font-weight: 400;
+}
+h2 {
+  border-bottom: 1px solid #ccc;
+  margin-top: 2em;
+  padding-bottom: 0.125em;
+}
+progress {
+  width: 100%;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+.input-group-addon {
+  min-width: 110px;
+}
+.input-group-addon label {
+  margin: 0;
+}
+.dropdown-toggle {
+  border-radius: 0;
+  padding: 6px 4px;
+}
+
+.expander {
+  display: none;
+}
+.share {
+  text-align: center;
+  margin: 80px 0 45px;
+}

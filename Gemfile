@@ -14,6 +14,7 @@ gem "httparty"
 gem "airbrake"
 gem "newrelic_rpm", require: false
 gem "rack-ssl-enforcer"
+gem "secure_headers"
 gem "clogger"
 gem "heroku-env"
 gem "activesupport"

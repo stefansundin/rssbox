@@ -1,6 +1,11 @@
-environment = ENV["RACK_ENV"] || "development"
+ENV["RACK_ENV"] ||= "development"
 
-if environment == "development"
+# Load secure_headers rake task
+require "bundler/setup"
+Bundler.require(:default, ENV["RACK_ENV"])
+load "tasks/tasks.rake"
+
+if ENV["RACK_ENV"] == "development"
   require "github-release-party/tasks/heroku"
 end
 

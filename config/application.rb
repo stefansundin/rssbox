@@ -7,6 +7,8 @@ Bundler.require(:default, ENV["RACK_ENV"])
 # set :environment, :production
 
 configure do
+  use Rack::SslEnforcer, only_hosts: /\.herokuapp\.com$/
+  use SecureHeaders::Middleware
   set :erb, trim: "-"
   # Look up Rack::Mime::MIME_TYPES to see rack defaults
   mime_type :opensearch, "application/opensearchdescription+xml"

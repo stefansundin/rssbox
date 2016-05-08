@@ -10,7 +10,7 @@ GEM
     addressable (2.4.0)
     airbrake (5.2.3)
       airbrake-ruby (~> 1.2)
-    airbrake-ruby (1.2.3)
+    airbrake-ruby (1.2.4)
     backports (3.6.8)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
@@ -47,10 +47,10 @@ GEM
     method_source (0.8.2)
     mini_portile2 (2.0.0)
     minitest (5.8.4)
-    multi_json (1.11.3)
+    multi_json (1.12.0)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
-    newrelic_rpm (3.15.1.316)
+    newrelic_rpm (3.15.2.317)
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
     opengraph_parser (0.2.3)
@@ -77,6 +77,8 @@ GEM
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
     sax-machine (1.3.2)
+    secure_headers (3.3.0)
+      useragent
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -99,6 +101,7 @@ GEM
     unicorn (5.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
+    useragent (0.16.7)
 
 PLATFORMS
   ruby
@@ -125,6 +128,7 @@ DEPENDENCIES
   rake
   redis
   redis-namespace
+  secure_headers
   sinatra
   sinatra-reloader
   unicorn

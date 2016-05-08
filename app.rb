@@ -267,7 +267,7 @@ get "/facebook/download" do
     created_at = data["created_time"]
     return {
       url: data["source"],
-      filename: "#{created_at.to_date} - #{data["title"] || data["description"]}.mp3"
+      filename: "#{created_at.to_date} - #{data["title"] || data["description"]}.mp4"
     }.to_json
   end
 
@@ -493,14 +493,16 @@ get "/soundcloud" do
 end
 
 get "/soundcloud/download" do
-  response = SoundcloudParty.get("/resolve", query: { url: params[:url] }, follow_redirects: false)
+  url = params[:url]
+  url = "https://#{url}" if !url.start_with?("http:", "https:")
+  response = SoundcloudParty.get("/resolve", query: { url: url }, follow_redirects: false)
   return "URL does not resolve." if response.code == 404
   raise SoundcloudError.new(response) if response.code != 302
   uri = URI.parse response.parsed_response["location"]
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
   response = SoundcloudParty.get("#{uri.path}/stream", follow_redirects: false)
   raise SoundcloudError.new(response) if response.code != 302
-  url = response.parsed_response["location"]
+  media_url = response.parsed_response["location"]
 
   if env["HTTP_ACCEPT"] == "application/json"
     response = SoundcloudParty.get("#{uri.path}")
@@ -509,12 +511,12 @@ get "/soundcloud/download" do
     data = response.parsed_response
     created_at = Time.parse(data["created_at"])
     return {
-      url: url,
+      url: media_url,
       filename: "#{created_at.to_date} - #{data["title"]}.mp3"
     }.to_json
   end
 
-  redirect url
+  redirect media_url
 end
 
 get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
@@ -544,15 +546,13 @@ get "/ustream" do
   begin
     doc = Nokogiri::HTML(open(url))
     channel_id = doc.at("meta[name='ustream:channel_id']")["content"].to_i
+    doc = Nokogiri::HTML(open("http://www.ustream.tv/channel/#{channel_id}"))
+    channel_name = doc.at("link[rel='canonical']")["href"].split("/")[-1]
   rescue
     return "Could not find the channel."
   end
 
-  response = UstreamParty.get("/channels/#{channel_id}.json")
-  raise UstreamError.new(response) if !response.success?
-  channel_title = response.parsed_response["channel"]["title"]
-
-  redirect "/ustream/#{channel_id}/#{channel_title}"
+  redirect "/ustream/#{channel_id}/#{channel_name}"
 end
 
 get %r{/ustream/(?<id>\d+)(/(?<title>.+))?} do |id, title|
@@ -640,7 +640,7 @@ get "/imgur" do
     # https://imgur.com/user/thebookofgray
   elsif /imgur\.com\/a\/(?<album_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/a/IwyIm
-  elsif /imgur\.com\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q] or /reddit\.com\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
+  elsif /imgur\.com\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q] or /(?:reddit\.com)?\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
     redirect "https://imgur.com/r/#{subreddit}/rss"
