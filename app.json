@@ -5,12 +5,16 @@
   "website": "https://github.com/stefansundin/rssbox",
   "logo": "https://stefansundin.github.io/rssbox/img/icon128.png",
   "success_url": "/",
-  "addons": ["heroku-redis", "raygun:intro"],
+  "addons": ["heroku-redis"],
   "keywords": ["rss"],
   "env": {
     "RACK_ENV": "production",
     "GOOGLE_API_KEY": {
-      "description": "(Optional) Your Google API key for YouTube queries.",
+      "description": "(Optional) Your Google API key for YouTube and Google+.",
+      "required": false
+    },
+    "VIMEO_ACCESS_TOKEN": {
+      "description": "(Optional) Your Vimeo access token.",
       "required": false
     },
     "FACEBOOK_APP_ID": {

@@ -29,8 +29,8 @@ SecureHeaders::Configuration.default do |config|
     child_src: %w(mdo.github.io),
     block_all_mixed_content: true,
     # upgrade_insecure_requests: true,
-    report_uri: ENV["CSP_REPORT_URI"].split(",")
   }
+  config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
 end
 
 # Allow unsafe-inline for better_errors in development mode

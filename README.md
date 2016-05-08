@@ -4,11 +4,13 @@ You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.c
 
 ## Roll your own
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/stefansundin/rssbox)
 
 ### Configuration
 
 You need to get API keys for the respective services and populate the environment variables, e.g. by using an [.env](.env.example) file.
+
+A couple of services do not have official APIs, or do not require API keys, so they will work without any keys.
 
 #### Google
 
@@ -17,6 +19,10 @@ Go to the [Google Developer Console](https://console.developers.google.com/), cr
 Enable the following APIs in the project:
 - YouTube Data API v3
 - Google+ API
+
+#### Vimeo
+
+Go to the [Vimeo developer website](https://developer.vimeo.com/apps) and create an app. Then create a personal access token.
 
 #### Facebook
 
