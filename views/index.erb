@@ -138,19 +138,16 @@ $(document).ready(function() {
     xhr.addEventListener("load", function() {
       // var data = JSON.parse(this.responseText);
       var data = this.response;
-      var t = new Date(data.created_time);
-      var date = `${t.getUTCFullYear()}-${("0"+(t.getUTCMonth()+1)).slice(-2)}-${("0"+t.getUTCDate()).slice(-2)}`;
-      var fn = `${date} - ${data.title || data.description}.mp4`;
-      progress.title = fn;
+      progress.title = data.filename;
 
       // this is a big hack for cross-origin <a download="filename">
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", data.source, true);
+      xhr.open("GET", data.url, true);
       xhr.responseType = "blob";
       xhr.addEventListener("progress", function(e) {
         progress.value = e.loaded;
         progress.max = e.total;
-        progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${fn}`;
+        progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
       });
       xhr.addEventListener("load", function() {
         var blob = new Blob([xhr.response]);
@@ -158,7 +155,7 @@ $(document).ready(function() {
         var a = document.createElement("a");
         a.style.display = "none";
         a.href = url;
-        a.download = fn;
+        a.download = data.filename;
         document.body.appendChild(a);
         a.click();
         setTimeout(function(){
@@ -246,7 +243,9 @@ $(document).ready(function() {
           <li><a data-submit-type="posts">All posts (default)</a></li>
           <li><a data-submit-type="videos">Videos</a></li>
           <li><a data-submit-type="photos">Photos</a></li>
-          <li><a data-download>Download post</a></li>
+          <li><a data-download>Open media</a></li>
+          <li><a data-download download>Download media</a></li>
+          <li><a data-download-filename>Download media with nice filename</a></li>
         </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -259,7 +258,9 @@ $(document).ready(function() {
       <span class="input-group-btn">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
         <ul class="dropdown-menu">
-          <li><a data-download>Download video</a></li>
+          <li><a data-download>Open video</a></li>
+          <li><a data-download download>Download video</a></li>
+          <li><a data-download-filename>Download video with nice filename</a></li>
           <li><a href="vine/popular-now">Popular now</a></li>
         </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
@@ -273,7 +274,9 @@ $(document).ready(function() {
       <span class="input-group-btn">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
         <ul class="dropdown-menu">
-          <li><a data-download>Download track</a></li>
+          <li><a data-download>Open track</a></li>
+          <li><a data-download download>Download track</a></li>
+          <li><a data-download-filename>Download track with nice filename</a></li>
         </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -323,7 +326,7 @@ $(document).ready(function() {
     <ul>
       <li>YouTube lets you subscribe to a channel's recent videos, but it is difficult to find the url. Playlists also work.</li>
       <li>Vimeo also has RSS feeds, but are easier to find than YouTube's feeds.</li>
-      <li>You can download Facebook videos, Vine videos and SoundCloud tracks, paste the url and use the dropdown!</li>
+      <li>You can download Facebook videos, Vine videos and SoundCloud tracks, just paste the url and use the dropdown.</li>
       <li>The other platforms don't have native feeds, so this website builds a feed from their API.</li>
     </ul>
 

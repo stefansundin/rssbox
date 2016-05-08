@@ -23,4 +23,9 @@ class String
   def tz_offset?
     /^[-+]?\d+(\.\d+)?$/ === self
   end
+
+  def url_ext
+    uri = URI.parse(self)
+    File.extname(uri.path)
+  end
 end

@@ -263,7 +263,12 @@ get "/facebook/download" do
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
     status response.code
-    return response.body
+    data = response.parsed_response
+    created_at = data["created_time"]
+    return {
+      url: data["source"],
+      filename: "#{created_at.to_date} - #{data["title"] || data["description"]}.mp3"
+    }.to_json
   end
 
   return "Video not found." if !response.success? or !data["source"]
@@ -325,7 +330,19 @@ get "/instagram/download" do
     # https://instagram.com/p/4KaPsKSjni/
     response = InstagramParty.get("/media/shortcode/#{post_id}")
     data = response.parsed_response["data"]
-    redirect data["videos"] && data["videos"]["standard_resolution"]["url"] || data["images"]["standard_resolution"]["url"]
+    url = data["videos"] && data["videos"]["standard_resolution"]["url"] || data["images"]["standard_resolution"]["url"]
+
+    if env["HTTP_ACCEPT"] == "application/json"
+      content_type :json
+      status response.code
+      created_at = Time.at(data["created_time"].to_i)
+      return {
+        url: url,
+        filename: "#{created_at.to_date} - #{data["user"]["username"]} - #{data["caption"]["text"] || post_id}#{url.url_ext}"
+      }.to_json
+    end
+
+    redirect url
   else
     return "Please use a URL directly to a post."
   end
@@ -440,9 +457,22 @@ get "/vine/download" do
   end
 
   response = VineParty.get("/timelines/posts/s/#{post_id}")
+
+  if env["HTTP_ACCEPT"] == "application/json"
+    content_type :json
+    status response.code
+    data = response.parsed_response["data"]["records"][0]
+    created_at = Time.parse(data["created"])
+    return {
+      url: data["videoUrls"][0]["videoUrl"].gsub(/^http:/, "https:"),
+      filename: "#{created_at.to_date} - #{data["username"]} - #{post_id}.mp3"
+    }.to_json
+  end
+
   return "Post does not exist." if response.code == 404
   raise VineError.new(response) if !response.success?
-  redirect response.parsed_response["data"]["records"][0]["videoUrls"][0]["videoUrl"]
+  data = response.parsed_response["data"]["records"][0]
+  redirect data["videoUrls"][0]["videoUrl"]
 end
 
 get "/soundcloud" do
@@ -470,7 +500,21 @@ get "/soundcloud/download" do
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
   response = SoundcloudParty.get("#{uri.path}/stream", follow_redirects: false)
   raise SoundcloudError.new(response) if response.code != 302
-  redirect response.parsed_response["location"]
+  url = response.parsed_response["location"]
+
+  if env["HTTP_ACCEPT"] == "application/json"
+    response = SoundcloudParty.get("#{uri.path}")
+    content_type :json
+    status response.code
+    data = response.parsed_response
+    created_at = Time.parse(data["created_at"])
+    return {
+      url: url,
+      filename: "#{created_at.to_date} - #{data["title"]}.mp3"
+    }.to_json
+  end
+
+  redirect url
 end
 
 get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
@@ -526,6 +570,8 @@ end
 get "/ustream/download" do
   if /ustream\.tv\/recorded\/(?<id>\d+)/ =~ params[:url]
     # http://www.ustream.tv/recorded/74562214
+  elsif params[:url].numeric?
+    id = params[:url]
   else
     return "Please use a link directly to a video."
   end
