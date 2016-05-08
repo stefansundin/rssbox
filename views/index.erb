@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base target="_blank">
   <title>RSS Box</title>
 
   <meta charset="utf-8">
@@ -30,7 +29,7 @@
 
   <div class="container">
 <% if ENV["GOOGLE_API_KEY"] %>
-    <form class="input-group" method="get" action="youtube" target="_self">
+    <form class="input-group" method="get" action="youtube">
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
       <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
       <span class="input-group-btn">
@@ -42,7 +41,7 @@
       </span>
     </form>
 
-    <form class="input-group" method="get" action="googleplus" target="_self">
+    <form class="input-group" method="get" action="googleplus">
       <div class="input-group-addon"><label for="googleplus_q">Google+</label></div>
       <input class="form-control" type="search" name="q" id="googleplus_q" placeholder="Enter a Google+ name or a url." required>
       <span class="input-group-btn">
@@ -52,7 +51,7 @@
 <% end %>
 
 <% if ENV["VIMEO_ACCESS_TOKEN"] %>
-    <form class="input-group" method="get" action="vimeo" target="_self">
+    <form class="input-group" method="get" action="vimeo">
       <div class="input-group-addon"><label for="vimeo_q">Vimeo</label></div>
       <input class="form-control" type="search" name="q" id="vimeo_q" placeholder="Enter a Vimeo channel name, video id, or a url to a channel or video." required>
       <span class="input-group-btn">
@@ -62,7 +61,7 @@
 <% end %>
 
 <% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
-    <form class="input-group" method="get" action="facebook" target="_self">
+    <form class="input-group" method="get" action="facebook">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
       <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
       <span class="input-group-btn">
@@ -81,7 +80,7 @@
 <% end %>
 
 <% if ENV["INSTAGRAM_CLIENT_ID"] and ENV["INSTAGRAM_CLIENT_SECRET"] %>
-    <form class="input-group" method="get" action="instagram" target="_self">
+    <form class="input-group" method="get" action="instagram">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
       <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
       <span class="input-group-btn">
@@ -99,7 +98,7 @@
     </form>
 <% end %>
 
-    <form class="input-group" method="get" action="vine" target="_self">
+    <form class="input-group" method="get" action="vine">
       <div class="input-group-addon"><label for="vine_q">Vine</label></div>
       <input class="form-control" type="search" name="q" id="vine_q" placeholder="Enter a Vine username or a url." required>
       <span class="input-group-btn">
@@ -115,7 +114,7 @@
     </form>
 
 <% if ENV["SOUNDCLOUD_CLIENT_ID"] %>
-    <form class="input-group" method="get" action="soundcloud" target="_self">
+    <form class="input-group" method="get" action="soundcloud">
       <div class="input-group-addon"><label for="soundcloud_q">SoundCloud</label></div>
       <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
       <span class="input-group-btn">
@@ -130,7 +129,7 @@
     </form>
 <% end %>
 
-    <form class="input-group" method="get" action="ustream" target="_self">
+    <form class="input-group" method="get" action="ustream">
       <div class="input-group-addon"><label for="ustream_q">Ustream</label></div>
       <input class="form-control" type="search" name="q" id="ustream_q" placeholder="Enter a Ustream channel name or a url." required>
       <span class="input-group-btn">
@@ -142,7 +141,7 @@
       </span>
     </form>
 
-    <form class="input-group" method="get" action="dailymotion" target="_self">
+    <form class="input-group" method="get" action="dailymotion">
       <div class="input-group-addon"><label for="dailymotion_q">Dailymotion</label></div>
       <input class="form-control" type="search" name="q" id="dailymotion_q" placeholder="Enter a Dailymotion channel name or a url." required>
       <span class="input-group-btn">
@@ -151,7 +150,7 @@
     </form>
 
 <% if ENV["IMGUR_CLIENT_ID"] %>
-    <form class="input-group" method="get" action="imgur" target="_self">
+    <form class="input-group" method="get" action="imgur">
       <div class="input-group-addon"><label for="imgur_q">Imgur</label></div>
       <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur user name or a url. Or subreddit url." required>
       <span class="input-group-btn">
@@ -160,7 +159,7 @@
     </form>
 <% end %>
 
-    <form class="input-group" method="get" action="svtplay" target="_self">
+    <form class="input-group" method="get" action="svtplay">
       <div class="input-group-addon"><label for="svtplay_q">SVT Play</label></div>
       <input class="form-control" type="search" name="q" id="svtplay_q" placeholder="Enter a SVT Play program name or a url." required>
       <span class="input-group-btn">
