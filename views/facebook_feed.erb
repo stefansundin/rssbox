@@ -17,12 +17,14 @@ elsif @type
   @type[0..-2].camelize
 end
 
-suffix = if post["message"]
+suffix = if post["title"]
+  post["title"].to_line.esc
+elsif post["name"]
+  post["name"].to_line.esc
+elsif post["message"]
   post["message"].to_line.truncate(120).esc
 elsif post["type"] == "link"
   post["link"].esc
-elsif post["name"]
-  post["name"].to_line.esc
 elsif post["description"]
   post["description"].to_line.truncate(120).esc
 end

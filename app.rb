@@ -227,16 +227,25 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = FacebookParty.get("/#{CGI.escape(id)}")
+  response = FacebookParty.get("/", query: { id: id, metadata: "1" })
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise FacebookError.new(response) if !response.success?
   data = response.parsed_response
-  if data["from"]
-    response = FacebookParty.get("/#{data["from"]["id"]}")
+  if data["metadata"]["fields"].any? { |field| field["name"] == "from" }
+    # this is needed if the url is for e.g. a photo and not the main page
+    response = FacebookParty.get("/", query: { id: id, fields: "from", metadata: "1" })
+    raise FacebookError.new(response) if !response.success?
+    response = FacebookParty.get("/", query: { id: response.parsed_response["from"]["id"], metadata: "1" })
+    raise FacebookError.new(response) if !response.success?
+    data = response.parsed_response
+  end
+  if data["metadata"]["fields"].any? { |field| field["name"] == "username" }
+    response = FacebookParty.get("/", query: { id: id, fields: "username", metadata: "1" })
     raise FacebookError.new(response) if !response.success?
     data = response.parsed_response
   end
 
+  return "Please use a link directly to the Facebook page." if !data["id"].numeric?
   redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
@@ -248,7 +257,7 @@ get "/facebook/download" do
     id = params[:url]
   end
 
-  response = FacebookParty.get("/#{id}")
+  response = FacebookParty.get("/", query: { id: id, fields: "source" })
   return "Video not found." if !response.success? or !response.parsed_response["source"]
   redirect response.parsed_response["source"]
 end
@@ -256,9 +265,14 @@ end
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  @type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
+  @type = %w[videos photos].find(params[:type]) || "posts"
+  fields = {
+    "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture",
+    "videos" => "updated_time,from,title,description,embeddable,embed_html",
+    "photos" => "updated_time,from,message,description,name,link,source",
+  }[@type]
 
-  response = FacebookParty.get("/#{id}/#{@type}")
+  response = FacebookParty.get("/#{id}/#{@type}", query: { fields: fields })
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]

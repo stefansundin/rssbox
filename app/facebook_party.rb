@@ -2,7 +2,7 @@
 
 class FacebookParty
   include HTTParty
-  base_uri "https://graph.facebook.com/v2.3"
+  base_uri "https://graph.facebook.com/v2.6"
   default_params access_token: "#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}"
   format :json
 end
