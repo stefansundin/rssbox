@@ -30,7 +30,7 @@ Go to the [Facebook developer website](https://developers.facebook.com/) and cre
 
 #### Instagram
 
-Go to the [Instagram developer website](http://instagram.com/developer/) and create a client. Copy your client id and secret.
+Go to the [Instagram developer website](https://www.instagram.com/developer/) and create a client. Copy your client id and secret.
 
 #### SoundCloud
 

@@ -302,12 +302,12 @@ get "/instagram" do
   return "Insufficient parameters" if params[:q].empty?
 
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
-    # https://instagram.com/p/4KaPsKSjni/
+    # https://www.instagram.com/p/4KaPsKSjni/
     response = InstagramParty.get("/media/shortcode/#{post_id}")
     return response.parsed_response["meta"]["error_message"] if !response.success?
     user = response.parsed_response["data"]["user"]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
-    # https://instagram.com/infectedmushroom/
+    # https://www.instagram.com/infectedmushroom/
   else
     name = params[:q]
   end
@@ -327,7 +327,7 @@ end
 
 get "/instagram/download" do
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:url]
-    # https://instagram.com/p/4KaPsKSjni/
+    # https://www.instagram.com/p/4KaPsKSjni/
     response = InstagramParty.get("/media/shortcode/#{post_id}")
     data = response.parsed_response["data"]
     url = data["videos"] && data["videos"]["standard_resolution"]["url"] || data["images"]["standard_resolution"]["url"]

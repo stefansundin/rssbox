@@ -20,12 +20,12 @@ end
 configure :development do
   use BetterErrors::Middleware
   BetterErrors.application_root = File.expand_path(".")
+
+  # puma autoload warnings
+  require 'tilt/erubis'
 end
 
 # require things
 app_path = File.expand_path("../..", __FILE__)
 Dir["#{app_path}/config/initializers/*.rb"].each { |f| require f }
 Dir["#{app_path}/app/**/*.rb"].each { |f| require f }
-
-# puma autoload warnings
-require 'tilt/erubis'
