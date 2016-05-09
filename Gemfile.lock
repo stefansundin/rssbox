@@ -41,7 +41,6 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
     json (1.8.3)
-    kgio (2.10.0)
     loofah (2.0.3)
       nokogiri (>= 1.5.9)
     method_source (0.8.2)
@@ -65,13 +64,13 @@ GEM
     pry-remote (0.1.8)
       pry (~> 0.9)
       slop (~> 3.0)
+    puma (3.4.0)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
     rack-ssl-enforcer (0.2.9)
     rack-test (0.6.3)
       rack (>= 1.0)
-    raindrops (0.16.0)
     rake (11.1.2)
     redis (3.3.0)
     redis-namespace (1.5.2)
@@ -98,9 +97,6 @@ GEM
     tilt (2.0.2)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    unicorn (5.1.0)
-      kgio (~> 2.6)
-      raindrops (~> 0.7)
     useragent (0.16.7)
 
 PLATFORMS
@@ -123,6 +119,7 @@ DEPENDENCIES
   opengraph_parser
   powder
   pry-remote
+  puma
   rack
   rack-ssl-enforcer
   rake
@@ -131,7 +128,6 @@ DEPENDENCIES
   secure_headers
   sinatra
   sinatra-reloader
-  unicorn
 
 BUNDLED WITH
    1.11.2

@@ -4,6 +4,7 @@
 /.env
 /.dockerenv
 /.vagrant
+/.otto*
 /.bundle
 Thumbs.db
 .DS_Store
