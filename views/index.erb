@@ -129,6 +129,20 @@
     </form>
 <% end %>
 
+<% if ENV["TWITCH_CLIENT_ID"] %>
+    <form class="input-group" method="get" action="twitch">
+      <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
+      <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
+      <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-download>Get download command</a></li>
+        </ul>
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+<% end %>
+
     <form class="input-group" method="get" action="ustream">
       <div class="input-group-addon"><label for="ustream_q">Ustream</label></div>
       <input class="form-control" type="search" name="q" id="ustream_q" placeholder="Enter a Ustream channel name or a url." required>

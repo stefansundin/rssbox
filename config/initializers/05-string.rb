@@ -7,6 +7,10 @@ class String
     self.split(split).reject { |line| line.ustrip == "" }.map { |line| "<p>#{line}</p>" }.join("\n")
   end
 
+  def to_filename
+    self.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/\t+/, " ")
+  end
+
   def esc
     self.gsub("&","&amp;").gsub("<","&lt;")
   end

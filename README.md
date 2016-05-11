@@ -36,6 +36,10 @@ Go to the [Instagram developer website](https://www.instagram.com/developer/) an
 
 Go to the [SoundCloud developer website](http://soundcloud.com/you/apps) and create an app. Copy your client id and secret.
 
+#### Twitch
+
+Go to your [Twitch settings](https://www.twitch.tv/settings/connections) and create an app. Copy your client id.
+
 #### Imgur
 
 Go to the [Imgur settings](https://imgur.com/account/settings/apps) and create an app. Copy your client id.

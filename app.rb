@@ -533,6 +533,60 @@ get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   erb :soundcloud_feed
 end
 
+get "/twitch" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
+    # https://www.twitch.tv/majinphil
+  else
+    username = params[:q]
+  end
+
+  response = TwitchParty.get("/channels/#{username}")
+  raise TwitchError.new(response) if !response.success?
+  data = response.parsed_response
+  return "Can't find a user with that name. Sorry." if !data
+
+  redirect "/twitch/#{data["_id"]}/#{data["name"]}"
+end
+
+get "/twitch/download" do
+  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /^v?(?<vod_id>\d+)$/ =~ params[:url]
+    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+  else
+    return "Please use an URL to a video."
+  end
+
+  response = TwitchParty.get("/videos/v#{vod_id}")
+  return "Video does not exist." if response.code == 404
+  raise TwitchError.new(response) if !response.success?
+  data = response.parsed_response
+
+  response = HTTParty.get("https://api.twitch.tv/api/vods/#{vod_id}/access_token")
+  raise TwitchError.new(response) if !response.success?
+  vod_data = response.parsed_response
+  url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
+  fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
+
+  content_type :text
+  "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
+end
+
+get %r{/twitch/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @id = id
+  @username = username
+
+  response = TwitchParty.get("/channels/#{username}/videos", query: { broadcasts: true })
+  raise TwitchError.new(response) if !response.success?
+
+  @data = response.parsed_response["videos"]
+  @username = @data[0]["channel"]["name"] rescue username
+  @user = @data[0]["channel"]["display_name"] rescue username
+
+  content_type :atom
+  erb :twitch_feed
+end
+
 get "/ustream" do
   return "Insufficient parameters" if params[:q].empty?
 

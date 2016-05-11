@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>twitch:<%= @id %></id>
+  <title><%= @user %> on Twitch</title>
+  <icon>https://www.twitch.tv/favicon.ico</icon>
+  <link href="<%= request.original_url %>" rel="self" />
+  <link href="https://www.twitch.tv/<%= @username %>" rel="alternate" />
+  <updated><%= Time.parse(@data[0]["created_at"]) if @data[0] %></updated>
+<%- @data.each do |video| -%>
+
+  <entry>
+    <id>twitch:video:<%= video["_id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title>[<%= video["length"].to_i.to_duration %>] <%= video["title"].to_line.esc %></title>
+    <link href="<%= "https://www.twitch.tv/#{video["channel"]["name"]}/v/#{video["_id"][1..-1]}" %>" />
+    <updated><%= Time.parse(video["created_at"]) %></updated>
+    <author><name><%= video["channel"]["display_name"] %></name></author>
+    <content type="html">
+<%= <<-EOF.esc
+<iframe width="620" height="378" src="https://player.twitch.tv/?video=#{video["_id"]}" frameborder="0" scrolling="no" allowfullscreen></iframe>
+
+#{video["description"].to_paragraphs}
+
+<a href="#{request.root_url}/twitch/download?url=#{video["_id"]}">Download video</a>
+EOF
+-%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>
