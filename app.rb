@@ -22,6 +22,8 @@ get "/go" do
     redirect "/vine?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
     redirect "/soundcloud?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?twitch\.tv/ =~ params[:q]
+    redirect "/twitch?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?ustream\.tv/ =~ params[:q]
     redirect "/ustream?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?dailymotion\.com/ =~ params[:q]
