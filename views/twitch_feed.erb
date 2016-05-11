@@ -16,7 +16,7 @@
     <author><name><%= video["channel"]["display_name"] %></name></author>
     <content type="html">
 <%= <<-EOF.esc
-<em>#{video["channel"]["display_name"]} was playing #{video["game"]}.</em>
+<em>#{video["channel"]["display_name"]} was #{video["game"] ? "playing #{video["game"]}" : "live"}.</em>
 
 <iframe width="620" height="378" src="https://player.twitch.tv/?video=#{video["_id"]}" frameborder="0" scrolling="no" allowfullscreen></iframe>
 

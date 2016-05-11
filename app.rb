@@ -545,9 +545,9 @@ get "/twitch" do
   end
 
   response = TwitchParty.get("/channels/#{username}")
+  return "Can't find a user with that name. Sorry." if response.code == 404
   raise TwitchError.new(response) if !response.success?
   data = response.parsed_response
-  return "Can't find a user with that name. Sorry." if !data
 
   redirect "/twitch/#{data["_id"]}/#{data["name"]}"
 end
