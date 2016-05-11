@@ -465,7 +465,7 @@ get "/vine/download" do
     created_at = Time.parse(data["created"])
     return {
       url: data["videoUrls"][0]["videoUrl"].gsub(/^http:/, "https:"),
-      filename: "#{created_at.to_date} - #{data["username"]} - #{post_id}.mp3"
+      filename: "#{created_at.to_date} - #{data["username"]} - #{post_id}.mp4"
     }.to_json
   end
 

@@ -28,7 +28,7 @@ SecureHeaders::Configuration.default do |config|
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.cdn.vine.co *.sndcdn.com),
     child_src: %w(mdo.github.io),
     block_all_mixed_content: true,
-    # upgrade_insecure_requests: true,
+    upgrade_insecure_requests: true,
   }
   config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
 end
@@ -38,6 +38,6 @@ configure :development do
   SecureHeaders::Configuration.override(:default) do |config|
     config.csp[:script_src] << "'unsafe-inline'"
     config.csp[:style_src] << "'unsafe-inline'"
-    # config.csp[:upgrade_insecure_requests] = false
+    config.csp[:upgrade_insecure_requests] = false
   end
 end
