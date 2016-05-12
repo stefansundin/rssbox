@@ -578,7 +578,7 @@ get %r{/twitch/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
   @username = username
 
-  response = TwitchParty.get("/channels/#{username}/videos", query: { broadcasts: true })
+  response = TwitchParty.get("/channels/#{username}/videos", query: { broadcast_type: "all" })
   raise TwitchError.new(response) if !response.success?
 
   @data = response.parsed_response["videos"]
