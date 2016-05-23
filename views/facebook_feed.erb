@@ -39,7 +39,7 @@ end
     <updated><%= Time.parse(post["updated_time"]) %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
-<%= "<em>#{post["story"]}</em>".esc if post["story"] %>
+<%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
 <%= (post["message"] || post["description"]).to_paragraphs.esc %>
 <%=
 if /^https?:\/\/[a-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+\.gif/i =~ post["link"]
