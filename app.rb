@@ -221,6 +221,8 @@ get "/facebook" do
     # https://www.facebook.com/pages/Lule%C3%A5-Sweden/106412259396611?fref=ts
   elsif /facebook\.com\/groups\/(?<id>\d+)/ =~ params[:q]
     # https://www.facebook.com/groups/223764997793315
+  elsif /facebook\.com\/video\/[^\d]+(?<id>\d+)/ =~ params[:q]
+    # https://www.facebook.com/video/embed?video_id=1192228974143110
   elsif /facebook\.com\/[^\/]+-(?<id>[\d]+)/ =~ params[:q]
     # https://www.facebook.com/TNG-Recuts-867357396651373/
   elsif /facebook\.com\/(?<id>[^\/?#]+)/ =~ params[:q]
@@ -237,7 +239,8 @@ get "/facebook" do
     # this is needed if the url is for e.g. a photo and not the main page
     response = FacebookParty.get("/", query: { id: id, fields: "from", metadata: "1" })
     raise FacebookError.new(response) if !response.success?
-    response = FacebookParty.get("/", query: { id: response.parsed_response["from"]["id"], metadata: "1" })
+    id = response.parsed_response["from"]["id"]
+    response = FacebookParty.get("/", query: { id: id, metadata: "1" })
     raise FacebookError.new(response) if !response.success?
     data = response.parsed_response
   end
@@ -283,7 +286,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @type = %w[videos photos].pick(params[:type]) || "posts"
   fields = {
     "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture",
-    "videos" => "updated_time,from,title,description,embeddable,embed_html",
+    "videos" => "updated_time,from,title,description,embeddable,embed_html,length",
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@type]
 

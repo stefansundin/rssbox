@@ -11,10 +11,10 @@
   <entry>
     <id>facebook:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%=
-prefix = if %w[link video photo event].include?(post["type"])
-  post["type"].camelize
-elsif @type
-  @type[0..-2].camelize
+prefix = if post["length"]
+  "[#{post["length"].round.to_duration}]"
+elsif %w[link video photo event].include?(post["type"])
+  "#{post["type"].camelize}:"
 end
 
 suffix = if post["title"]
@@ -30,9 +30,11 @@ elsif post["description"]
 end
 
 if prefix and suffix
-  "#{prefix}: #{suffix}"
-else
+  "#{prefix} #{suffix}"
+elsif suffix or prefix
   suffix || prefix
+else
+  (post["type"] || @type[0..-2]).camelize
 end
 %></title>
     <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
