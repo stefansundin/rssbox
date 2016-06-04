@@ -2,8 +2,8 @@
 
 class InstagramParty
   include HTTParty
-  base_uri "https://api.instagram.com/v1"
-  default_params client_id: ENV["INSTAGRAM_CLIENT_ID"], client_secret: ENV["INSTAGRAM_CLIENT_SECRET"]
+  base_uri "https://instagram.com"
+  default_params __a: "1"
   format :json
 end
 

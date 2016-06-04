@@ -308,9 +308,9 @@ get "/instagram" do
 
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/4KaPsKSjni/
-    response = InstagramParty.get("/media/shortcode/#{post_id}")
-    return response.parsed_response["meta"]["error_message"] if !response.success?
-    user = response.parsed_response["data"]["user"]
+    response = InstagramParty.get("/p/#{post_id}/")
+    return InstagramError.new(response) if !response.success?
+    user = response.parsed_response["media"]["owner"]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
   else
@@ -318,13 +318,19 @@ get "/instagram" do
   end
 
   if name
-    response = InstagramParty.get("/users/search", query: { q: name })
-    raise InstagramError.new(response) if !response.success?
-    user = response.parsed_response["data"].find { |user| user["username"] == name }
+    response = InstagramParty.get("/#{name}/")
+    if response.success?
+      user = response.parsed_response["user"]
+    else
+      # https://www.instagram.com/web/search/topsearch/?query=infected
+      response = InstagramParty.get("/web/search/topsearch/", query: { query: name })
+      raise InstagramError.new(response) if !response.success?
+      user = response.parsed_response["users"][0]["user"]
+    end
   end
 
   if user
-    redirect "/instagram/#{user["id"]}/#{user["username"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+    redirect "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   else
     "Can't find a user with that name. Sorry."
   end
@@ -333,46 +339,42 @@ end
 get "/instagram/download" do
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:url]
     # https://www.instagram.com/p/4KaPsKSjni/
-    response = InstagramParty.get("/media/shortcode/#{post_id}")
-    data = response.parsed_response["data"]
-    url = data["videos"] && data["videos"]["standard_resolution"]["url"] || data["images"]["standard_resolution"]["url"]
-
-    if env["HTTP_ACCEPT"] == "application/json"
-      content_type :json
-      status response.code
-      created_at = Time.at(data["created_time"].to_i)
-      return {
-        url: url,
-        filename: "#{created_at.to_date} - #{data["user"]["username"]} - #{data["caption"]["text"] || post_id}#{url.url_ext}"
-      }.to_json
-    end
-
-    redirect url
   else
-    return "Please use a URL directly to a post."
+    post_id = params[:url]
   end
+
+  response = InstagramParty.get("/p/#{post_id}/")
+  return "Please use a URL directly to a post." if !response.success?
+  data = response.parsed_response["media"]
+  url = data["video_url"] || data["display_src"]
+
+  if env["HTTP_ACCEPT"] == "application/json"
+    content_type :json
+    status response.code
+    created_at = Time.at(data["date"])
+    return {
+      url: url,
+      filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{data["caption"] || post_id}#{url.url_ext}"
+    }.to_json
+  end
+
+  redirect url
 end
 
 get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
   @user_id = user_id
 
-  response = InstagramParty.get("/users/#{user_id}/media/recent")
-  if response.code == 400
-    # user no longer exists or is private, show the error in the feed
-    @meta = response.parsed_response["meta"]
-    content_type :atom
-    return erb :instagram_error
-  end
+  response = InstagramParty.get("/#{username}/")
   raise InstagramError.new(response) if !response.success?
 
-  @data = response.parsed_response["data"]
-  @user = @data[0]["user"]["username"] rescue username
+  @data = response.parsed_response["user"]
+  @user = @data["username"] rescue username
 
-  type = %w[videos photos].include?(params[:type]) ? params[:type] : "posts"
+  type = %w[videos photos].pick(params[:type]) || "posts"
   if type == "videos"
-    @data.select! { |post| post["type"] == "video" }
+    @data["media"]["nodes"].select! { |post| post["is_video"] }
   elsif type == "photos"
-    @data.select! { |post| post["type"] == "image" }
+    @data["media"]["nodes"].select! { |post| !post["is_video"] }
   end
 
   @title = @user

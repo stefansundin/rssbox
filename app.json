@@ -25,14 +25,6 @@
       "description": "(Optional) Your Facebook app secret.",
       "required": false
     },
-    "INSTAGRAM_CLIENT_ID": {
-      "description": "(Optional) Your Instagram client id.",
-      "required": false
-    },
-    "INSTAGRAM_CLIENT_SECRET": {
-      "description": "(Optional) Your Instagram client secret.",
-      "required": false
-    },
     "SOUNDCLOUD_CLIENT_ID": {
       "description": "(Optional) Your SoundCloud client id.",
       "required": false

@@ -79,7 +79,6 @@
     </form>
 <% end %>
 
-<% if ENV["INSTAGRAM_CLIENT_ID"] and ENV["INSTAGRAM_CLIENT_SECRET"] %>
     <form class="input-group" method="get" action="instagram">
       <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
       <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
@@ -96,7 +95,6 @@
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
-<% end %>
 
     <form class="input-group" method="get" action="vine">
       <div class="input-group-addon"><label for="vine_q">Vine</label></div>
