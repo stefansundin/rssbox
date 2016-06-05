@@ -5,7 +5,7 @@
   <icon>https://instagramstatic-a.akamaihd.net/bluebar/97ef9c7/images/ico/favicon.ico</icon>
   <link href="<%= request.original_url %>" rel="self" />
   <link href="https://www.instagram.com/<%= @user %>" rel="alternate" />
-  <updated><%= Time.at(@data["media"][0]["date"]) if @data["media"][0] %></updated>
+  <updated><%= Time.at(@data["media"]["nodes"][0]["date"]) if @data["media"]["nodes"][0] %></updated>
 <%- @data["media"]["nodes"].each do |post| -%>
 
   <entry>

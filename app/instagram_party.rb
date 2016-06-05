@@ -2,7 +2,7 @@
 
 class InstagramParty
   include HTTParty
-  base_uri "https://instagram.com"
+  base_uri "https://www.instagram.com"
   default_params __a: "1"
   format :json
 end
