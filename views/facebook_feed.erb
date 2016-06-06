@@ -13,8 +13,10 @@
     <title><%=
 prefix = if post["length"]
   "[#{post["length"].round.to_duration}]"
+elsif post["story"][" was live"]
+  "Live"
 elsif %w[link video photo event].include?(post["type"])
-  "#{post["type"].camelize}:"
+  "#{post["type"].camelize}"
 end
 
 suffix = if post["title"]
@@ -30,7 +32,11 @@ elsif post["description"]
 end
 
 if prefix and suffix
-  "#{prefix} #{suffix}"
+  if prefix[0] == "["
+    "#{prefix} #{suffix}"
+  else
+    "#{prefix}: #{suffix}"
+  end
 elsif suffix or prefix
   suffix || prefix
 else

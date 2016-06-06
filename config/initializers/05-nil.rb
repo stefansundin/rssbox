@@ -10,4 +10,8 @@ class NilClass
   def esc
     nil
   end
+
+  def [](key)
+    false
+  end
 end
