@@ -8,9 +8,9 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     addressable (2.4.0)
-    airbrake (5.4.0)
+    airbrake (5.4.1)
       airbrake-ruby (~> 1.4)
-    airbrake-ruby (1.4.2)
+    airbrake-ruby (1.4.3)
     backports (3.6.8)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
@@ -73,7 +73,7 @@ GEM
     rack-ssl-enforcer (0.2.9)
     rack-test (0.6.3)
       rack (>= 1.0)
-    rake (11.1.2)
+    rake (11.2.2)
     redis (3.3.0)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
@@ -131,5 +131,8 @@ DEPENDENCIES
   sinatra
   sinatra-reloader
 
+RUBY VERSION
+   ruby 2.3.1p112
+
 BUNDLED WITH
-   1.11.2
+   1.12.5
