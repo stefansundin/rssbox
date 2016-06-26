@@ -296,7 +296,12 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @data = response.parsed_response["data"]
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
-  @title += "'s #{@type}" if @type != "posts"
+  if params[:type] == "live"
+    @title += "'s live videos"
+    @data.select! { |post| post["story"][" was live"] }
+  elsif @type != "posts"
+    @title += "'s #{@type}"
+  end
   @title += " on Facebook"
 
   content_type :atom
