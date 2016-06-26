@@ -22,9 +22,16 @@ $(document).ready(function() {
   $(document).on("show.bs.dropdown", function(e) {
     form = $(e.target).parents("form");
     q = form.find("input[name=q]").val();
-    btn = form.find("[data-download]");
-    btn.attr("href", `${form.attr("action")}/download?url=${q}`);
-  })
+    form.find("[data-download]").each(function() {
+      btn = $(this);
+      url = `${form.attr("action")}/download?url=${q}`;
+      val = btn.attr("data-download");
+      if (val) {
+        url += `&type=${val}`;
+      }
+      btn.attr("href", url);
+    });
+  });
 
   $("[data-submit-type]").click(function() {
     var form = $(this).parents("form");

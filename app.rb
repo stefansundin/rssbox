@@ -558,24 +558,40 @@ get "/twitch" do
 end
 
 get "/twitch/download" do
-  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /^v?(?<vod_id>\d+)$/ =~ params[:url]
-    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
-  else
-    return "Please use an URL to a video."
-  end
-
-  response = TwitchParty.get("/videos/v#{vod_id}")
-  return "Video does not exist." if response.code == 404
-  raise TwitchError.new(response) if !response.success?
-  data = response.parsed_response
-
-  response = HTTParty.get("https://api.twitch.tv/api/vods/#{vod_id}/access_token")
-  raise TwitchError.new(response) if !response.success?
-  vod_data = response.parsed_response
-  url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
-  fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
-
   content_type :text
+  if params[:type] == "live"
+    if /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
+      # https://www.twitch.tv/trevperson
+    else
+      channel_name = params[:url]
+    end
+
+    response = HTTParty.get("https://api.twitch.tv/api/channels/#{channel_name}/access_token")
+    data = response.parsed_response
+    return "Channel does not seem to exist." if response.code == 404
+
+    response = HTTParty.get("http://usher.ttvnw.net/api/channel/hls/#{channel_name}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true")
+    return "Channel does not seem to be online." if response.code == 404
+    url = response.body.split("\n").find { |line| !line.start_with?("#") }
+    fn = "#{Time.now.to_date} - #{channel_name} live.mp4".to_filename
+  else
+    if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /^v?(?<vod_id>\d+)$/ =~ params[:url]
+      # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+    else
+      return "Please use an URL to a video."
+    end
+
+    response = TwitchParty.get("/videos/v#{vod_id}")
+    return "Video does not exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+    data = response.parsed_response
+
+    response = HTTParty.get("https://api.twitch.tv/api/vods/#{vod_id}/access_token")
+    raise TwitchError.new(response) if !response.success?
+    vod_data = response.parsed_response
+    url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
+    fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
+  end
   "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
 end
 
