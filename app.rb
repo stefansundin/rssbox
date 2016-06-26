@@ -586,7 +586,7 @@ get %r{/twitch/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   response = TwitchParty.get("/channels/#{username}/videos", query: { broadcast_type: "all" })
   raise TwitchError.new(response) if !response.success?
 
-  @data = response.parsed_response["videos"]
+  @data = response.parsed_response["videos"].select { |video| video["status"] != "recording" }
   @username = @data[0]["channel"]["name"] rescue username
   @user = @data[0]["channel"]["display_name"] rescue username
 
