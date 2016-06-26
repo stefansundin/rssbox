@@ -298,7 +298,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @title = @user
   if params[:type] == "live"
     @title += "'s live videos"
-    @data.select! { |post| post["story"][" was live"] }
+    @data.select! { |post| post["story"][" live"] }
   elsif @type != "posts"
     @title += "'s #{@type}"
   end

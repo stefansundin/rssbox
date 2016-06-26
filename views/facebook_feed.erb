@@ -13,7 +13,7 @@
     <title><%=
 prefix = if post["length"]
   "[#{post["length"].round.to_duration}]"
-elsif post["story"][" was live"]
+elsif post["story"][" live"]
   "Live"
 elsif %w[link video photo event].include?(post["type"])
   "#{post["type"].camelize}"
