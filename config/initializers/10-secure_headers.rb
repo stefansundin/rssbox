@@ -26,7 +26,6 @@ SecureHeaders::Configuration.default do |config|
     img_src: %w('self' www.google-analytics.com),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com http://www.svtplay.se stefansundin.com),
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.cdn.vine.co *.sndcdn.com),
-    child_src: %w(mdo.github.io),
     block_all_mixed_content: true,
     upgrade_insecure_requests: true,
   }
