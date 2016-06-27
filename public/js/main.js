@@ -54,14 +54,23 @@ $(document).ready(function() {
       return;
     }
 
-    var progress = document.createElement("progress");
-    $(progress).insertAfter(form);
-
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.addEventListener("load", function() {
-      // var data = JSON.parse(this.responseText);
       var data = this.response;
+
+      if (this.status != 200 || !data) {
+        alert("Something went wrong.");
+        return;
+      }
+
+      if (data.live) {
+        $(`<div><p><tt>ffmpeg -i "${data.url}" "${data.filename}"</tt></p></div>`).insertAfter(form);
+        return;
+      }
+
+      var progress = document.createElement("progress");
+      $(progress).insertAfter(form);
       progress.title = data.filename;
 
       // this is a big hack for cross-origin <a download="filename">

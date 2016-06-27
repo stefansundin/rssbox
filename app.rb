@@ -255,6 +255,7 @@ get "/facebook" do
 end
 
 get "/facebook/download" do
+  content_type :text
   if /\/(?<id>\d+)/ =~ params[:url]
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
@@ -262,22 +263,32 @@ get "/facebook/download" do
     id = params[:url]
   end
 
-  response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description" })
+  response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status" })
+  status response.code
+  return "Video not found." if !response.success?
+
   data = response.parsed_response
+  fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"]}.mp4".to_filename
+  url = if data["live_status"] == "LIVE"
+    "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
+  else
+    data["source"]
+  end
 
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
-    status response.code
-    data = response.parsed_response
-    created_at = data["created_time"]
     return {
-      url: data["source"],
-      filename: "#{created_at.to_date} - #{data["title"] || data["description"]}.mp4"
+      url: url,
+      filename: fn,
+      live: (data["live_status"] == "LIVE")
     }.to_json
   end
 
-  return "Video not found." if !response.success? or !data["source"]
-  redirect data["source"]
+  if data["live_status"] == "LIVE"
+    "ffmpeg -i \"#{url}\" \"#{fn}\""
+  else
+    redirect url
+  end
 end
 
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
@@ -359,7 +370,7 @@ get "/instagram/download" do
     created_at = Time.at(data["date"])
     return {
       url: url,
-      filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{data["caption"] || post_id}#{url.url_ext}"
+      filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{data["caption"] || post_id}#{url.url_ext}".to_filename
     }.to_json
   end
 
@@ -477,7 +488,7 @@ get "/vine/download" do
     created_at = Time.parse(data["created"])
     return {
       url: data["videoUrls"][0]["videoUrl"].gsub(/^http:/, "https:"),
-      filename: "#{created_at.to_date} - #{data["username"]} - #{post_id}.mp4"
+      filename: "#{created_at.to_date} - #{data["username"]} - #{post_id}.mp4".to_filename
     }.to_json
   end
 
@@ -524,7 +535,7 @@ get "/soundcloud/download" do
     created_at = Time.parse(data["created_at"])
     return {
       url: media_url,
-      filename: "#{created_at.to_date} - #{data["title"]}.mp3"
+      filename: "#{created_at.to_date} - #{data["title"]}.mp3".to_filename
     }.to_json
   end
 
