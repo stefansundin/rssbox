@@ -377,10 +377,12 @@ get "/instagram/download" do
   redirect url
 end
 
-get %r{/instagram/(?<user_id>\d+)(/(?<username>.+))?} do |user_id, username|
+get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
+  content_type :text
 
   response = InstagramParty.get("/#{username}/")
+  return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/query/?q=ig_user(#{@user_id})%7Busername%7D" if response.code == 404
   raise InstagramError.new(response) if !response.success?
 
   @data = response.parsed_response["user"]
