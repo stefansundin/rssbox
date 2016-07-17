@@ -10,9 +10,15 @@
 
   <entry>
     <id>facebook:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= "[#{post["length"].round.to_duration}] " if post["length"] %><%=
+    <title><%=
+if post["live_status"] == "LIVE" or post["story"][" is live now"]
+  "[LIVE] "
+elsif post["length"]
+  "[#{post["length"].round.to_duration}] "
+end
+%><%=
 if @type == "posts" or @type == "videos"
-  prefix = if post["story"][" live"] or post["live_status"]
+  prefix = if post["live_status"] or post["story"][" live"]
     "Live"
   elsif %w[link video photo event].include?(post["type"])
     "#{post["type"].camelize}"
