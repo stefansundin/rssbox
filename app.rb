@@ -308,6 +308,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @data.each do |post|
     # remove page id from post id
     underscore = post["id"].index("_")
+    next if underscore == nil
     post["id"] = post["id"][underscore+1..-1]
   end
   @user = @data[0]["from"]["name"] rescue username
