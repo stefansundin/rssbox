@@ -10,13 +10,13 @@
 
   <entry>
     <id>facebook:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%=
-prefix = if post["length"]
-  "[#{post["length"].round.to_duration}]"
-elsif post["story"][" live"]
-  "Live"
-elsif %w[link video photo event].include?(post["type"])
-  "#{post["type"].camelize}"
+    <title><%= "[#{post["length"].round.to_duration}] " if post["length"] %><%=
+if @type == "posts" or @type == "videos"
+  prefix = if post["story"][" live"] or post["live_status"]
+    "Live"
+  elsif %w[link video photo event].include?(post["type"])
+    "#{post["type"].camelize}"
+  end
 end
 
 suffix = if post["title"]
@@ -32,11 +32,7 @@ elsif post["description"]
 end
 
 if prefix and suffix
-  if prefix[0] == "["
-    "#{prefix} #{suffix}"
-  else
-    "#{prefix}: #{suffix}"
-  end
+  "#{prefix}: #{suffix}"
 elsif suffix or prefix
   suffix || prefix
 else

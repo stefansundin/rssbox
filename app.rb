@@ -297,7 +297,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @type = %w[videos photos].pick(params[:type]) || "posts"
   fields = {
     "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture,properties",
-    "videos" => "updated_time,from,title,description,embeddable,embed_html,length",
+    "videos" => "updated_time,from,title,description,embeddable,embed_html,length,live_status",
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@type]
 
@@ -318,11 +318,15 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
     end
   end
 
+  if params[:type] == "live"
+    @type = "live"
+    @data.select! { |post| post["story"][" live"] }
+  end
+
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
-  if params[:type] == "live"
+  if @type == "live"
     @title += "'s live videos"
-    @data.select! { |post| post["story"][" live"] }
   elsif @type != "posts"
     @title += "'s #{@type}"
   end
