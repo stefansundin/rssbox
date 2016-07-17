@@ -296,7 +296,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   @type = %w[videos photos].pick(params[:type]) || "posts"
   fields = {
-    "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture",
+    "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture,parent_id",
     "videos" => "updated_time,from,title,description,embeddable,embed_html,length",
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@type]
@@ -306,10 +306,10 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   @data = response.parsed_response["data"]
   @data.each do |post|
-    # remove page id from post id
-    underscore = post["id"].index("_")
+    id = post["parent_id"] || post["id"]
+    underscore = id.index("_")
     next if underscore == nil
-    post["id"] = post["id"][underscore+1..-1]
+    post["canonical_id"] = id[underscore+1..-1]
   end
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
@@ -323,11 +323,11 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   # add length to videos by making a separate request
   if @type == "posts"
-    video_ids = @data.select { |post| post["type"] == "video" }.map { |post| post["id"] }
+    video_ids = @data.select { |post| post["type"] == "video" }.map { |post| post["canonical_id"] }
     if video_ids.length > 0
       video_data = FacebookParty.batch(video_ids, { fields: "length" })
       video_data.each do |id, data|
-        i = @data.find_index { |post| post["id"] == id }
+        i = @data.find_index { |post| post["canonical_id"] == id }
         @data[i].merge!(data)
       end
     end
