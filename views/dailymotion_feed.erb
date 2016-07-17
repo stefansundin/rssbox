@@ -3,7 +3,7 @@
   <id>dailymotion:<%= @user_id %></id>
   <title><%= @screenname %> on Dailymotion</title>
   <icon>https://static1.dmcdn.net/images/favicons/favicon-32x32.png</icon>
-  <link href="<%= request.original_url %>" rel="self" />
+  <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://dailymotion.com/<%= @screenname %>" rel="alternate" />
   <updated><%= Time.at(@data[0]["created_time"]) if @data[0] %></updated>
 <%- @data.each do |video| -%>

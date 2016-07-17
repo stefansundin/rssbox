@@ -3,7 +3,7 @@
   <id>twitch:<%= @id %></id>
   <title><%= @user %> on Twitch</title>
   <icon>https://www.twitch.tv/favicon.ico</icon>
-  <link href="<%= request.original_url %>" rel="self" />
+  <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.twitch.tv/<%= @username %>" rel="alternate" />
   <updated><%= Time.parse(@data[0]["created_at"]) if @data[0] %></updated>
 <%- @data.each do |video| -%>

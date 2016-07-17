@@ -3,7 +3,7 @@
   <id>facebook:<%= @id %></id>
   <title><%= @title %></title>
   <icon>https://www.facebook.com/favicon.ico</icon>
-  <link href="<%= request.original_url %>" rel="self" />
+  <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.facebook.com/<%= @id %>" rel="alternate" />
   <updated><%= Time.parse(@data[0]["updated_time"]) if @data[0] %></updated>
 <%- @data.each do |post| -%>
@@ -43,7 +43,7 @@ else
   (post["type"] || @type[0..-2]).camelize
 end
 %></title>
-    <link href="<%= post["link"] || "https://www.facebook.com/#{post["id"]}" %>" />
+    <link href="<%= post["link"].esc || "https://www.facebook.com/#{post["id"]}" %>" />
     <updated><%= Time.parse(post["updated_time"]) %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">

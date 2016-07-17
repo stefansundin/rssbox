@@ -3,7 +3,7 @@
   <id>dilbert</id>
   <title><%= @feed.title %></title>
   <icon>http://dilbert.com/favicon.ico</icon>
-  <link href="<%= request.original_url %>" rel="self" />
+  <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="http://dilbert.com/" rel="alternate" />
   <updated><%= Time.parse(@entries[0]["id"]) if @entries[0] %></updated>
 <%- @entries.each do |entry| -%>

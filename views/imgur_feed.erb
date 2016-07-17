@@ -3,7 +3,7 @@
   <id>imgur:<%= @user_id %></id>
   <title><%= @username %> on Imgur</title>
   <icon>https://s.imgur.com/images/favicon-96x96.png</icon>
-  <link href="<%= request.original_url %>" rel="self" />
+  <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://imgur.com/user/<%= @username %>" rel="alternate" />
   <updated><%= Time.at(@data[0]["datetime"].to_i) if @data[0] %></updated>
 <%-
@@ -36,7 +36,7 @@ EOF
   <entry>
     <id><%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= title.to_line.esc %></title>
-    <link href="<%= link %>" />
+    <link href="<%= link.esc %>" />
     <updated><%= Time.at(image["datetime"].to_i) %></updated>
     <author><name><%= @username %></name></author>
     <content type="html">

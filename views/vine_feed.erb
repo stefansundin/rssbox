@@ -3,7 +3,7 @@
   <id>vine:<%= @id %></id>
   <title><%= @user %> on Vine</title>
   <icon>https://v.cdn.vine.co/w/a0e7f0dc-assets/images/favicon.ico</icon>
-  <link href="<%= request.original_url %>" rel="self" />
+  <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://vine.co/<%= @username %>" rel="alternate" />
   <updated><%= Time.parse(@data[0]["created"]) if @data[0] %></updated>
 <%-
@@ -18,7 +18,7 @@
   <entry>
     <id>vine:post:<%= post["postId"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= title.to_line.esc %></title>
-    <link href="<%= post["permalinkUrl"] %>" />
+    <link href="<%= post["permalinkUrl"].esc %>" />
     <updated><%= Time.parse(post["created"]) %></updated>
     <author><name><%= post["username"] %></name></author>
     <content type="html">
