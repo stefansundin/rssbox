@@ -72,7 +72,7 @@ end
 <%=
 if @type == "photos" and post["source"]
   "<img src='#{post["source"]}'>".esc
-elsif @type == "videos" and post["id"]
+elsif @edge == "videos" and post["id"]
   "<p><a href='#{request.root_url}/facebook/download?url=#{post["id"]}'>Download video</a></p>".esc
 elsif post["type"] == "photo"
   "<img src='#{post["picture"]}'>".esc

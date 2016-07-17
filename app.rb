@@ -294,18 +294,19 @@ end
 get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
 
-  @type = %w[videos photos].pick(params[:type]) || "posts"
+  @type = @edge = %w[videos photos live].pick(params[:type]) || "posts"
+  @edge = "videos" if @type == "live"
   fields = {
     "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture,properties",
     "videos" => "updated_time,from,title,description,embeddable,embed_html,length,live_status",
     "photos" => "updated_time,from,message,description,name,link,source",
-  }[@type]
+  }[@edge]
 
-  response = FacebookParty.get("/#{id}/#{@type}", query: { fields: fields })
+  response = FacebookParty.get("/#{id}/#{@edge}", query: { fields: fields })
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
-  if @type == "posts"
+  if @edge == "posts"
     # copy down video length from properties array
     @data.each do |post|
       if post["properties"]
@@ -316,11 +317,8 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
         end
       end
     end
-  end
-
-  if params[:type] == "live"
-    @type = "live"
-    @data.select! { |post| post["story"][" live"] }
+  elsif @type == "live"
+    @data.select! { |post| post["live_status"] }
   end
 
   @user = @data[0]["from"]["name"] rescue username
