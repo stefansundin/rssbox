@@ -296,7 +296,7 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
 
   @type = %w[videos photos].pick(params[:type]) || "posts"
   fields = {
-    "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture,parent_id",
+    "posts"  => "updated_time,from,type,story,name,message,description,link,source,picture,properties",
     "videos" => "updated_time,from,title,description,embeddable,embed_html,length",
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@type]
@@ -305,12 +305,19 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
-  @data.each do |post|
-    id = post["parent_id"] || post["id"]
-    underscore = id.index("_")
-    next if underscore == nil
-    post["canonical_id"] = id[underscore+1..-1]
+  if @type == "posts"
+    # copy down video length from properties array
+    @data.each do |post|
+      if post["properties"]
+        post["properties"].each do |prop|
+          if prop["name"] == "Length" and /^(?<m>\d+):(?<s>\d+)$/ =~ prop["text"]
+            post["length"] = 60*m.to_i + s.to_i
+          end
+        end
+      end
+    end
   end
+
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
   if params[:type] == "live"
@@ -320,18 +327,6 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
     @title += "'s #{@type}"
   end
   @title += " on Facebook"
-
-  # add length to videos by making a separate request
-  if @type == "posts"
-    video_ids = @data.select { |post| post["type"] == "video" }.map { |post| post["canonical_id"] }
-    if video_ids.length > 0
-      video_data = FacebookParty.batch(video_ids, { fields: "length" })
-      video_data.each do |id, data|
-        i = @data.find_index { |post| post["canonical_id"] == id }
-        @data[i].merge!(data)
-      end
-    end
-  end
 
   content_type :atom
   erb :facebook_feed
