@@ -305,6 +305,11 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
+  @data.each do |post|
+    # remove page id from post id
+    underscore = post["id"].index("_")
+    post["id"] = post["id"][underscore+1..-1]
+  end
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
   if params[:type] == "live"
@@ -314,6 +319,18 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
     @title += "'s #{@type}"
   end
   @title += " on Facebook"
+
+  # add length to videos by making a separate request
+  if @type == "posts"
+    video_ids = @data.select { |post| post["type"] == "video" }.map { |post| post["id"] }
+    if video_ids.length > 0
+      video_data = FacebookParty.batch(video_ids, { fields: "length" })
+      video_data.each do |id, data|
+        i = @data.find_index { |post| post["id"] == id }
+        @data[i].merge!(data)
+      end
+    end
+  end
 
   content_type :atom
   erb :facebook_feed
