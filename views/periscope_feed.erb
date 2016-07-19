@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>periscope:<%= @id %></id>
+  <title><%= @user %> on Periscope</title>
+  <icon>https://assets.periscope.tv/images/favicon.ico</icon>
+  <link href="<%= request.original_url.esc %>" rel="self" />
+  <link href="https://www.periscope.tv/<%= @username %>" rel="alternate" />
+  <updated><%= Time.parse(@data[0]["created_at"]) if @data[0] %></updated>
+<%- @data.each do |post| -%>
+
+  <entry>
+    <id>periscope:broadcast:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= post["status"].to_line.esc %></title>
+    <link href="https://www.periscope.tv/<%= "#{post["username"]}/#{post["id"]}" %>" />
+    <updated><%= Time.parse(post["created_at"]) %></updated>
+    <author><name><%= post["user_display_name"] %></name></author>
+    <content type="html">
+<%= <<-EOF.esc
+<p><em>Live in #{post["city"]}.</em></p>
+
+<a href="https://www.periscope.tv/#{post["username"]}/#{post["id"]}"><img src="#{post["image_url"]}"></a>
+EOF
+-%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

@@ -20,6 +20,8 @@ get "/go" do
     redirect "/instagram?#{params.to_querystring}"
   elsif /^https?:\/\/vine\.co/ =~ params[:q]
     redirect "/vine?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?periscope\.tv/ =~ params[:q]
+    redirect "/periscope?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
     redirect "/soundcloud?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?twitch\.tv/ =~ params[:q]
@@ -513,6 +515,51 @@ get "/vine/download" do
   raise VineError.new(response) if !response.success?
   data = response.parsed_response["data"]["records"][0]
   redirect data["videoUrls"][0]["videoUrl"]
+end
+
+get "/periscope" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /periscope\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
+    # https://www.periscope.tv/w/1gqxvBmMZdexB
+  elsif /periscope\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
+    # https://www.periscope.tv/jimmy_dore
+  else
+    username = params[:q]
+  end
+
+  url = if broadcast_id
+    "https://www.periscope.tv/w/#{broadcast_id}"
+  else
+    "https://www.periscope.tv/#{CGI.escape(username)}"
+  end
+  response = HTTParty.get(url)
+  return "That username does not exist." if response.code == 404
+  return "That broadcast has expired." if response.code == 410
+  raise PeriscopeError.new(response) if !response.success?
+  doc = Nokogiri::HTML(response.body)
+  data = doc.at("div#page-container")["data-store"]
+  json = JSON.parse(data)
+  username, user_id = json["UserCache"]["usernames"].first
+
+  redirect "/periscope/#{user_id}/#{username}"
+end
+
+get %r{/periscope/(?<id>[^/]+)(/(?<username>.+))?} do |id, username|
+  @id = id
+  @username = username
+
+  response = PeriscopeParty.get_broadcasts(id)
+  raise PeriscopeError.new(response) if !response.success?
+  @data = response.parsed_response["broadcasts"]
+  @user = if @data.first
+    @data.first["user_display_name"]
+  else
+    @username
+  end
+
+  content_type :atom
+  erb :periscope_feed
 end
 
 get "/soundcloud" do
