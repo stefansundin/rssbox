@@ -6,8 +6,7 @@ class PeriscopeParty
   format :json
 
   def self.get_broadcasts(user_id)
-    response = HTTParty.get("https://www.periscope.tv/couchmode")
-    return response if !response.success?
+    response = HTTParty.get("https://www.periscope.tv/cnn", format: :plain)
     doc = Nokogiri::HTML(response.body)
     data = doc.at("div#page-container")["data-store"]
     json = JSON.parse(data)
