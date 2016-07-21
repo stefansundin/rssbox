@@ -46,13 +46,18 @@ end
 get "/youtube" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /youtube\.com\/channel\/(?<channel_id>UC[^\/?#]+)/ =~ params[:q]
+  if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
+    # https://www.youtube.com/channel/SWu5RTwuNMv6U
   elsif /youtube\.com\/user\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
-  elsif /youtube\.com\/c\/(?<channel_title>[^\/?#]+)/ =~ params[:q]
-    # https://www.youtube.com/c/khanacademy/videos
+  elsif /youtube\.com\/(?<channel_type>c|show)\/(?<channel_title>[^\/?#]+)/ =~ params[:q]
+    # https://www.youtube.com/c/khanacademy
+    # https://www.youtube.com/show/redvsblue
+    # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that channel_title != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
+    doc = Nokogiri::HTML(open("https://www.youtube.com/#{channel_type}/#{channel_title}"))
+    channel_id = doc.at("meta[itemprop='channelId']")["content"]
   elsif /youtube\.com\/.*[?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
@@ -61,7 +66,7 @@ get "/youtube" do
     # https://www.youtube.com/khanacademy
   elsif /youtu\.be\/(?<video_id>[^?#]+)/ =~ params[:q]
     # https://youtu.be/vVXbgbMp0oY?t=1s
-  elsif /(?<channel_id>UC[^\/?#]+)/ =~ params[:q]
+  elsif /(?<channel_id>(UC|S)[^\/?#]+)/ =~ params[:q]
     # it's a channel id
   else
     # it's probably a channel name
@@ -73,14 +78,6 @@ get "/youtube" do
     raise GoogleError.new(response) if !response.success?
     if response.parsed_response["items"].length > 0
       channel_id = response.parsed_response["items"][0]["id"]
-    end
-  end
-
-  if channel_title
-    response = GoogleParty.get("/youtube/v3/search", query: { part: "id", q: channel_title })
-    raise GoogleError.new(response) if !response.success?
-    if response.parsed_response["items"].length > 0
-      channel_id = response.parsed_response["items"][0]["id"]["channelId"]
     end
   end
 
