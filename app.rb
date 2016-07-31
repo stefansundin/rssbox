@@ -215,6 +215,7 @@ end
 
 get "/facebook" do
   return "Insufficient parameters" if params[:q].empty?
+  params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q]["facebookcorewwwi.onion"]
 
   if /facebook\.com\/pages\/[^\/]+\/(?<id>\d+)/ =~ params[:q]
     # https://www.facebook.com/pages/Lule%C3%A5-Sweden/106412259396611?fref=ts
