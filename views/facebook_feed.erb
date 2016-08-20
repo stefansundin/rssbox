@@ -52,11 +52,6 @@ end
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
 <%= (post["message"] || post["description"]).to_paragraphs.esc %>
 <%=
-if /^https?:\/\/[a-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+\.gif/i =~ post["link"]
-  "<img src='#{post["link"]}'>".esc
-end
-%>
-<%=
 if /https?:\/\/www\.facebook\.com\/.*\/videos\/(?<video_id>\d+)/ =~ post["link"]
   <<-EOF.esc
 <iframe src="https://www.facebook.com/video/embed?video_id=#{video_id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
@@ -72,6 +67,11 @@ elsif /youtu\.be\/(?<video_id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^
     embed_url += "&start=#{start}"
   end
   "<iframe width='640' height='360' src='#{embed_url}' frameborder='0' scrolling='no' allowfullscreen></iframe>".esc
+elsif /giphy\.com\/gifs\/(?:.*-)?(?<giphy_id>[0-9a-zA-Z]+)(\/|\?|&|#|$)/ =~ post["link"]
+  # TODO: http://gph.is/2b9CSM2 are bit.ly links
+  "<img src='https://i.giphy.com/#{giphy_id}.gif'>".esc
+elsif /^https?:\/\/[a-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+\.gif/i =~ post["link"]
+  "<img src='#{post["link"]}'>".esc
 end
 %>
 <%= post["embed_html"].esc if post["embed_html"] %>
