@@ -34,6 +34,8 @@ get "/go" do
     redirect "/vimeo?#{params.to_querystring}"
   elsif /^https?:\/\/([a-zA-Z0-9]+\.)?imgur\.com/ =~ params[:q]
     redirect "/imgur?#{params.to_querystring}"
+  elsif /^https?:\/\/(?<user>[a-zA-Z0-9]+)\.deviantart\.com/ =~ params[:q]
+    redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
   elsif /^https?:\/\/(www\.)?svtplay\.se/ =~ params[:q]
     redirect "/svtplay?#{params.to_querystring}"
   elsif /^https?:\/\/twitter\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
