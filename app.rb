@@ -10,7 +10,9 @@ end
 get "/go" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /^https?:\/\/(www\.|gaming\.)?youtu(\.be|be\.com)/ =~ params[:q]
+  if /^https?:\/\/twitter\.com\// =~ params[:q]
+    redirect "/twitter?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.|gaming\.)?youtu(\.be|be\.com)/ =~ params[:q]
     redirect "/youtube?#{params.to_querystring}"
   elsif /^https?:\/\/plus\.google\.com/ =~ params[:q]
     redirect "/googleplus?#{params.to_querystring}"
@@ -38,8 +40,6 @@ get "/go" do
     redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
   elsif /^https?:\/\/(www\.)?svtplay\.se/ =~ params[:q]
     redirect "/svtplay?#{params.to_querystring}"
-  elsif /^https?:\/\/twitter\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
-    redirect "https://stefansundin.com/@#{user}"
   else
     "Unknown service"
   end
