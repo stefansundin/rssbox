@@ -28,6 +28,16 @@
   </header>
 
   <div class="container">
+<% if ENV["TWITTER_ACCESS_TOKEN"] %>
+    <form class="input-group" method="get" action="twitter">
+      <div class="input-group-addon"><label for="twitter_q">Twitter</label></div>
+      <input class="form-control" type="search" name="q" id="twitter_q" placeholder="Enter a Twitter handle or a url." required>
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+<% end %>
+
 <% if ENV["GOOGLE_API_KEY"] %>
     <form class="input-group" method="get" action="youtube">
       <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>

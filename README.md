@@ -12,6 +12,18 @@ You need to get API keys for the respective services and populate the environmen
 
 A couple of services do not have official APIs, or do not require API keys, so they will work without any keys.
 
+#### Twitter
+
+Go to [Twitter Application Management](https://apps.twitter.com/) and create a new app.
+
+Once you have the consumer key and consumer secret, run the following to get the bearer token.
+
+```
+curl -X POST -d grant_type=client_credentials -u CONSUMER_KEY:CONSUMER_SECRET https://api.twitter.com/oauth2/token
+```
+
+Copy the `access_token` and put it in the config.
+
 #### Google
 
 Go to the [Google Developer Console](https://console.developers.google.com/), create a project and a server key. Copy the server key.

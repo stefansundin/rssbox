@@ -45,6 +45,43 @@ get "/go" do
   end
 end
 
+get "/twitter" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /twitter\.com\/i\// =~ params[:q] or /twitter\.com\/who_to_follow\// =~ params[:q]
+    return "Unsupported url. Sorry."
+  elsif /twitter\.com\/hashtag\// =~ params[:q]
+    return "This app does not support hashtags. Sorry."
+  elsif /twitter\.com\/(?:#!\/)?(?<user>[^\/?#]+)/ =~ params[:q]
+    # https://twitter.com/#!/infected
+    # https://twitter.com/infected
+  else
+    # it's probably a username
+    user = params[:q]
+  end
+
+  response = TwitterParty.get("/users/lookup.json", query: { screen_name: user })
+  return "Can't find a user with that name. Sorry." if response.code == 404
+  raise TwitterError.new(response) if !response.success?
+
+  user_id = response.parsed_response[0]["id_str"]
+  screen_name = response.parsed_response[0]["screen_name"]
+  redirect "/twitter/#{user_id}/#{screen_name}"
+end
+
+get %r{/twitter/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+  @user_id = id
+
+  response = TwitterParty.get("/statuses/user_timeline.json", query: { user_id: id, count: 200, include_rts: "1" })
+  raise TwitterError.new(response) if !response.success?
+
+  @data = response.parsed_response
+  @username = @data[0]["user"]["screen_name"] rescue username
+
+  content_type :atom
+  erb :twitter_feed
+end
+
 get "/youtube" do
   return "Insufficient parameters" if params[:q].empty?
 
