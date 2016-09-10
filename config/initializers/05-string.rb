@@ -59,30 +59,39 @@ class String
     dest = url
     catch :done do
       5.times do
-        uri = URI.parse(dest)
-        Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
-          response = http.head(uri.request_uri)
-          case response
-          when Net::HTTPRedirection then
-            if %w[
-              ://www.youtube.com/das_captcha
-              ://www.nytimes.com/glogin
-              ://www.facebook.com/unsupportedbrowser
-              ://play.spotify.com/error/browser-not-supported.php
-              ://www.linkedin.com/uas/login
-              ://www.theaustralian.com.au/remote/check_cookie.html
-            ].any? { |s| response["location"].include?(s) }
+        begin
+          uri = URI.parse(dest)
+          opt = {
+            use_ssl: uri.scheme == "https",
+            open_timeout: 3,
+            read_timeout: 3,
+          }
+          Net::HTTP.start(uri.host, uri.port, opt) do |http|
+            response = http.head(uri.request_uri)
+            case response
+            when Net::HTTPRedirection then
+              if %w[
+                ://www.youtube.com/das_captcha
+                ://www.nytimes.com/glogin
+                ://www.facebook.com/unsupportedbrowser
+                ://play.spotify.com/error/browser-not-supported.php
+                ://www.linkedin.com/uas/login
+                ://www.theaustralian.com.au/remote/check_cookie.html
+              ].any? { |s| response["location"].include?(s) }
+                throw :done
+              end
+              if response["location"][0] == "/"
+                uri = URI.parse(url)
+                dest = uri.scheme + "://" + uri.host + response["location"]
+              else
+                dest = response["location"]
+              end
+            else
               throw :done
             end
-            if response["location"][0] == "/"
-              uri = URI.parse(url)
-              dest = uri.scheme + "://" + uri.host + response["location"]
-            else
-              dest = response["location"]
-            end
-          else
-            throw :done
           end
+        rescue Net::OpenTimeout
+          throw :done
         end
       end
     end
@@ -123,7 +132,7 @@ class String
       "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
       "<img src='https://i.giphy.com/#{id}.gif'>"
-    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.gif}i =~ self
+    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.gif}i =~ self or %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.jpg(?::large)?}i =~ self
       "<img src='#{self}'>"
     end
   end

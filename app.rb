@@ -72,7 +72,7 @@ end
 get %r{/twitter/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @user_id = id
 
-  response = TwitterParty.get("/statuses/user_timeline.json", query: { user_id: id, count: 200, include_rts: "1" })
+  response = TwitterParty.get("/statuses/user_timeline.json", query: { user_id: id, count: 100, include_rts: "1" })
   raise TwitterError.new(response) if !response.success?
 
   @data = response.parsed_response
