@@ -40,7 +40,8 @@ class String
   def normalize_url
     uri = URI.parse(self)
     port = uri.port if (uri.scheme == "http" and uri.port != 80) or (uri.scheme == "https" and uri.port != 443)
-    URI::HTTP.new(uri.scheme.downcase, uri.userinfo, uri.host.downcase, port, uri.registry, uri.path, uri.opaque, uri.query, uri.fragment).to_s
+    path = "/" if uri.path.empty?
+    URI::HTTP.new(uri.scheme.downcase, uri.userinfo, uri.host.downcase, port, uri.registry, path, uri.opaque, uri.query, uri.fragment).to_s
   end
 
   def short_host
@@ -102,7 +103,19 @@ class String
       dest = dest.gsub(tracking, "")
     end
     # Remove mysterious prclt tracking code
-    dest = dest.gsub(/[?&#](?:__)?prclt[=-][^&]+/, "")
+    dest = dest.gsub(/(?:__)?prclt[=-][^&]+/, "")
+    # Remove utm_ and sc_ codes
+    # https://aws.amazon.com/podcasts/aws-podcast/?utm_content=bufferf4ae0&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
+    # https://aws.amazon.com/about-aws/whats-new/2016/09/aws-config-console-now-displays-api-events-associated-with-configuration-changes/?sc_channel=sm&sc_campaign=launch_Config_ead85f34&sc_publisher=tw_go&sc_content=AWS_Config_add_support_for_viewing_CloudTrail_API_events_from_Config_console&sc_geo=globaly
+    dest = dest.gsub(/(?:utm|sc)_[^&]+/, "")
+    # Remove #_=_
+    dest = dest.gsub(/#_=_$/, "")
+    # Remove #. tracking codes
+    dest = dest.gsub(/#\..*$/, "")
+    # Remove unnecessary ampersands (possibly caused by the above)
+    dest = dest.gsub(/\?&+/, "?")
+    # Remove trailing ?&#
+    dest = dest.gsub(/[?&#]+$/, "")
 
     $redis.hset("urls", url, dest)
     dest
@@ -133,7 +146,7 @@ class String
       "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
       "<img src='https://i.giphy.com/#{id}.gif'>"
-    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.gif}i =~ self or %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.jpg(?::large)?}i =~ self
+    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
       "<img src='#{self}'>"
     end
   end
