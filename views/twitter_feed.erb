@@ -42,6 +42,8 @@
     dest = url.resolve_url
     title.gsub!(url, "[#{dest.short_host}]")
     body.gsub!(url, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
+    embed_html = dest.embed_html(request)
+    body += "\n#{embed_html}" if embed_html
   end
 -%>
 
@@ -52,7 +54,7 @@
     <updated><%= Time.parse(tweet["created_at"]) %></updated>
     <author><name><%= @username %></name></author>
     <content type="html">
-<%= body.esc %>
+<%= body.to_paragraphs.esc %>
     </content>
   </entry>
 <%- end -%>

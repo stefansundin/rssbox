@@ -6,7 +6,10 @@
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.facebook.com/<%= @id %>" rel="alternate" />
   <updated><%= Time.parse(@data[0]["updated_time"]) if @data[0] %></updated>
-<%- @data.each do |post| -%>
+<%-
+@data.each do |post|
+  post["link"] = post["link"].resolve_url if post["link"]
+-%>
 
   <entry>
     <id>facebook:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
@@ -51,29 +54,7 @@ end
     <content type="html">
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
 <%= (post["message"] || post["description"]).to_paragraphs.esc %>
-<%=
-if /https?:\/\/www\.facebook\.com\/.*\/videos\/(?<video_id>\d+)/ =~ post["link"]
-  <<-EOF.esc
-<iframe src="https://www.facebook.com/video/embed?video_id=#{video_id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
-<p><a href="#{request.root_url}/facebook/download?url=#{video_id}">Download video</a></p>
-  EOF
-elsif /youtu\.be\/(?<video_id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*/ =~ post["link"] or /youtube\.com\/(?:.*?[?&#](v=(?<video_id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+/ =~ post["link"]
-  # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
-  embed_url = "https://www.youtube.com/embed/#{video_id}?rel=0"
-  embed_url += "&list=#{list}" if list
-  if t and /(?:(?<h>\d+)h|(?<m>\d+)m|(?<s>\d+)s)+/ =~ t
-    # https://youtu.be/wZZ7oFKsKzY?t=3h44m34s => start=13474
-    start = 60*60*h.to_i + 60*m.to_i + s.to_i
-    embed_url += "&start=#{start}"
-  end
-  "<iframe width='640' height='360' src='#{embed_url}' frameborder='0' scrolling='no' allowfullscreen></iframe>".esc
-elsif /giphy\.com\/gifs\/(?:.*-)?(?<giphy_id>[0-9a-zA-Z]+)(\/|\?|&|#|$)/ =~ post["link"]
-  # TODO: http://gph.is/2b9CSM2 are bit.ly links
-  "<img src='https://i.giphy.com/#{giphy_id}.gif'>".esc
-elsif /^https?:\/\/[a-z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+\.gif/i =~ post["link"]
-  "<img src='#{post["link"]}'>".esc
-end
-%>
+<%= post["link"].embed_html(request) %>
 <%= post["embed_html"].esc if post["embed_html"] %>
 <%=
 if @type == "photos" and post["source"]
