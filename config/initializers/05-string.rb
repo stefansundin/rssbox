@@ -1,5 +1,6 @@
 require "net/http"
 require "uri"
+require "resolv-replace.rb"
 
 class String
   def to_line
@@ -90,7 +91,7 @@ class String
               throw :done
             end
           end
-        rescue Net::OpenTimeout
+        rescue Net::OpenTimeout, Net::ReadTimeout, SocketError
           throw :done
         end
       end
