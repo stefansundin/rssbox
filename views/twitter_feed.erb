@@ -10,13 +10,31 @@
 @data.each do |tweet|
   if tweet["retweeted_status"]
     text = "RT #{tweet["retweeted_status"]["user"]["screen_name"]}: #{tweet["retweeted_status"]["text"]}"
-    entities = tweet["retweeted_status"]["entities"]["urls"]
+    t = tweet["retweeted_status"]
   else
     text = tweet["text"]
-    entities = tweet["entities"]["urls"]
+    t = tweet
   end
-  for entity in entities
+  for entity in t["entities"]["urls"]
     text.gsub!(entity["url"], entity["expanded_url"])
+  end
+  if t["entities"]["media"]
+    for media in t["entities"]["media"]
+      text += " #{media["media_url_https"]}:large"
+    end
+  end
+  if t["extended_entities"]
+    for entity in t["extended_entities"]["media"]
+      next if !entity["video_info"]
+      video = entity["video_info"]["variants"].sort do |a,b|
+        if a["content_type"].start_with?("video/") and b["content_type"].start_with?("video/")
+          b["bitrate"] - a["bitrate"]
+        else
+          b["content_type"].start_with?("video/") <=> a["content_type"].start_with?("video/")
+        end
+      end.first
+      text += " #{video["url"]}"
+    end
   end
   body = text.dup
   title = text.dup
