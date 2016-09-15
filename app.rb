@@ -741,12 +741,12 @@ get "/ustream" do
     doc = Nokogiri::HTML(open(url))
     channel_id = doc.at("meta[name='ustream:channel_id']")["content"].to_i
     doc = Nokogiri::HTML(open("http://www.ustream.tv/channel/#{channel_id}"))
-    channel_name = doc.at("link[rel='canonical']")["href"].split("/")[-1]
+    channel_title = doc.at("meta[property='og:title']")["content"]
   rescue
     return "Could not find the channel."
   end
 
-  redirect "/ustream/#{channel_id}/#{channel_name}"
+  redirect "/ustream/#{channel_id}/#{channel_title}"
 end
 
 get %r{/ustream/(?<id>\d+)(/(?<title>.+))?} do |id, title|
