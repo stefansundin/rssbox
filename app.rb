@@ -762,6 +762,7 @@ get %r{/ustream/(?<id>\d+)(/(?<title>.+))?} do |id, title|
 end
 
 get "/ustream/download" do
+  content_type :text
   if /ustream\.tv\/recorded\/(?<id>\d+)/ =~ params[:url]
     # http://www.ustream.tv/recorded/74562214
   elsif params[:url].numeric?
@@ -772,6 +773,7 @@ get "/ustream/download" do
 
   response = UstreamParty.get("/videos/#{id}.json")
   return "Video does not exist." if response.code == 404
+  return "#{response.request.uri} responded with #{response.code} #{response.message}." if response.code == 401
   raise UstreamError.new(response) if !response.success?
   redirect response.parsed_response["video"]["media_urls"]["flv"]
 end
