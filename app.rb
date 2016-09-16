@@ -52,7 +52,7 @@ get "/twitter" do
     return "Unsupported url. Sorry."
   elsif /twitter\.com\/hashtag\// =~ params[:q]
     return "This app does not support hashtags. Sorry."
-  elsif /twitter\.com\/(?:#!\/)?(?<user>[^\/?#]+)/ =~ params[:q]
+  elsif /twitter\.com\/(?:#!\/|@)?(?<user>[^\/?#]+)/ =~ params[:q]
     # https://twitter.com/#!/infected
     # https://twitter.com/infected
   else
