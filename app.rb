@@ -775,7 +775,9 @@ get "/ustream/download" do
   return "Video does not exist." if response.code == 404
   return "#{response.request.uri} responded with #{response.code} #{response.message}." if response.code == 401
   raise UstreamError.new(response) if !response.success?
-  redirect response.parsed_response["video"]["media_urls"]["flv"]
+  url = response.parsed_response["video"]["media_urls"]["flv"]
+  return "#{response.request.uri}: Video flv url is null. This channel is probably protected or something." if url.nil?
+  redirect url
 end
 
 get "/dailymotion" do
