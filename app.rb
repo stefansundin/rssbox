@@ -302,12 +302,12 @@ get "/facebook/download" do
     id = params[:url]
   end
 
-  response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status" })
+  response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
   status response.code
   return "Video not found." if !response.success?
 
   data = response.parsed_response
-  fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"]}.mp4".to_filename
+  fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
   url = if data["live_status"] == "LIVE"
     "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
   else

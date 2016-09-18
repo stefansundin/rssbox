@@ -12,7 +12,7 @@ class String
   end
 
   def to_filename
-    self.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/\t+/, " ")
+    self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/\t+/, " ")
   end
 
   def esc
