@@ -2,7 +2,7 @@
 
 class TwitchParty
   include HTTParty
-  base_uri "https://api.twitch.tv/kraken"
+  base_uri "https://api.twitch.tv"
   headers "Client-ID": ENV["TWITCH_CLIENT_ID"]
   headers Accept: "application/vnd.twitchtv.v3+json"
   format :json

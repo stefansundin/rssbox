@@ -666,7 +666,7 @@ get "/twitch" do
     username = params[:q]
   end
 
-  response = TwitchParty.get("/channels/#{username}")
+  response = TwitchParty.get("/kraken/channels/#{username}")
   return "Can't find a user with that name. Sorry." if response.code == 404
   raise TwitchError.new(response) if !response.success?
   data = response.parsed_response
@@ -683,7 +683,7 @@ get "/twitch/download" do
       channel_name = params[:url]
     end
 
-    response = HTTParty.get("https://api.twitch.tv/api/channels/#{channel_name}/access_token")
+    response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
     data = response.parsed_response
     return "Channel does not seem to exist." if response.code == 404
 
@@ -698,12 +698,12 @@ get "/twitch/download" do
       return "Please use an URL to a video."
     end
 
-    response = TwitchParty.get("/videos/v#{vod_id}")
+    response = TwitchParty.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     data = response.parsed_response
 
-    response = HTTParty.get("https://api.twitch.tv/api/vods/#{vod_id}/access_token")
+    response = TwitchParty.get("/api/vods/#{vod_id}/access_token")
     raise TwitchError.new(response) if !response.success?
     vod_data = response.parsed_response
     url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
@@ -716,7 +716,7 @@ get %r{/twitch/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @id = id
   @username = username
 
-  response = TwitchParty.get("/channels/#{username}/videos", query: { broadcast_type: "all" })
+  response = TwitchParty.get("/kraken/channels/#{username}/videos", query: { broadcast_type: "all" })
   raise TwitchError.new(response) if !response.success?
 
   @data = response.parsed_response["videos"].select { |video| video["status"] != "recording" }
