@@ -66,13 +66,19 @@ get "/twitter" do
 
   user_id = response.parsed_response[0]["id_str"]
   screen_name = response.parsed_response[0]["screen_name"]
-  redirect "/twitter/#{user_id}/#{screen_name}"
+  redirect "/twitter/#{user_id}/#{screen_name}#{"?#{params[:type]}" if !params[:type].empty?}"
 end
 
 get %r{/twitter/(?<id>\d+)(/(?<username>.+))?} do |id, username|
   @user_id = id
 
-  response = TwitterParty.get("/statuses/user_timeline.json", query: { user_id: id, count: 100, include_rts: "1", tweet_mode: "extended" })
+  response = TwitterParty.get("/statuses/user_timeline.json", query: {
+    user_id: id,
+    count: 100,
+    include_rts: params[:include_rts] || "1",
+    exclude_replies: params[:exclude_replies] || "0",
+    tweet_mode: "extended"
+  })
   raise TwitterError.new(response) if !response.success?
 
   @data = response.parsed_response

@@ -33,6 +33,13 @@
       <div class="input-group-addon"><label for="twitter_q">Twitter</label></div>
       <input class="form-control" type="search" name="q" id="twitter_q" placeholder="Enter a Twitter handle or a url." required>
       <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><a data-submit-type="">All posts (default)</a></li>
+          <li><a data-submit-type="include_rts=0&amp;exclude_replies=1">Exclude retweets and replies</a></li>
+          <li><a data-submit-type="include_rts=0">Exclude retweets</a></li>
+          <li><a data-submit-type="exclude_replies=1">Exclude replies</a></li>
+        </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>
