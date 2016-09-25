@@ -53,16 +53,16 @@ end
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
-<%= (post["message"] || post["description"]).to_paragraphs.esc %>
+<%= (post["message"] || post["description"]).linkify.to_paragraphs.esc %>
 <%= post["link"].embed_html(request).esc if post["link"] %>
 <%= post["embed_html"].esc if post["embed_html"] %>
 <%=
 if @type == "photos" and post["source"]
-  "<img src='#{post["source"]}'>".esc
+  "<p><img src='#{post["source"]}'></p>".esc
 elsif @edge == "videos" and post["id"]
   "<p><a href='#{request.root_url}/facebook/download?url=#{post["id"]}'>Download video</a></p>".esc
 elsif post["type"] == "photo"
-  "<img src='#{post["picture"]}'>".esc
+  "<p><img src='#{post["picture"]}'></p>".esc
 end
 %>
 <%= "<p>Link: <a href='#{post["link"]}'>#{post["link"]}</a></p>".esc if post["link"] %>

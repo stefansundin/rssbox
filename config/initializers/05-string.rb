@@ -121,6 +121,14 @@ class String
     dest
   end
 
+  def linkify
+    URI.extract(-self, %w[http https]) do |url|
+      dest = url.resolve_url
+      self.gsub!(url, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
+    end
+    return self
+  end
+
   def embed_html(request)
     if %r{^https?://www\.facebook\.com/.*/videos/(?<id>\d+)} =~ self
       <<-EOF
