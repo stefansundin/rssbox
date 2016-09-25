@@ -56,6 +56,7 @@ class String
   def resolve_url
     url = self.normalize_url
     dest = $redis.hget("urls", url)
+    return url if dest == ""
     return dest if dest
 
     dest = url
@@ -117,7 +118,11 @@ class String
     # Remove trailing ?&#
     dest = dest.gsub(/[?&#]+$/, "")
 
-    $redis.hset("urls", url, dest)
+    if url == dest
+      $redis.hset("urls", url, "") # save some redis space
+    else
+      $redis.hset("urls", url, dest)
+    end
     dest
   end
 
