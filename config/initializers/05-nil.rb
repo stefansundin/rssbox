@@ -11,6 +11,10 @@ class NilClass
     nil
   end
 
+  def linkify
+    nil
+  end
+
   def [](key)
     false
   end
