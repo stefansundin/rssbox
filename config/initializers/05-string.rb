@@ -84,10 +84,15 @@ class String
                 throw :done
               end
               if response["location"][0] == "/"
+                # relative redirect
                 uri = URI.parse(url)
                 dest = uri.scheme + "://" + uri.host + response["location"]
-              else
+              elsif /^https?:\/\/./ =~ response["location"]
+                # absolute redirect
                 dest = response["location"]
+              else
+                # bad redirect
+                throw :done
               end
             else
               throw :done
