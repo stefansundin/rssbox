@@ -169,6 +169,8 @@ class String
       "<img src='https://i.giphy.com/#{id}.gif'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
       "<img src='#{self}'>"
+    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
+      "<iframe width='640' height='538' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     end
   end
 end
