@@ -3,6 +3,10 @@ class NilClass
     true
   end
 
+  def downcase
+    nil
+  end
+
   def to_paragraphs(split="\n")
     nil
   end

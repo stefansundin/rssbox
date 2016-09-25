@@ -64,6 +64,7 @@ class String
       5.times do
         begin
           uri = URI.parse(dest)
+          throw :done if uri.host.nil?
           opt = {
             use_ssl: uri.scheme == "https",
             open_timeout: 3,
