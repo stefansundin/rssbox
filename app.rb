@@ -4,6 +4,7 @@ require "active_support/core_ext/string"
 require "open-uri"
 
 get "/" do
+  SecureHeaders.use_secure_headers_override(request, :index)
   erb :index
 end
 

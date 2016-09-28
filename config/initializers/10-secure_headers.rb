@@ -1,3 +1,4 @@
+# By default, block everything
 SecureHeaders::Configuration.default do |config|
   config.cookies = {
     secure: true,
@@ -14,10 +15,27 @@ SecureHeaders::Configuration.default do |config|
   config.x_permitted_cross_domain_policies = "none"
   config.referrer_policy = "origin-when-cross-origin"
   config.csp = {
+    default_src: %w('none'),
+    block_all_mixed_content: true,
+  }
+  config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
+
+  # Allow unsafe-inline for better_errors in development mode
+  if ENV["RACK_ENV"] == "development"
+    config.csp.merge!({
+      script_src: %w('unsafe-inline'),
+      style_src: %w('unsafe-inline'),
+      connect_src: %w('self'),
+    })
+  end
+end
+
+# Index page
+SecureHeaders::Configuration.override(:index) do |config|
+  config.csp.merge!({
     # "meta" values. these will shape the header, but the values are not included in the header.
     report_only: false,
     preserve_schemes: true,
-
     # directive values: these values will directly translate into source directives
     default_src: %w('none'),
     style_src: %w('self' *.bootstrapcdn.com),
@@ -26,17 +44,11 @@ SecureHeaders::Configuration.default do |config|
     img_src: %w('self' www.google-analytics.com),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com http://www.svtplay.se stefansundin.com),
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.cdn.vine.co *.sndcdn.com),
-    block_all_mixed_content: true,
-    upgrade_insecure_requests: true,
-  }
-  config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
-end
+  })
 
-# Allow unsafe-inline for better_errors in development mode
-configure :development do
-  SecureHeaders::Configuration.override(:default) do |config|
+  # Allow unsafe-inline for better_errors in development mode
+  if ENV["RACK_ENV"] == "development"
     config.csp[:script_src] << "'unsafe-inline'"
     config.csp[:style_src] << "'unsafe-inline'"
-    config.csp[:upgrade_insecure_requests] = false
   end
 end
