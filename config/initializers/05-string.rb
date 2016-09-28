@@ -182,6 +182,8 @@ class String
       "<img src='#{self}'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
       "<iframe width='640' height='538' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+    elsif %r{^https?://amp\.twimg\.com/v/.+}i =~ self
+      "<iframe width='640' height='530' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     end
   end
 end
