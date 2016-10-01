@@ -81,6 +81,7 @@ class String
                 ://play.spotify.com/error/browser-not-supported.php
                 ://www.linkedin.com/uas/login
                 ://www.theaustralian.com.au/remote/check_cookie.html
+                ://signin.aws.amazon.com/
               ].any? { |s| response["location"].include?(s) }
                 throw :done
               end
