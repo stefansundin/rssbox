@@ -10,7 +10,7 @@ class PeriscopeParty
     doc = Nokogiri::HTML(response.body)
     data = doc.at("div#page-container")["data-store"]
     json = JSON.parse(data)
-    session_id = json["SessionToken"]["broadcastHistory"]["token"]["session_id"]
+    session_id = json["SessionToken"]["public"]["broadcastHistory"]["token"]["session_id"]
     get("/getUserBroadcastsPublic", query: { user_id: user_id, session_id: session_id })
   end
 end
