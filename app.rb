@@ -310,30 +310,52 @@ get "/facebook/download" do
   end
 
   response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
-  status response.code
-  return "Video not found." if !response.success?
+  if response.success?
+    status response.code
+    data = response.parsed_response
+    fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
+    url = if data["live_status"] == "LIVE"
+      "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
+    else
+      data["source"]
+    end
 
-  data = response.parsed_response
-  fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
-  url = if data["live_status"] == "LIVE"
-    "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
-  else
-    data["source"]
-  end
+    if env["HTTP_ACCEPT"] == "application/json"
+      content_type :json
+      return {
+        url: url,
+        filename: fn,
+        live: (data["live_status"] == "LIVE")
+      }.to_json
+    end
 
-  if env["HTTP_ACCEPT"] == "application/json"
-    content_type :json
-    return {
-      url: url,
-      filename: fn,
-      live: (data["live_status"] == "LIVE")
-    }.to_json
-  end
+    if data["live_status"] == "LIVE"
+      "ffmpeg -i \"#{url}\" \"#{fn}\""
+    else
+      redirect url
+    end
+  elsif response.parsed_response["error"]["code"] == 100
+    # The video is probably uploaded by a regular Facebook user (i.e. not uploaded to a page), which we can't get info from via the API
+    response = HTTParty.get("https://www.facebook.com/#{id}", type: :plain)
+    status response.code
+    if response.success? and /hd_src_no_ratelimit:"(?<url>[^"]+)"/ =~ response.body
+      if env["HTTP_ACCEPT"] == "application/json"
+        if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
+          title = title.gsub!(" | Facebook", "")
+          created_time = Time.at(utime.to_i)
+          fn = "#{created_time.to_date} - #{title}.mp4".to_filename.force_encoding("UTF-8")
+        end
+        content_type :json
+        return {
+          url: url,
+          filename: fn
+        }.to_json
+      end
 
-  if data["live_status"] == "LIVE"
-    "ffmpeg -i \"#{url}\" \"#{fn}\""
-  else
-    redirect url
+      redirect url
+    else
+      return "Video not found."
+    end
   end
 end
 
