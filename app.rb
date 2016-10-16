@@ -305,56 +305,82 @@ get "/facebook/download" do
   if /\/(?<id>\d+)/ =~ params[:url]
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
+  elsif /\d+_(?<id>\d+)/ =~ params[:url]
   else
     id = params[:url]
   end
 
-  response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
+  response = FacebookParty.get("/", query: { id: id, metadata: "1" })
   if response.success?
-    status response.code
-    data = response.parsed_response
-    fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
-    url = if data["live_status"] == "LIVE"
-      "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
-    else
-      data["source"]
-    end
+    type = response.parsed_response["metadata"]["type"]
+    if type == "video"
+      response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
+      status response.code
+      data = response.parsed_response
+      fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
+      url = if data["live_status"] == "LIVE"
+        "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
+      else
+        data["source"]
+      end
 
-    if env["HTTP_ACCEPT"] == "application/json"
-      content_type :json
-      return {
-        url: url,
-        filename: fn,
-        live: (data["live_status"] == "LIVE")
-      }.to_json
-    end
-
-    if data["live_status"] == "LIVE"
-      "ffmpeg -i \"#{url}\" \"#{fn}\""
-    else
-      redirect url
-    end
-  elsif response.parsed_response["error"]["code"] == 100
-    # The video is probably uploaded by a regular Facebook user (i.e. not uploaded to a page), which we can't get info from via the API
-    response = HTTParty.get("https://www.facebook.com/#{id}", type: :plain)
-    status response.code
-    if response.success? and /hd_src_no_ratelimit:"(?<url>[^"]+)"/ =~ response.body
       if env["HTTP_ACCEPT"] == "application/json"
+        content_type :json
+        return {
+          url: url,
+          filename: fn,
+          live: (data["live_status"] == "LIVE")
+        }.to_json
+      end
+
+      if data["live_status"] == "LIVE"
+        "ffmpeg -i \"#{url}\" \"#{fn}\""
+      else
+        redirect url
+      end
+    elsif type == "photo"
+      response = FacebookParty.get("/", query: { id: id, fields: "images,width" })
+      data = response.parsed_response
+      image = data["images"].find { |image| image["width"] == data["width"] }
+      redirect image["source"]
+    else
+      return "Unknown type (#{type})."
+    end
+  else
+    if response.parsed_response["error"]["code"] == 100
+      # The video/photo is probably uploaded by a regular Facebook user (i.e. not uploaded to a page), which we can't get info from via the API.
+      # Video example: https://www.facebook.com/ofer.dikovsky/videos/10154633221533413/
+      # Photo example: 1401133169914577
+      response = HTTParty.get("https://www.facebook.com/#{id}", type: :plain)
+      if response.success?
         if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
           title = title.gsub!(" | Facebook", "")
           created_time = Time.at(utime.to_i)
           fn = "#{created_time.to_date} - #{title}.mp4".to_filename.force_encoding("UTF-8")
         end
-        content_type :json
-        return {
-          url: url,
-          filename: fn
-        }.to_json
+        if /hd_src_no_ratelimit:"(?<url>[^"]+)"/ =~ response.body
+        elsif /https:\/\/[^"]+_#{id}_[^"]+\.jpg[^"]+/o =~ response.body
+          # This is not the best quality of the picture, but it will have to do
+          url = CGI.unescapeHTML($&)
+        end
+        if url
+          if env["HTTP_ACCEPT"] == "application/json"
+            content_type :json
+            return {
+              url: url,
+              filename: fn
+            }.to_json
+          end
+          redirect url
+        else
+          return "Video/photo not found."
+        end
+      else
+        return "https://www.facebook.com/#{id} returned #{response.code}"
       end
-
-      redirect url
     else
-      return "Video not found."
+      status response.code
+      return response.parsed_response.to_json
     end
   end
 end
