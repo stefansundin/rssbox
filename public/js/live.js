@@ -1,0 +1,450 @@
+var facebook_token = ""
+var google_key = ""
+var twitch_client_id = "";
+
+if (!localStorage.facebook_accounts) {
+  localStorage.facebook_accounts = "[]";
+}
+if (!localStorage.youtube_accounts) {
+  localStorage.youtube_accounts = "[]";
+}
+if (!localStorage.twitch_accounts) {
+  localStorage.twitch_accounts = "[]";
+}
+if (!localStorage.mute_notifications) {
+  localStorage.mute_notifications = "false";
+}
+
+function pad(n) {
+  return `0${n}`.slice(-2);
+}
+
+function to_duration(t) {
+  t = Math.round(t);
+  var seconds = t % 60;
+  var minutes = Math.floor(t / 60) % 60;
+  var hours = Math.floor(t / 3600);
+  if (hours > 0) {
+    return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+  }
+  else {
+    return `${minutes}:${pad(seconds)}`;
+  }
+}
+
+function toObject(arr) {
+  var obj = {};
+  arr.forEach(function(e) {
+    obj[e[0]] = e[1];
+  });
+  return obj;
+}
+
+function update_accounts() {
+  $("#facebook_accounts").empty();
+  JSON.parse(localStorage.facebook_accounts).forEach(function(a) {
+    var panel = $(`
+<div class="panel panel-default">
+  <div class="panel-heading">
+    ${a.username} (${a.id})
+    <button type="button" class="btn btn-xs btn-danger pull-right" data-facebook-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-default pull-right" href="https://www.facebook.com/${a.id}/videos">Open</a>
+  </div>
+  <div class="panel-body">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>length</th>
+          <th>status</th>
+          <th>title</th>
+          <th>date</th>
+        </tr>
+      </thead>
+      <tbody data-facebook-id="${a.id}"></tbody>
+    </table>
+  </div>
+</div>`);
+    panel.find(".btn-danger").click(function() {
+      var id = $(this).data("facebook-id");
+      var accounts = JSON.parse(localStorage.facebook_accounts);
+      accounts = accounts.filter(function(a) {
+        return a.id != id;
+      });
+      localStorage.facebook_accounts = JSON.stringify(accounts);
+      panel.detach();
+    });
+    $("#facebook_accounts").append(panel);
+  });
+
+  $("#youtube_accounts").empty();
+  JSON.parse(localStorage.youtube_accounts).forEach(function(a) {
+    var panel = $(`
+<div class="panel panel-default" data-youtube-id="${a.id}">
+  <div class="panel-heading">
+    ${a.username} (${a.id})
+    <button type="button" class="btn btn-xs btn-danger pull-right" data-youtube-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-default pull-right" href="https://www.youtube.com/channel/${a.id}/live">Open</a>
+  </div>
+  <div class="panel-body">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>status</th>
+          <th>title</th>
+          <th>date</th>
+        </tr>
+      </thead>
+      <tbody data-youtube-id="${a.id}"></tbody>
+    </table>
+  </div>
+</div>`);
+    panel.find(".btn-danger").click(function() {
+      var id = $(this).data("youtube-id");
+      var accounts = JSON.parse(localStorage.youtube_accounts);
+      accounts = accounts.filter(function(a) {
+        return a.id != id;
+      });
+      localStorage.youtube_accounts = JSON.stringify(accounts);
+      panel.detach();
+    });
+    $("#youtube_accounts").append(panel);
+  });
+
+  $("#twitch_accounts").empty();
+  JSON.parse(localStorage.twitch_accounts).forEach(function(a) {
+    var panel = $(`
+<div class="panel panel-default" data-twitch-id="${a.id}">
+  <div class="panel-heading">
+    ${a.display_name}
+    <button type="button" class="btn btn-xs btn-danger pull-right" data-twitch-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-default pull-right" href="https://www.twitch.tv/${a.username}">Open</a>
+  </div>
+  <div class="panel-body">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>status</th>
+          <th>title</th>
+          <th>game</th>
+          <th>date</th>
+        </tr>
+      </thead>
+      <tbody data-twitch-id="${a.id}"></tbody>
+    </table>
+  </div>
+</div>`);
+    panel.find(".btn-danger").click(function() {
+      var id = $(this).data("twitch-id");
+      var accounts = JSON.parse(localStorage.twitch_accounts);
+      accounts = accounts.filter(function(a) {
+        return a.id != id;
+      });
+      localStorage.twitch_accounts = JSON.stringify(accounts);
+      panel.detach();
+    });
+    $("#twitch_accounts").append(panel);
+  });
+}
+
+function poll() {
+  var facebook_accounts = JSON.parse(localStorage.facebook_accounts);
+  if (facebook_accounts.length > 0) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("POST", "https://graph.facebook.com/v2.7");
+    xhr.addEventListener("load", function() {
+      this.response.forEach(function(r, i) {
+        var a = facebook_accounts[i];
+        if (r.code != 200) {
+          console.log(r);
+          return;
+        }
+        var data = JSON.parse(r.body).data;
+        var live_videos = data.filter(function(v){ return v.live_status }).slice(0, 3);
+        console.log("facebook", a.username, new Date, live_videos);
+        live_videos.reverse().forEach(function(v) {
+          var tbody = $(`tbody[data-facebook-id='${a.id}']`);
+          var tr_id = `${v.live_status}-${v.id}`;
+          if (tbody.find(`#${tr_id}`).length > 0) {
+            return;
+          }
+          var tr = $(`
+<tr id="${tr_id}">
+  <td>${to_duration(v.length)}</td>
+  <td>${v.live_status}</td>
+  <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.description}</a></td>
+  <td><time class="timeago" datetime="${v.created_time}">${v.created_time.replace('T',' ').replace('+',' +')}</time></td>
+</tr>`);
+          tbody.prepend(tr);
+          if ($("#mute_notifications").prop('checked')) {
+            return;
+          }
+          if (v.live_status == "LIVE") {
+            var notification = new Notification(`${v.from.name} is live on Facebook`, {
+              body: v.description,
+              icon: `https://graph.facebook.com/${a.id}/picture`,
+            });
+            notification.addEventListener("click", function(e) {
+              notification.close();
+              window.focus();
+              tr.addClass("success");
+              tr[0].scrollIntoView();
+            });
+          }
+        });
+      });
+      $("time.timeago").timeago();
+    });
+    var form = new FormData();
+    form.append("access_token", facebook_token);
+    form.append("batch", JSON.stringify(facebook_accounts.map(function(a) {
+      return {
+        method: "GET",
+        relative_url: `${a.id}/videos?fields=created_time,from,title,description,embeddable,embed_html,length,live_status`,
+      };
+    })));
+    xhr.send(form);
+  }
+
+  var youtube_accounts = JSON.parse(localStorage.youtube_accounts);
+  youtube_accounts.forEach(function(a) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://www.googleapis.com/youtube/v3/search?part=id&type=video&order=date&eventType=live&channelId=${a.id}&key=${google_key}`);
+    xhr.addEventListener("load", function() {
+      var ids = this.response.items.map(function(v) { return v.id.videoId });
+      var xhr2 = new XMLHttpRequest();
+      xhr2.responseType = "json";
+      xhr2.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${ids.join(",")}&key=${google_key}`);
+      xhr2.addEventListener("load", function() {
+        console.log("youtube", a.username, new Date, this.response.items);
+        var tbody = $(`tbody[data-youtube-id='${a.id}']`);
+        this.response.items.reverse().forEach(function(v) {
+          var live_status, live_text, notification_text;
+          if (v.liveStreamingDetails) {
+            if (v.liveStreamingDetails.actualStartTime) {
+              live_status = "live";
+              live_text = `started <time class="timeago" datetime="${v.liveStreamingDetails.actualStartTime}">${v.liveStreamingDetails.actualStartTime.replace('T',' ')}</time>`;
+              notification_text = `started ${$.timeago(v.liveStreamingDetails.actualStartTime)}\n${v.snippet.title}`;
+            }
+            else if (v.liveStreamingDetails.scheduledStartTime) {
+              live_status = "scheduled";
+              live_text = `scheduled to start <time class="timeago"; datetime="${v.liveStreamingDetails.scheduledStartTime}">${v.liveStreamingDetails.scheduledStartTime.replace('T',' ')}</time>`;
+              notification_text = `scheduled to start ${$.timeago(v.liveStreamingDetails.scheduledStartTime)}\n${v.snippet.title}`;
+            }
+          }
+          var tr_id = `youtube-${live_status}-${v.id}`;
+          if (tbody.find(`#${tr_id}`).length > 0) {
+            return;
+          }
+          var tr = $(`
+<tr id="${tr_id}">
+  <td>${live_status}</td>
+  <td><a href="https://www.youtube.com/watch?v=${v.id}">${v.snippet.title}</a></td>
+  <td>${live_text}</td>
+</tr>`);
+          tbody.prepend(tr);
+          if ($("#mute_notifications").prop('checked')) {
+            return;
+          }
+          var notification = new Notification(`${v.snippet.channelTitle} is live on YouTube`, {
+            body: notification_text,
+            icon: v.snippet.thumbnails.default.url,
+          });
+          notification.addEventListener("click", function(e) {
+            notification.close();
+            window.focus();
+            tr.addClass("success");
+            tr[0].scrollIntoView();
+          });
+        });
+        $("time.timeago").timeago();
+      });
+      xhr2.send();
+    });
+    xhr.send();
+  });
+
+  var twitch_accounts = JSON.parse(localStorage.twitch_accounts);
+  twitch_accounts.forEach(function(a) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://api.twitch.tv/kraken/channels/${a.username}/videos?broadcast_type=all`);
+    xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
+    xhr.setRequestHeader("Client-ID", twitch_client_id);
+    xhr.addEventListener("load", function() {
+      var live_videos = this.response.videos.slice(0, 3);
+      console.log("twitch", a.username, new Date, live_videos);
+      var tbody = $(`tbody[data-twitch-id='${a.id}']`);
+      live_videos.reverse().forEach(function(v) {
+        var tr_id = `twitch-${v.status}-${v._id}`;
+        if (tbody.find(`#${tr_id}`).length > 0) {
+          return;
+        }
+        var url = v.url;
+        if (v.status == "recording") {
+          url = `https://www.twitch.tv/${a.username}`;
+        }
+        var tr = $(`
+<tr id="${tr_id}">
+  <td>${v.status}</td>
+  <td><a href="${url}">${v.title}</a></td>
+  <td>${v.game}</td>
+  <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace('T',' ')}</time></td>
+</tr>`);
+        tbody.prepend(tr);
+        if ($("#mute_notifications").prop('checked')) {
+          return;
+        }
+        if (v.status == "recording") {
+          var notification = new Notification(`${v.channel.display_name} is live on Twitch`, {
+            body: v.title,
+            icon: v.thumbnails[0].url,
+          });
+          notification.addEventListener("click", function(e) {
+            notification.close();
+            window.focus();
+            tr.addClass("success");
+            tr[0].scrollIntoView();
+          });
+        }
+      });
+      $("time.timeago").timeago();
+    });
+    xhr.send();
+  });
+
+  $("#counter").text(parseInt($("#counter").text(),10)+1);
+  $("#last_updated").text(new Date);
+}
+
+$(document).ready(function() {
+  $.timeago.settings.allowFuture = true;
+  update_accounts();
+  $("#mute_notifications").attr("checked", JSON.parse(localStorage.mute_notifications));
+  $("#mute_notifications").change(function() {
+    localStorage.mute_notifications = JSON.stringify(this.checked);
+  });
+
+  $("#facebook_form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    setTimeout(function() {
+      form.removeClass("has-success has-error");
+    }, 3000);
+    var q = $("#facebook_q").val();
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://graph.facebook.com/v2.7/${q}?fields=username&access_token=${facebook_token}`);
+    xhr.addEventListener("load", function() {
+      var data = this.response;
+      if (this.response.error) {
+        form.addClass("has-error");
+        alert(this.response.error.message);
+        return;
+      }
+      var accounts = JSON.parse(localStorage.facebook_accounts);
+      if (accounts.find(function(a){ return a.id == data.id })) {
+        alert("You are already monitoring this page.");
+        return;
+      }
+      accounts.push(data);
+      localStorage.facebook_accounts = JSON.stringify(accounts);
+      form.addClass("has-success");
+      update_accounts();
+    });
+    xhr.send();
+  });
+
+  $("#youtube_form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    setTimeout(function() {
+      form.removeClass("has-success has-error");
+    }, 3000);
+    var q = $("#youtube_q").val();
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=${q}&key=${google_key}`);
+    xhr.addEventListener("load", function() {
+      if (this.response.items.length == 0) {
+        form.addClass("has-error");
+        alert("Could not find a channel with that name.");
+        return;
+      }
+      var data = this.response.items[0];
+      var acc = {
+        id: data.id,
+        username: data.snippet.title,
+      };
+
+      var accounts = JSON.parse(localStorage.youtube_accounts);
+      if (accounts.find(function(a){ return a.id == acc.id })) {
+        alert("You are already monitoring this channel.");
+        return;
+      }
+      accounts.push(acc);
+      localStorage.youtube_accounts = JSON.stringify(accounts);
+      form.addClass("has-success");
+      update_accounts();
+    });
+    xhr.send();
+  });
+
+  $("#twitch_form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    setTimeout(function() {
+      form.removeClass("has-success has-error");
+    }, 3000);
+    var q = $("#twitch_q").val();
+    if (re=/twitch\.tv\/([^\/?#]+)/.exec(q)) {
+      q = re[1];
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://api.twitch.tv/kraken/channels/${q}`);
+    xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
+    xhr.setRequestHeader("Client-ID", twitch_client_id);
+    xhr.addEventListener("load", function() {
+      if (this.response.error) {
+        form.addClass("has-error");
+        alert(this.response.message || this.response.error);
+        return;
+      }
+      var data = this.response;
+      var acc = {
+        id: data._id,
+        username: data.name,
+        display_name: data.display_name,
+      };
+
+      var accounts = JSON.parse(localStorage.twitch_accounts);
+      if (accounts.find(function(a){ return a.id == acc.id })) {
+        alert("You are already monitoring this channel.");
+        return;
+      }
+      accounts.push(acc);
+      localStorage.twitch_accounts = JSON.stringify(accounts);
+      form.addClass("has-success");
+      update_accounts();
+    });
+    xhr.send();
+  });
+
+  setInterval(poll, 30000);
+  poll();
+
+  var args = toObject(window.location.search.substr(1).split("&").map(function(arg){ return arg.split("="); }));
+  if (args.q) {
+    $("input[type='search']").val(args.q);
+  }
+
+  console.log(`Notification permissions: ${Notification.permission}`);
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+});

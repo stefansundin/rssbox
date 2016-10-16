@@ -1,0 +1,15 @@
+.timeago {
+  border-bottom: 1px dotted #6f6f6f;
+}
+.pull-right {
+  margin-right: 6px;
+}
+.panel-body {
+  padding: 0;
+}
+.table {
+  margin: 0;
+}
+time {
+  white-space: nowrap;
+}

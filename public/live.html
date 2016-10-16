@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Live notifications</title>
+  <base target="_blank">
+
+  <meta charset="utf-8">
+  <meta name="author" content="Stefan Sundin">
+  <meta name="description" content="Get RSS feeds for services">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/live.css">
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script src="https://cdn.rawgit.com/rmm5t/jquery-timeago/v1.5.3/jquery.timeago.js" integrity="sha384-dQvpXViVb0WZSjp9d7efnqmvZsiU7hNfuna9ebReA/0XRrD4Q+iGmp9EF7PZ7/JW" crossorigin="anonymous"></script>
+  <script src="/js/live.js"></script>
+</head>
+<body>
+  <header>
+    <img src="/img/icon128.png" width="128" height="128" alt="Icon" itemprop="image">
+    <h1 itemprop="name">Live notifier</h1>
+    <h2 itemprop="description">Add channels to get browser notification when they go live.</h2>
+  </header>
+
+  <div class="container">
+    <div class="checkbox text-center">
+      <label><input type="checkbox" id="mute_notifications"> Mute notifications</label>
+    </div>
+
+    <form class="input-group" id="facebook_form">
+      <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
+      <input class="form-control" type="search" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="submit">Add</button>
+      </span>
+    </form>
+
+    <form class="input-group" id="youtube_form">
+      <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
+      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="submit">Add</button>
+      </span>
+    </form>
+
+    <form class="input-group" id="twitch_form">
+      <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
+      <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
+      <span class="input-group-btn">
+        <button class="btn btn-primary" type="submit">Add</button>
+      </span>
+    </form>
+
+    <p>Polled <span id="counter">0</span> times (last updated at <span id="last_updated">N/A</span>).</p>
+
+    <h2>Facebook pages</h2>
+    <div id="facebook_accounts"></div>
+
+    <h2>YouTube channels</h2>
+    <div id="youtube_accounts"></div>
+
+    <h2>Twitch channels</h2>
+    <div id="twitch_accounts"></div>
+  </div>
+</body>
+</html>
