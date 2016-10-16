@@ -1,7 +1,12 @@
-var facebook_token = ""
-var google_key = ""
-var twitch_client_id = "";
-
+if (!localStorage.facebook) {
+  localStorage.facebook = "{}";
+}
+if (!localStorage.youtube) {
+  localStorage.youtube = "{}";
+}
+if (!localStorage.twitch) {
+  localStorage.twitch = "{}";
+}
 if (!localStorage.facebook_accounts) {
   localStorage.facebook_accounts = "[]";
 }
@@ -147,6 +152,7 @@ function update_accounts() {
 }
 
 function poll() {
+  var facebook = JSON.parse(localStorage.facebook);
   var facebook_accounts = JSON.parse(localStorage.facebook_accounts);
   if (facebook_accounts.length > 0) {
     var xhr = new XMLHttpRequest();
@@ -196,7 +202,7 @@ function poll() {
       $("time.timeago").timeago();
     });
     var form = new FormData();
-    form.append("access_token", facebook_token);
+    form.append("access_token", facebook.token);
     form.append("batch", JSON.stringify(facebook_accounts.map(function(a) {
       return {
         method: "GET",
@@ -206,16 +212,17 @@ function poll() {
     xhr.send(form);
   }
 
+  var youtube = JSON.parse(localStorage.youtube);
   var youtube_accounts = JSON.parse(localStorage.youtube_accounts);
   youtube_accounts.forEach(function(a) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://www.googleapis.com/youtube/v3/search?part=id&type=video&order=date&eventType=live&channelId=${a.id}&key=${google_key}`);
+    xhr.open("GET", `https://www.googleapis.com/youtube/v3/search?part=id&type=video&order=date&eventType=live&channelId=${a.id}&key=${youtube.key}`);
     xhr.addEventListener("load", function() {
       var ids = this.response.items.map(function(v) { return v.id.videoId });
       var xhr2 = new XMLHttpRequest();
       xhr2.responseType = "json";
-      xhr2.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${ids.join(",")}&key=${google_key}`);
+      xhr2.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${ids.join(",")}&key=${youtube.key}`);
       xhr2.addEventListener("load", function() {
         console.log("youtube", a.username, new Date, this.response.items);
         var tbody = $(`tbody[data-youtube-id='${a.id}']`);
@@ -267,11 +274,12 @@ function poll() {
 
   var twitch_accounts = JSON.parse(localStorage.twitch_accounts);
   twitch_accounts.forEach(function(a) {
+    var twitch = JSON.parse(localStorage.twitch);
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("GET", `https://api.twitch.tv/kraken/channels/${a.username}/videos?broadcast_type=all`);
     xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
-    xhr.setRequestHeader("Client-ID", twitch_client_id);
+    xhr.setRequestHeader("Client-ID", twitch.client_id);
     xhr.addEventListener("load", function() {
       var live_videos = this.response.videos.slice(0, 3);
       console.log("twitch", a.username, new Date, live_videos);
@@ -333,10 +341,11 @@ $(document).ready(function() {
       form.removeClass("has-success has-error");
     }, 3000);
     var q = $("#facebook_q").val();
+    var facebook = JSON.parse(localStorage.facebook);
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://graph.facebook.com/v2.7/${q}?fields=username&access_token=${facebook_token}`);
+    xhr.open("GET", `https://graph.facebook.com/v2.7/${q}?fields=username&access_token=${facebook.token}`);
     xhr.addEventListener("load", function() {
       var data = this.response;
       if (this.response.error) {
@@ -364,10 +373,11 @@ $(document).ready(function() {
       form.removeClass("has-success has-error");
     }, 3000);
     var q = $("#youtube_q").val();
+    var youtube = JSON.parse(localStorage.youtube);
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=${q}&key=${google_key}`);
+    xhr.open("GET", `https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=${q}&key=${youtube.key}`);
     xhr.addEventListener("load", function() {
       if (this.response.items.length == 0) {
         form.addClass("has-error");
@@ -403,12 +413,13 @@ $(document).ready(function() {
     if (re=/twitch\.tv\/([^\/?#]+)/.exec(q)) {
       q = re[1];
     }
+    var twitch = JSON.parse(localStorage.twitch);
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("GET", `https://api.twitch.tv/kraken/channels/${q}`);
     xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
-    xhr.setRequestHeader("Client-ID", twitch_client_id);
+    xhr.setRequestHeader("Client-ID", twitch.client_id);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
         form.addClass("has-error");
@@ -434,6 +445,101 @@ $(document).ready(function() {
     });
     xhr.send();
   });
+
+  $("#facebook_token").parents("form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var token = $("#facebook_token").val();
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://graph.facebook.com/v2.7/debug_token?input_token=${token}&access_token=${token}`);
+    xhr.addEventListener("load", function() {
+      if (this.response.error) {
+        form.addClass("has-error");
+        alert(this.response.error.message);
+        return;
+      }
+      var data = this.response.data;
+      if (!data.is_valid) {
+        form.addClass("has-error");
+        alert("This token is not valid.");
+        return;
+      }
+      var facebook = JSON.parse(localStorage.facebook);
+      facebook.token = token;
+      localStorage.facebook = JSON.stringify(facebook);
+      form.addClass("has-success");
+    });
+    xhr.send();
+  });
+  $("#facebook_token").on("input", function(e) {
+    $(this.form).removeClass("has-success has-error");
+  });
+  var facebook = JSON.parse(localStorage.facebook);
+  if (facebook.token) {
+    $("#facebook_token").val(facebook.token);
+  }
+
+  $("#youtube_key").parents("form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var key = $("#youtube_key").val();
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=9bZkp7q19f0&key=${key}`);
+    xhr.addEventListener("load", function() {
+      if (this.response.error) {
+        form.addClass("has-error");
+        alert(this.response.error.errors[0].reason);
+        return;
+      }
+      var youtube = JSON.parse(localStorage.youtube);
+      youtube.key = key;
+      localStorage.youtube = JSON.stringify(youtube);
+      form.addClass("has-success");
+    });
+    xhr.send();
+  });
+  $("#youtube_key").on("input", function(e) {
+    $(this.form).removeClass("has-success has-error");
+  });
+  var youtube = JSON.parse(localStorage.youtube);
+  if (youtube.key) {
+    $("#youtube_key").val(youtube.key);
+  }
+
+  $("#twitch_client_id").parents("form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var client_id = $("#twitch_client_id").val();
+
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://api.twitch.tv/kraken/base`);
+    xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
+    xhr.setRequestHeader("Client-ID", client_id);
+    xhr.addEventListener("load", function() {
+      if (this.response.error) {
+        form.addClass("has-error");
+        alert(this.response.message);
+        return;
+      }
+      var twitch = JSON.parse(localStorage.twitch);
+      twitch.client_id = client_id;
+      localStorage.twitch = JSON.stringify(twitch);
+      form.addClass("has-success");
+    });
+    xhr.send();
+  });
+  $("#twitch_client_id").on("input", function(e) {
+    $(this.form).removeClass("has-success has-error");
+  });
+  var twitch = JSON.parse(localStorage.twitch);
+  if (twitch.client_id) {
+    $("#twitch_client_id").val(twitch.client_id);
+  }
 
   setInterval(poll, 30000);
   poll();

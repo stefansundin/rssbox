@@ -51,6 +51,9 @@ progress {
   border-radius: 0;
   padding: 6px 4px;
 }
+*[monospace] {
+  font-family: monospace;
+}
 
 .expander {
   display: none;
