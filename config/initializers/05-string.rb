@@ -96,6 +96,7 @@ class String
                 # bad redirect
                 throw :done
               end
+              dest = URI.escape(dest) # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
             else
               throw :done
             end
