@@ -45,6 +45,18 @@ function toObject(arr) {
   return obj;
 }
 
+var notifications = [];
+function notify(title, options) {
+  var notification = new Notification(title, options);
+  notifications.push(notification);
+  notification.addEventListener("close", function(e) {
+    notifications = notifications.filter(function(n) {
+      return n != notification;
+    });
+  });
+  return notification;
+}
+
 function update_accounts() {
   $("#facebook_accounts").empty();
   JSON.parse(localStorage.facebook_accounts).forEach(function(a) {
@@ -178,7 +190,7 @@ function poll() {
 <tr id="${tr_id}">
   <td>${to_duration(v.length)}</td>
   <td>${v.live_status}</td>
-  <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.description}</a></td>
+  <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.description || "Untitled"}</a></td>
   <td><time class="timeago" datetime="${v.created_time}">${v.created_time.replace('T',' ').replace('+',' +')}</time></td>
 </tr>`);
           tbody.prepend(tr);
@@ -186,8 +198,8 @@ function poll() {
             return;
           }
           if (v.live_status == "LIVE") {
-            var notification = new Notification(`${v.from.name} is live on Facebook`, {
-              body: v.description,
+            var notification = notify(`${v.from.name} is live on Facebook`, {
+              body: `Started ${$.timeago(v.created_time)}.\n${v.description || ""}`,
               icon: `https://graph.facebook.com/${a.id}/picture`,
             });
             notification.addEventListener("click", function(e) {
@@ -232,12 +244,12 @@ function poll() {
             if (v.liveStreamingDetails.actualStartTime) {
               live_status = "live";
               live_text = `started <time class="timeago" datetime="${v.liveStreamingDetails.actualStartTime}">${v.liveStreamingDetails.actualStartTime.replace('T',' ')}</time>`;
-              notification_text = `started ${$.timeago(v.liveStreamingDetails.actualStartTime)}\n${v.snippet.title}`;
+              notification_text = `Started ${$.timeago(v.liveStreamingDetails.actualStartTime)}\n${v.snippet.title}`;
             }
             else if (v.liveStreamingDetails.scheduledStartTime) {
               live_status = "scheduled";
               live_text = `scheduled to start <time class="timeago"; datetime="${v.liveStreamingDetails.scheduledStartTime}">${v.liveStreamingDetails.scheduledStartTime.replace('T',' ')}</time>`;
-              notification_text = `scheduled to start ${$.timeago(v.liveStreamingDetails.scheduledStartTime)}\n${v.snippet.title}`;
+              notification_text = `Scheduled to start ${$.timeago(v.liveStreamingDetails.scheduledStartTime)}\n${v.snippet.title}`;
             }
           }
           var tr_id = `youtube-${live_status}-${v.id}`;
@@ -254,7 +266,7 @@ function poll() {
           if ($("#mute_notifications").prop('checked')) {
             return;
           }
-          var notification = new Notification(`${v.snippet.channelTitle} is live on YouTube`, {
+          var notification = notify(`${v.snippet.channelTitle} is live on YouTube`, {
             body: notification_text,
             icon: v.snippet.thumbnails.default.url,
           });
@@ -305,8 +317,8 @@ function poll() {
           return;
         }
         if (v.status == "recording") {
-          var notification = new Notification(`${v.channel.display_name} is live on Twitch`, {
-            body: v.title,
+          var notification = notify(`${v.channel.display_name} is live on Twitch`, {
+            body: `Started ${$.timeago(v.created_at)}.\n${v.title}`,
             icon: v.thumbnails[0].url,
           });
           notification.addEventListener("click", function(e) {
@@ -553,4 +565,10 @@ $(document).ready(function() {
   if (Notification.permission !== "granted") {
     Notification.requestPermission();
   }
+
+  $(window).on("beforeunload", function(event) {
+    notifications.forEach(function(notification) {
+      notification.close();
+    });
+  });
 });
