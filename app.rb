@@ -389,6 +389,11 @@ get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
     @data.select! { |post| post["live_status"] }
   end
 
+  # Remove live videos from most feeds
+  if @type != "live"
+    @data.select! { |post| post["live_status"] != "LIVE" }
+  end
+
   @user = @data[0]["from"]["name"] rescue username
   @title = @user
   if @type == "live"

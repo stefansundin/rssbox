@@ -9,10 +9,12 @@
 <%-
 @data.each do |post|
   post["link"] = post["link"].resolve_url if post["link"]
+  id = post["id"]
+  id += ":#{post["live_status"]}" if post["live_status"]
 -%>
 
   <entry>
-    <id>facebook:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <id>facebook:post:<%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%=
 if post["live_status"] == "LIVE" or post["story"][" is live now"]
   "[LIVE] "
