@@ -8,6 +8,11 @@ get "/" do
   erb :index
 end
 
+get "/live" do
+  SecureHeaders.use_secure_headers_override(request, :live)
+  send_file File.join(settings.public_folder, 'live.html')
+end
+
 get "/go" do
   return "Insufficient parameters" if params[:q].empty?
 

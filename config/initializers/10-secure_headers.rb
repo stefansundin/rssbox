@@ -52,3 +52,19 @@ SecureHeaders::Configuration.override(:index) do |config|
     config.csp[:style_src] << "'unsafe-inline'"
   end
 end
+
+# Live page
+SecureHeaders::Configuration.override(:live) do |config|
+  config.csp.merge!({
+    # "meta" values. these will shape the header, but the values are not included in the header.
+    report_only: false,
+    preserve_schemes: true,
+    # directive values: these values will directly translate into source directives
+    default_src: %w('none'),
+    style_src: %w('self' *.bootstrapcdn.com),
+    script_src: %w('self' *.bootstrapcdn.com code.jquery.com cdn.rawgit.com),
+    font_src: %w(*.bootstrapcdn.com),
+    img_src: %w('self' graph.facebook.com scontent.xx.fbcdn.net i.ytimg.com static-cdn.jtvnw.net),
+    connect_src: %w(graph.facebook.com www.googleapis.com api.twitch.tv),
+  })
+end
