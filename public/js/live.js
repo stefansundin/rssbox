@@ -1,20 +1,20 @@
 if (!localStorage.facebook) {
-  localStorage.facebook = "{}";
+  localStorage.facebook = JSON.stringify({
+    token: "",
+    accounts: [],
+  });
 }
 if (!localStorage.youtube) {
-  localStorage.youtube = "{}";
+  localStorage.youtube = JSON.stringify({
+    key: "",
+    accounts: [],
+  });
 }
 if (!localStorage.twitch) {
-  localStorage.twitch = "{}";
-}
-if (!localStorage.facebook_accounts) {
-  localStorage.facebook_accounts = "[]";
-}
-if (!localStorage.youtube_accounts) {
-  localStorage.youtube_accounts = "[]";
-}
-if (!localStorage.twitch_accounts) {
-  localStorage.twitch_accounts = "[]";
+  localStorage.twitch = JSON.stringify({
+    client_id: "",
+    accounts: [],
+  });
 }
 if (!localStorage.mute_notifications) {
   localStorage.mute_notifications = "false";
@@ -58,8 +58,12 @@ function notify(title, options) {
 }
 
 function update_accounts() {
+  var facebook = JSON.parse(localStorage.facebook);
+  var youtube = JSON.parse(localStorage.youtube);
+  var twitch = JSON.parse(localStorage.twitch);
+
   $("#facebook_accounts").empty();
-  JSON.parse(localStorage.facebook_accounts).forEach(function(a) {
+  facebook.accounts.forEach(function(a) {
     var panel = $(`
 <div class="panel panel-default">
   <div class="panel-heading">
@@ -83,18 +87,18 @@ function update_accounts() {
 </div>`);
     panel.find(".btn-danger").click(function() {
       var id = $(this).data("facebook-id");
-      var accounts = JSON.parse(localStorage.facebook_accounts);
-      accounts = accounts.filter(function(a) {
+      var facebook = JSON.parse(localStorage.facebook);
+      facebook.accounts = facebook.accounts.filter(function(a) {
         return a.id != id;
       });
-      localStorage.facebook_accounts = JSON.stringify(accounts);
+      localStorage.facebook = JSON.stringify(facebook);
       panel.detach();
     });
     $("#facebook_accounts").append(panel);
   });
 
   $("#youtube_accounts").empty();
-  JSON.parse(localStorage.youtube_accounts).forEach(function(a) {
+  youtube.accounts.forEach(function(a) {
     var panel = $(`
 <div class="panel panel-default" data-youtube-id="${a.id}">
   <div class="panel-heading">
@@ -117,18 +121,18 @@ function update_accounts() {
 </div>`);
     panel.find(".btn-danger").click(function() {
       var id = $(this).data("youtube-id");
-      var accounts = JSON.parse(localStorage.youtube_accounts);
-      accounts = accounts.filter(function(a) {
+      var youtube = JSON.parse(localStorage.youtube);
+      youtube.accounts = youtube.accounts.filter(function(a) {
         return a.id != id;
       });
-      localStorage.youtube_accounts = JSON.stringify(accounts);
+      localStorage.youtube = JSON.stringify(youtube);
       panel.detach();
     });
     $("#youtube_accounts").append(panel);
   });
 
   $("#twitch_accounts").empty();
-  JSON.parse(localStorage.twitch_accounts).forEach(function(a) {
+  twitch.accounts.forEach(function(a) {
     var panel = $(`
 <div class="panel panel-default" data-twitch-id="${a.id}">
   <div class="panel-heading">
@@ -152,11 +156,11 @@ function update_accounts() {
 </div>`);
     panel.find(".btn-danger").click(function() {
       var id = $(this).data("twitch-id");
-      var accounts = JSON.parse(localStorage.twitch_accounts);
-      accounts = accounts.filter(function(a) {
+      var twitch = JSON.parse(localStorage.twitch);
+      twitch.accounts = twitch.accounts.filter(function(a) {
         return a.id != id;
       });
-      localStorage.twitch_accounts = JSON.stringify(accounts);
+      localStorage.twitch = JSON.stringify(twitch);
       panel.detach();
     });
     $("#twitch_accounts").append(panel);
@@ -165,14 +169,13 @@ function update_accounts() {
 
 function poll() {
   var facebook = JSON.parse(localStorage.facebook);
-  var facebook_accounts = JSON.parse(localStorage.facebook_accounts);
-  if (facebook_accounts.length > 0) {
+  if (facebook.accounts.length > 0) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("POST", "https://graph.facebook.com/v2.7");
     xhr.addEventListener("load", function() {
       this.response.forEach(function(r, i) {
-        var a = facebook_accounts[i];
+        var a = facebook.accounts[i];
         if (r.code != 200) {
           console.log(r);
           return;
@@ -215,7 +218,7 @@ function poll() {
     });
     var form = new FormData();
     form.append("access_token", facebook.token);
-    form.append("batch", JSON.stringify(facebook_accounts.map(function(a) {
+    form.append("batch", JSON.stringify(facebook.accounts.map(function(a) {
       return {
         method: "GET",
         relative_url: `${a.id}/videos?fields=created_time,from,title,description,embeddable,embed_html,length,live_status`,
@@ -225,8 +228,7 @@ function poll() {
   }
 
   var youtube = JSON.parse(localStorage.youtube);
-  var youtube_accounts = JSON.parse(localStorage.youtube_accounts);
-  youtube_accounts.forEach(function(a) {
+  youtube.accounts.forEach(function(a) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("GET", `https://www.googleapis.com/youtube/v3/search?part=id&type=video&order=date&eventType=live&channelId=${a.id}&key=${youtube.key}`);
@@ -284,9 +286,8 @@ function poll() {
     xhr.send();
   });
 
-  var twitch_accounts = JSON.parse(localStorage.twitch_accounts);
-  twitch_accounts.forEach(function(a) {
-    var twitch = JSON.parse(localStorage.twitch);
+  var twitch = JSON.parse(localStorage.twitch);
+  twitch.accounts.forEach(function(a) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("GET", `https://api.twitch.tv/kraken/channels/${a.username}/videos?broadcast_type=all`);
@@ -365,13 +366,12 @@ $(document).ready(function() {
         alert(this.response.error.message);
         return;
       }
-      var accounts = JSON.parse(localStorage.facebook_accounts);
-      if (accounts.find(function(a){ return a.id == data.id })) {
+      if (facebook.accounts.find(function(a){ return a.id == data.id })) {
         alert("You are already monitoring this page.");
         return;
       }
-      accounts.push(data);
-      localStorage.facebook_accounts = JSON.stringify(accounts);
+      facebook.accounts.push(data);
+      localStorage.facebook = JSON.stringify(facebook);
       form.addClass("has-success");
       update_accounts();
     });
@@ -402,13 +402,12 @@ $(document).ready(function() {
         username: data.snippet.title,
       };
 
-      var accounts = JSON.parse(localStorage.youtube_accounts);
-      if (accounts.find(function(a){ return a.id == acc.id })) {
+      if (youtube.accounts.find(function(a){ return a.id == acc.id })) {
         alert("You are already monitoring this channel.");
         return;
       }
-      accounts.push(acc);
-      localStorage.youtube_accounts = JSON.stringify(accounts);
+      youtube.accounts.push(acc);
+      localStorage.youtube = JSON.stringify(youtube);
       form.addClass("has-success");
       update_accounts();
     });
@@ -445,13 +444,12 @@ $(document).ready(function() {
         display_name: data.display_name,
       };
 
-      var accounts = JSON.parse(localStorage.twitch_accounts);
-      if (accounts.find(function(a){ return a.id == acc.id })) {
+      if (twitch.accounts.find(function(a){ return a.id == acc.id })) {
         alert("You are already monitoring this channel.");
         return;
       }
-      accounts.push(acc);
-      localStorage.twitch_accounts = JSON.stringify(accounts);
+      twitch.accounts.push(acc);
+      localStorage.twitch = JSON.stringify(twitch);
       form.addClass("has-success");
       update_accounts();
     });
@@ -552,6 +550,37 @@ $(document).ready(function() {
   if (twitch.client_id) {
     $("#twitch_client_id").val(twitch.client_id);
   }
+
+  $("#export_settings").click(function(e) {
+    var obj = {};
+    Object.keys(window.localStorage).sort().forEach(function(key) {
+      if (["better_errors_previous_commands"].indexOf(key) != -1) return;
+      obj[key] = JSON.parse(window.localStorage[key]);
+    });
+    $("#settings").val(JSON.stringify(obj));
+  });
+  $("#import_settings").parents("form").submit(function(e) {
+    e.preventDefault();
+    try {
+      var settings = JSON.parse($(this).find("textarea").val());
+    } catch (err) {
+      alert("Error parsing JSON.");
+      return;
+    }
+    Object.keys(settings).forEach(function(key) {
+      window.localStorage[key] = JSON.stringify(settings[key]);
+    });
+    alert("Settings imported. You should reload the page now.");
+  });
+  $("#clear_settings").click(function(e) {
+    if (!confirm("This will clear all your settings and reload the page. Are you sure you want to do this?")) {
+      return;
+    }
+    Object.keys(window.localStorage).forEach(function(key) {
+      delete window.localStorage[key];
+    });
+    window.location.reload();
+  });
 
   setInterval(poll, 30000);
   poll();

@@ -57,7 +57,19 @@
 
     <p>Polled <span id="counter">0</span> times (last updated at <span id="last_updated">N/A</span>).</p>
 
+    <h2>Facebook pages</h2>
+    <div id="facebook_accounts"></div>
+
+    <h2>YouTube channels</h2>
+    <div id="youtube_accounts"></div>
+
+    <h2>Twitch channels</h2>
+    <div id="twitch_accounts"></div>
+
+
     <h2>API keys</h2>
+
+    <p>Create API keys at <a href="https://developers.facebook.com/">Facebook</a>, <a href="https://console.developers.google.com/">Google</a>, and <a href="https://www.twitch.tv/settings/connections">Twitch</a>. Keep the keys private.</p>
 
     <form class="input-group">
       <div class="input-group-addon"><label for="facebook_token">Facebook</label></div>
@@ -83,14 +95,19 @@
       </span>
     </form>
 
-    <h2>Facebook pages</h2>
-    <div id="facebook_accounts"></div>
+    <h2>Settings</h2>
 
-    <h2>YouTube channels</h2>
-    <div id="youtube_accounts"></div>
+    <p>Settings are stored in your browser's localStorage. Use this to export/import settings.</p>
 
-    <h2>Twitch channels</h2>
-    <div id="twitch_accounts"></div>
+    <form>
+      <div class="form-group">
+        <textarea class="form-control" rows="3" id="settings" required monospace></textarea>
+      </div>
+      <button class="btn btn-default" type="button" id="export_settings">Export</button>
+      <button class="btn btn-default" type="submit" id="import_settings">Import</button>
+      <button class="btn btn-danger pull-right" type="button" id="clear_settings">Clear</button>
+    </form>
+
   </div>
 </body>
 </html>

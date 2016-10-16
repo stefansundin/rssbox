@@ -13,3 +13,6 @@
 time {
   white-space: nowrap;
 }
+textarea {
+  resize: vertical;
+}
