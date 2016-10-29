@@ -77,10 +77,18 @@ $(document).ready(function() {
       var xhr = new XMLHttpRequest();
       xhr.open("GET", data.url, true);
       xhr.responseType = "blob";
+      var bigfile_warning = false;
       xhr.addEventListener("progress", function(e) {
         progress.value = e.loaded;
         progress.max = e.total;
         progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
+        if (e.total > 100000000 && !bigfile_warning) {
+          bigfile_warning = true;
+          alert(`Warning: this file is big (${fmt_filesize(e.total,0)}).\n\nNote that if a download fails, it cannot be resumed. Consider opening the video and using the browser to download instead.`);
+        }
+      });
+      xhr.addEventListener("error", function() {
+        alert(`Network error downloading file:\n${data.filename}\n\nConsider opening the video and using the browser to download instead.`);
       });
       xhr.addEventListener("load", function() {
         var blob = new Blob([xhr.response]);
