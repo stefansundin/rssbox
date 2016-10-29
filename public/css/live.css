@@ -16,3 +16,14 @@ time {
 textarea {
   resize: vertical;
 }
+
+#progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 1px;
+  background: #29d;
+  box-shadow: 0 0 10px #29d, 0 0 5px #29d;
+  opacity: 0.8;
+  pointer-events: none;
+}

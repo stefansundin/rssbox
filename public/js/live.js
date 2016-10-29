@@ -20,6 +20,10 @@ if (!localStorage.mute_notifications) {
   localStorage.mute_notifications = "false";
 }
 
+function add_commas(n) {
+  return n.toString().replace(/(\d)(?=(\d{3})+($|,|\.))/g, "$1,");
+}
+
 function pad(n) {
   return `0${n}`.slice(-2);
 }
@@ -113,6 +117,7 @@ function update_accounts() {
           <th>status</th>
           <th>title</th>
           <th>date</th>
+          <th>viewers</th>
         </tr>
       </thead>
       <tbody data-youtube-id="${a.id}"></tbody>
@@ -144,6 +149,7 @@ function update_accounts() {
     <table class="table table-striped table-hover">
       <thead>
         <tr>
+          <th>length</th>
           <th>status</th>
           <th>title</th>
           <th>game</th>
@@ -168,6 +174,14 @@ function update_accounts() {
 }
 
 function poll() {
+  var progress = $("#progress")[0];
+  progress.style.transition = "";
+  progress.style.width = "0";
+  setTimeout(function() {
+    progress.style.transition = "all 29500ms linear";
+    progress.style.width = "100%";
+  }, 300);
+
   var facebook = JSON.parse(localStorage.facebook);
   if (facebook.accounts.length > 0) {
     var xhr = new XMLHttpRequest();
@@ -184,7 +198,7 @@ function poll() {
         var live_videos = data.filter(function(v){ return v.live_status }).slice(0, 3);
         console.log("facebook", a.username, new Date, live_videos);
         live_videos.reverse().forEach(function(v) {
-          var tbody = $(`tbody[data-facebook-id='${a.id}']`);
+          var tbody = $(`tbody[data-facebook-id="${a.id}"]`);
           var tr_id = `${v.live_status}-${v.id}`;
           if (tbody.find(`#${tr_id}`).length > 0) {
             return;
@@ -194,10 +208,10 @@ function poll() {
   <td>${to_duration(v.length)}</td>
   <td>${v.live_status}</td>
   <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.description || "Untitled"}</a></td>
-  <td><time class="timeago" datetime="${v.created_time}">${v.created_time.replace('T',' ').replace('+',' +')}</time></td>
+  <td><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+"," +")}</time></td>
 </tr>`);
           tbody.prepend(tr);
-          if ($("#mute_notifications").prop('checked')) {
+          if ($("#mute_notifications").prop("checked")) {
             return;
           }
           if (v.live_status == "LIVE") {
@@ -239,23 +253,24 @@ function poll() {
       xhr2.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${ids.join(",")}&key=${youtube.key}`);
       xhr2.addEventListener("load", function() {
         console.log("youtube", a.username, new Date, this.response.items);
-        var tbody = $(`tbody[data-youtube-id='${a.id}']`);
+        var tbody = $(`tbody[data-youtube-id="${a.id}"]`);
         this.response.items.reverse().forEach(function(v) {
           var live_status, live_text, notification_text;
           if (v.liveStreamingDetails) {
             if (v.liveStreamingDetails.actualStartTime) {
               live_status = "live";
-              live_text = `started <time class="timeago" datetime="${v.liveStreamingDetails.actualStartTime}">${v.liveStreamingDetails.actualStartTime.replace('T',' ')}</time>`;
+              live_text = `started <time class="timeago" datetime="${v.liveStreamingDetails.actualStartTime}">${v.liveStreamingDetails.actualStartTime.replace("T"," ")}</time>`;
               notification_text = `Started ${$.timeago(v.liveStreamingDetails.actualStartTime)}\n${v.snippet.title}`;
             }
             else if (v.liveStreamingDetails.scheduledStartTime) {
               live_status = "scheduled";
-              live_text = `scheduled to start <time class="timeago"; datetime="${v.liveStreamingDetails.scheduledStartTime}">${v.liveStreamingDetails.scheduledStartTime.replace('T',' ')}</time>`;
+              live_text = `scheduled to start <time class="timeago"; datetime="${v.liveStreamingDetails.scheduledStartTime}">${v.liveStreamingDetails.scheduledStartTime.replace("T"," ")}</time>`;
               notification_text = `Scheduled to start ${$.timeago(v.liveStreamingDetails.scheduledStartTime)}\n${v.snippet.title}`;
             }
           }
           var tr_id = `youtube-${live_status}-${v.id}`;
           if (tbody.find(`#${tr_id}`).length > 0) {
+            $(`#${tr_id} > td[data-concurrent-viewers]`).text(`${add_commas(v.liveStreamingDetails.concurrentViewers)} viewers`);
             return;
           }
           var tr = $(`
@@ -263,9 +278,10 @@ function poll() {
   <td>${live_status}</td>
   <td><a href="https://www.youtube.com/watch?v=${v.id}">${v.snippet.title}</a></td>
   <td>${live_text}</td>
+  <td data-concurrent-viewers>${add_commas(v.liveStreamingDetails.concurrentViewers)} viewers</td>
 </tr>`);
           tbody.prepend(tr);
-          if ($("#mute_notifications").prop('checked')) {
+          if ($("#mute_notifications").prop("checked")) {
             return;
           }
           var notification = notify(`${v.snippet.channelTitle} is live on YouTube`, {
@@ -296,7 +312,7 @@ function poll() {
     xhr.addEventListener("load", function() {
       var live_videos = this.response.videos.slice(0, 3);
       console.log("twitch", a.username, new Date, live_videos);
-      var tbody = $(`tbody[data-twitch-id='${a.id}']`);
+      var tbody = $(`tbody[data-twitch-id="${a.id}"]`);
       live_videos.reverse().forEach(function(v) {
         var tr_id = `twitch-${v.status}-${v._id}`;
         if (tbody.find(`#${tr_id}`).length > 0) {
@@ -308,17 +324,18 @@ function poll() {
         }
         var tr = $(`
 <tr id="${tr_id}">
+  <td>${to_duration(v.length)}</td>
   <td>${v.status}</td>
   <td><a href="${url}">${v.title}</a></td>
   <td>${v.game}</td>
-  <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace('T',' ')}</time></td>
+  <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ")}</time></td>
 </tr>`);
         tbody.prepend(tr);
-        if ($("#mute_notifications").prop('checked')) {
+        if ($("#mute_notifications").prop("checked")) {
           return;
         }
         if (v.status == "recording") {
-          var notification = notify(`${v.channel.display_name} is live on Twitch`, {
+          var notification = notify(`${v.channel.display_name} is playing ${v.game}`, {
             body: `Started ${$.timeago(v.created_at)}.\n${v.title}`,
             icon: v.thumbnails[0].url,
           });
@@ -587,7 +604,7 @@ $(document).ready(function() {
 
   var args = toObject(window.location.search.substr(1).split("&").map(function(arg){ return arg.split("="); }));
   if (args.q) {
-    $("input[type='search']").val(args.q);
+    $('input[type="search"]').val(args.q);
   }
 
   console.log(`Notification permissions: ${Notification.permission}`);
