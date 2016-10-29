@@ -62,7 +62,10 @@ end
 if @type == "photos" and post["source"]
   "<p><img src='#{post["source"]}'></p>".esc
 elsif @edge == "videos" and post["id"]
-  "<p><a href='#{request.root_url}/facebook/download?url=#{post["id"]}'>Download video</a></p>".esc
+  <<-EOF.esc
+<p><a href="https://www.facebook.com/video/embed?video_id=#{post["id"]}">Open embed</a></p>
+<p><a href="#{request.root_url}/facebook/download?url=#{post["id"]}">Download video</a></p>
+  EOF
 elsif post["type"] == "photo"
   <<-EOF.esc
 <p><img src="#{post["picture"]}"></p>

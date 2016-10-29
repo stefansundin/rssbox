@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>youtube:<%= @channel_id %></id>
-  <title><%= @username %> on YouTube</title>
+  <title><%= @title %></title>
   <icon>https://s.ytimg.com/yts/img/favicon_48-vfl1s0rGh.png</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.youtube.com/channel/<%= @channel_id %>" rel="alternate" />

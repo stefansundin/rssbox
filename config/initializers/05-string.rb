@@ -146,6 +146,7 @@ class String
     if %r{^https?://www\.facebook\.com/.*/videos/(?<id>\d+)} =~ self
       <<-EOF
 <iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
+<p><a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a></p>
 <p><a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a></p>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*} =~ self

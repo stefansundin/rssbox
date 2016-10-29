@@ -165,7 +165,12 @@ get "/youtube/:channel_id/:username" do
   @tz = params[:tz]
 
   query = { part: "snippet", type: "video", order: "date", channelId: params[:channel_id], maxResults: 50 }
-  query[:q] = params[:q] if params[:q]
+  if params[:q]
+    query[:q] = params[:q]
+    @title = "\"#{params[:q]}\" from #{@username}"
+  else
+    @title = "#{@username} on YouTube"
+  end
 
   if params[:eventType]
     @data = params[:eventType].split(",").map do |eventType|
@@ -311,6 +316,7 @@ get "/facebook/download" do
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
   elsif /\d+_(?<id>\d+)/ =~ params[:url]
+  elsif /(?<id>\d+)/ =~ params[:url]
   else
     id = params[:url]
   end
@@ -344,9 +350,9 @@ get "/facebook/download" do
         redirect url
       end
     elsif type == "photo"
-      response = FacebookParty.get("/", query: { id: id, fields: "images,width" })
+      response = FacebookParty.get("/", query: { id: id, fields: "images" })
       data = response.parsed_response
-      image = data["images"].find { |image| image["width"] == data["width"] }
+      image = data["images"][0]
       redirect image["source"]
     else
       return "Unknown type (#{type})."
