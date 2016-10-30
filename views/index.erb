@@ -153,6 +153,14 @@
     </form>
 <% end %>
 
+    <form class="input-group" method="get" action="mixcloud">
+      <div class="input-group-addon"><label for="mixcloud_q">Mixcloud</label></div>
+      <input class="form-control" type="search" name="q" id="mixcloud_q" placeholder="Enter a Mixcloud username or a url to a user or track." required>
+      <span class="input-group-btn">
+        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
+      </span>
+    </form>
+
 <% if ENV["TWITCH_CLIENT_ID"] %>
     <form class="input-group" method="get" action="twitch">
       <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>

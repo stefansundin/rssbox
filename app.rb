@@ -32,6 +32,8 @@ get "/go" do
     redirect "/periscope?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
     redirect "/soundcloud?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?mixcloud\.com/ =~ params[:q]
+    redirect "/mixcloud?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?twitch\.tv/ =~ params[:q]
     redirect "/twitch?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?ustream\.tv/ =~ params[:q]
@@ -726,6 +728,35 @@ get %r{/soundcloud/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
 
   content_type :atom
   erb :soundcloud_feed
+end
+
+get "/mixcloud" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /mixcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
+    # https://www.mixcloud.com/infected-live/infected-mushroom-liveedc-las-vegas-21-5-2014/
+  else
+    username = params[:q]
+  end
+
+  response = MixcloudParty.get("/#{username}/")
+  return "Can't find a user with that name. Sorry." if response.code == 404
+  raise MixcloudError.new(response) if !response.success?
+  data = response.parsed_response
+
+  redirect "/mixcloud/#{data["username"]}/#{data["name"]}"
+end
+
+get %r{/mixcloud/(?<username>[^/]+)(?:/(?<user>.+))?} do |username, user|
+  response = MixcloudParty.get("/#{username}/cloudcasts/")
+  raise MixcloudError.new(response) if !response.success?
+
+  @data = response.parsed_response["data"]
+  @username = @data[0]["user"]["username"] rescue username
+  @user = @data[0]["user"]["name"] rescue (user || username)
+
+  content_type :atom
+  erb :mixcloud_feed
 end
 
 get "/twitch" do
