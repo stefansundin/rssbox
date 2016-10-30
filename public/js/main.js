@@ -78,13 +78,78 @@ $(document).ready(function() {
       xhr.open("GET", data.url, true);
       xhr.responseType = "blob";
       var bigfile_warning = false;
+      var chunk_size = 10000000;
       xhr.addEventListener("progress", function(e) {
         progress.value = e.loaded;
         progress.max = e.total;
         progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
-        if (e.total > 100000000 && !bigfile_warning) {
+        if (e.total > 5*chunk_size && !bigfile_warning) {
           bigfile_warning = true;
-          alert(`Warning: this file is big (${fmt_filesize(e.total,0)}).\n\nNote that if a download fails, it cannot be resumed. Consider opening the video and using the browser to download instead.`);
+          if (confirm(`This file is big (${fmt_filesize(e.total,0)}). Download with ${Math.ceil(e.total/chunk_size)} smaller and resumable requests instead?`)) {
+            xhr.abort();
+            $(progress).detach();
+            var requests = [];
+            for (var i=0, j=1; i < e.total; i += chunk_size, j++) {
+              (function(i, j) {
+                var progress = document.createElement("progress");
+                $(progress).insertAfter(form);
+                progress.title = data.filename;
+                progress.value = 0;
+                progress.max = 1;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", data.url, true);
+                xhr.responseType = "blob";
+                xhr.setRequestHeader("Range", `bytes=${i}-${i+chunk_size-1}`);
+                xhr.addEventListener("progress", function(e) {
+                  if (e.total == 0) return;
+                  progress.value = e.loaded;
+                  progress.max = e.total;
+                  progress.title = `Part ${j}: ${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
+                });
+                xhr.addEventListener("error", function() {
+                  console.log(`Network error downloading part ${j}.`);
+                  // reuse xhr object and try again
+                  var timer = setInterval(function() {
+                    xhr.open("GET", data.url, true);
+                    xhr.responseType = "blob";
+                    xhr.setRequestHeader("Range", `bytes=${i}-${i+chunk_size-1}`);
+                    try {
+                      xhr.send();
+                      clearInterval(timer);
+                    }
+                    catch (err) {
+                      console.log(err);
+                    }
+                  }, 1000);
+                });
+                xhr.addEventListener("load", function() {
+                  if (requests.every(function(request) {
+                    return request.readyState == 4;
+                  })) {
+                    var parts = requests.map(function(request) {
+                      return request.response;
+                    });
+                    var blob = new Blob(parts);
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement("a");
+                    a.style.display = "none";
+                    a.href = url;
+                    a.download = data.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(function(){
+                      document.body.removeChild(a);
+                      window.URL.revokeObjectURL(url);
+                      window.dirty--;
+                    }, 100);
+                  }
+                });
+                xhr.send();
+                requests.push(xhr);
+              })(i, j);
+            }
+          }
         }
       });
       xhr.addEventListener("error", function() {
