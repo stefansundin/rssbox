@@ -75,7 +75,7 @@ get "/twitter" do
   redirect "/twitter/#{user_id}/#{screen_name}#{"?#{params[:type]}" if !params[:type].empty?}"
 end
 
-get %r{/twitter/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/twitter/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @user_id = id
 
   response = TwitterParty.get("/statuses/user_timeline.json", query: {
@@ -226,7 +226,7 @@ get "/googleplus" do
   redirect "/googleplus/#{user_id}/#{username}"
 end
 
-get %r{/googleplus/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/googleplus/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
 
   response = GoogleParty.get("/plus/v1/people/#{id}/activities/public")
@@ -396,7 +396,7 @@ get "/facebook/download" do
   end
 end
 
-get %r{/facebook/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/facebook/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
 
   @type = @edge = %w[videos photos live].pick(params[:type]) || "posts"
@@ -566,7 +566,7 @@ get "/vine" do
   redirect "/vine/#{user_id}/#{username}"
 end
 
-get %r{/vine/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/vine/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
   @username = username
 
@@ -653,7 +653,7 @@ get "/periscope" do
   redirect "/periscope/#{user_id}/#{username}"
 end
 
-get %r{/periscope/(?<id>[^/]+)(/(?<username>.+))?} do |id, username|
+get %r{/periscope/(?<id>[^/]+)(?:/(?<username>.+))?} do |id, username|
   @id = id
   @username = username
 
@@ -714,7 +714,7 @@ get "/soundcloud/download" do
   redirect media_url
 end
 
-get %r{/soundcloud/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/soundcloud/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
 
   response = SoundcloudParty.get("/users/#{id}/tracks")
@@ -783,7 +783,7 @@ get "/twitch/download" do
   "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
 end
 
-get %r{/twitch/(?<id>\d+)(/(?<username>.+))?} do |id, username|
+get %r{/twitch/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
   @username = username
 
@@ -820,7 +820,7 @@ get "/ustream" do
   redirect "/ustream/#{channel_id}/#{channel_title}"
 end
 
-get %r{/ustream/(?<id>\d+)(/(?<title>.+))?} do |id, title|
+get %r{/ustream/(?<id>\d+)(?:/(?<title>.+))?} do |id, title|
   @id = id
   @user = title
 
@@ -858,7 +858,7 @@ get "/dailymotion" do
     # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
   elsif /dailymotion\.com\/playlist\/(?<playlist_id>[a-z0-9]+)/ =~ params[:q]
     # http://www.dailymotion.com/playlist/x4bnhu_GeneralGrin_fair-use-recuts/1
-  elsif /dailymotion\.com\/((followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/?#]+)/ =~ params[:q]
+  elsif /dailymotion\.com\/(?:(?:followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/?#]+)/ =~ params[:q]
     # http://www.dailymotion.com/followers/GeneralGrin/1
     # http://www.dailymotion.com/subscriptions/GeneralGrin/1
     # http://www.dailymotion.com/playlists/user/GeneralGrin/1
@@ -890,7 +890,7 @@ get "/dailymotion" do
   end
 end
 
-get %r{/dailymotion/(?<user_id>[a-z0-9]+)(/(?<screenname>.+))?} do |user_id, screenname|
+get %r{/dailymotion/(?<user_id>[a-z0-9]+)(?:/(?<screenname>.+))?} do |user_id, screenname|
   @user_id = user_id
   @screenname = screenname
 
