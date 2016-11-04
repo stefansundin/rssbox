@@ -17,11 +17,11 @@
     <content type="html">
 &lt;iframe width="100%" height="185" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/<%= track["id"] %>">&lt;/iframe>
 
-<%= "<img src='#{track["artwork_url"]}'>".esc if track["artwork_url"] %>
+<%= "<p><img src='#{track["artwork_url"]}'></p>".esc if track["artwork_url"] %>
 
 <%= track["description"].to_paragraphs.esc %>
 
-&lt;a href="<%= request.root_url %>/soundcloud/download?url=<%= track["permalink_url"] %>">Download track&lt;/a>
+&lt;p>&lt;a href="<%= request.root_url %>/soundcloud/download?url=<%= track["permalink_url"] %>">Download track&lt;/a>&lt;/p>
     </content>
   </entry>
 <%- end -%>
