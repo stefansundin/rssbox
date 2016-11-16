@@ -16,12 +16,12 @@
     <author><name><%= track["user"]["username"] %></name></author>
     <content type="html">
 <%=
-<<-EOF.esc
-<iframe width="100%" height="120" src="https://www.mixcloud.com/widget/iframe/?feed=#{track["url"]}&hide_cover=1&light=1" frameborder="0"></iframe>
+<<-EOF.undent.esc
+  <iframe width="100%" height="120" src="https://www.mixcloud.com/widget/iframe/?feed=#{track["url"]}&hide_cover=1&light=1" frameborder="0"></iframe>
 
-<a href="#{track["pictures"]["extra_large"]}"><img src="#{track["pictures"]["medium"]}"></a>
+  <a href="#{track["pictures"]["extra_large"]}"><img src="#{track["pictures"]["medium"]}"></a>
 
-#{track["name"].to_paragraphs}
+  #{track["name"].to_paragraphs}
 EOF
 -%>
     </content>

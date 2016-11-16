@@ -15,10 +15,10 @@
     <updated><%= Time.parse(post["created_at"]) %></updated>
     <author><name><%= post["user_display_name"] %></name></author>
     <content type="html">
-<%= <<-EOF.esc
-<p><em>Live in #{post["city"]}.</em></p>
+<%= <<-EOF.undent.esc
+  <p><em>Live in #{post["city"]}.</em></p>
 
-<a href="https://www.periscope.tv/#{post["username"]}/#{post["id"]}"><img src="#{post["image_url"]}"></a>
+  <a href="https://www.periscope.tv/#{post["username"]}/#{post["id"]}"><img src="#{post["image_url"]}"></a>
 EOF
 -%>
     </content>

@@ -22,12 +22,12 @@
     <updated><%= Time.parse(post["created"]) %></updated>
     <author><name><%= post["username"] %></name></author>
     <content type="html">
-<%= <<-EOF.esc
-<iframe width="600" height="600" scrolling="no" frameborder="no" src="#{post["permalinkUrl"]}/embed/simple" allowfullscreen></iframe>
+<%= <<-EOF.undent.esc
+  <iframe width="600" height="600" scrolling="no" frameborder="no" src="#{post["permalinkUrl"]}/embed/simple" allowfullscreen></iframe>
 
-<p>#{post["description"]}</p>
+  <p>#{post["description"]}</p>
 
-<a href="#{request.root_url}/vine/download?url=#{post["shareUrl"]}">Download video</a>
+  <a href="#{request.root_url}/vine/download?url=#{post["shareUrl"]}">Download video</a>
 EOF
 -%>
     </content>

@@ -28,15 +28,15 @@
     <content type="html">
 <%=
 if post["is_video"]
-  <<-EOF.esc
-<iframe src="https://www.instagram.com/p/#{post["code"]}/embed/" width="612" height="710" frameborder="0" scrolling="no" allowfullscreen></iframe>
-#{post["caption"].to_paragraphs}
-<p><a href="#{request.root_url}/instagram/download?url=#{post["code"]}">Download video</a></p>
+  <<-EOF.undent.esc
+    <iframe src="https://www.instagram.com/p/#{post["code"]}/embed/" width="612" height="710" frameborder="0" scrolling="no" allowfullscreen></iframe>
+    #{post["caption"].to_paragraphs}
+    <p><a href="#{request.root_url}/instagram/download?url=#{post["code"]}">Download video</a></p>
   EOF
 else
-  <<-EOF.esc
-<img src="#{post["display_src"]}">
-#{post["caption"].to_paragraphs}
+  <<-EOF.undent.esc
+    <img src="#{post["display_src"]}">
+    #{post["caption"].to_paragraphs}
   EOF
 end
 -%>

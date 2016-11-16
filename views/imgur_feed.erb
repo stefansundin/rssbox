@@ -12,24 +12,24 @@
     id = "imgur:album:#{image["id"]}"
     title = "Album: #{image["title"]} (#{image["images_count"]} images)"
     link = "https://imgur.com/a/#{image["id"]}"
-    body = <<-EOF.esc
-<a href="#{link}"><img src="https://i.imgur.com/#{image["cover"]}h.jpg"></a>
+    body = <<-EOF.undent.esc
+      <a href="#{link}"><img src="https://i.imgur.com/#{image["cover"]}h.jpg"></a>
 
-#{image["description"].to_paragraphs}
-<p><a href="http://s.imgur.com/a/#{image["id"]}/zip">Download album</a></p>
-EOF
+      #{image["description"].to_paragraphs}
+      <p><a href="http://s.imgur.com/a/#{image["id"]}/zip">Download album</a></p>
+    EOF
   else
     id = "imgur:image:#{image["id"]}"
     title = "#{image["title"]} [#{image["width"]}x#{image["height"]}]"
     link = "https://imgur.com/#{image["id"]}"
     ext = image["type"].split("/")[1]
-    body = <<-EOF.esc
-<a href="#{link}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
+    body = <<-EOF.undent.esc
+      <a href="#{link}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
 
-#{image["description"].to_paragraphs}
-<p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}">Download</a></p>
-<p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
-EOF
+      #{image["description"].to_paragraphs}
+      <p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}">Download</a></p>
+      <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
+    EOF
   end
 -%>
 

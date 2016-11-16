@@ -24,6 +24,11 @@ class String
     self.gsub(/[\u00a0\u3000]/,"").strip
   end
 
+  def undent
+    # from https://github.com/Homebrew/brew/blob/c9c7f462d37500549127efba96c7a25e5c70de4a/Library/Homebrew/extend/string.rb#L2-L4
+    gsub(/^[ \t]{#{(slice(/^[ \t]+/) || '').length}}/, "")
+  end
+
   def numeric?
     /^\d+$/ === self
   end
@@ -144,10 +149,10 @@ class String
 
   def embed_html(request)
     if %r{^https?://www\.facebook\.com/.*/videos/(?<id>\d+)} =~ self
-      <<-EOF
-<iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
-<p><a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a></p>
-<p><a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a></p>
+      <<-EOF.undent
+        <iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
+        <p><a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a></p>
+        <p><a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a></p>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
