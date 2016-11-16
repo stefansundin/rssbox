@@ -166,6 +166,8 @@ class String
       "<iframe width='640' height='360' src='#{url}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(?:www\.)?vimeo\.com/(?<id>\d+)} =~ self
       "<iframe width='853' height='480' src='https://player.vimeo.com/video/#{id}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+    elsif %r{^https?://(?:www\.)?instagram\.com/p/(?<id>[^/?#]+)} =~ self
+      "<iframe src='https://www.instagram.com/p/#{id}/embed/' width='612' height='710' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(?:www\.)?twitch\.tv/(?<channel_name>[^/]+)(?:/v/(?<vod_id>\d+))?.*(?:[?&#](?<t>t=[^&#]+))?} =~ self
       # https://www.twitch.tv/gamesdonequick
       # https://www.twitch.tv/gamesdonequick/v/76877760?t=20h38m50s

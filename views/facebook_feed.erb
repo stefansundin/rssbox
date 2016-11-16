@@ -11,12 +11,24 @@
   post["link"] = post["link"].resolve_url if post["link"]
   id = post["id"]
   id += ":#{post["live_status"]}" if post["live_status"]
+  /_(?<object_id>\d+)$/ =~ (post["parent_id"] || post["id"])
+
+  type = post["type"] || @type
+  if type[-1] == "s"
+    type = type[0..-2]
+  end
+
+  link = if @edge == "videos" or post["type"] == "video"
+    "https://www.facebook.com/video/embed?video_id=#{object_id}"
+  else
+    post["link"] || "https://www.facebook.com/#{post["id"]}"
+  end
 -%>
 
   <entry>
     <id>facebook:post:<%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%=
-if post["live_status"] == "LIVE" or post["story"][" is live now"]
+if (post["live_status"] and post["live_status"] != "VOD") or post["story"][" is live now"]
   "[LIVE] "
 elsif post["length"]
   "[#{post["length"].round.to_duration}] "
@@ -47,10 +59,10 @@ if prefix and suffix
 elsif suffix or prefix
   suffix || prefix
 else
-  (post["type"] || @type[0..-2]).camelize
+  type.camelize
 end
 %></title>
-    <link href="<%= post["link"].esc || "https://www.facebook.com/#{post["id"]}" %>" />
+    <link href="<%= link.esc %>" />
     <updated><%= Time.parse(post["updated_time"]) %></updated>
     <author><name><%= post["from"]["name"] %></name></author>
     <content type="html">
@@ -59,17 +71,17 @@ end
 <%= post["link"].embed_html(request).esc if post["link"] %>
 <%= post["embed_html"].esc if post["embed_html"] %>
 <%=
-if @type == "photos" and post["source"]
+if type == "photo" and post["source"]
   "<p><img src='#{post["source"]}'></p>".esc
 elsif @edge == "videos" and post["id"]
   <<-EOF.undent.esc
     <p><a href="https://www.facebook.com/video/embed?video_id=#{post["id"]}">Open embed</a></p>
     <p><a href="#{request.root_url}/facebook/download?url=#{post["id"]}">Download video</a></p>
   EOF
-elsif post["type"] == "photo"
+elsif type == "photo"
   <<-EOF.undent.esc
     <p><a href="#{post["full_picture"]}"><img src="#{post["picture"]}"></a></p>
-    <p><a href="#{request.root_url}/facebook/download?url=#{post["parent_id"] || post["id"]}">Full size</a></p>
+    <p><a href="#{request.root_url}/facebook/download?url=#{object_id}">Full size</a></p>
   EOF
 end
 %>
