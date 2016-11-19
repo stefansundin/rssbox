@@ -23,6 +23,7 @@
   #{video["description"].to_paragraphs}
 
   <p><a href="https://player.twitch.tv/?video=#{video["_id"]}">Open embed</a></p>
+  <p><a href="vlc://#{request.root_url}/twitch/watch?url=#{video["_id"]}">Open in VLC</a></p>
   <p><a href="#{request.root_url}/twitch/watch?url=#{video["_id"]}">Open in external program</a></p>
   <p><a href="#{request.root_url}/twitch/download?url=#{video["_id"]}">Download video</a></p>
 EOF

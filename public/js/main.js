@@ -49,6 +49,10 @@ $(document).ready(function() {
       btn = $(this);
       btn.attr("href", `${form.attr("action")}/${btn.attr("data-action")}?url=${q}`);
     });
+    form.find("[data-vlc]").each(function() {
+      btn = $(this);
+      btn.attr("href", `vlc://${form[0].action}/${btn.attr("data-vlc")}?url=${q}`);
+    });
     form.find("[data-irc]").each(function() {
       btn = $(this);
       btn.attr("href", `irc://${btn.attr("data-irc")}/${basename(q)}`);

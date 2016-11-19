@@ -1,6 +1,9 @@
 log=function(){};
 // log=console.log;
 
+var root_url = window.location.toString();
+root_url = root_url.substr(0, root_url.lastIndexOf("/live"));
+
 if (!localStorage.facebook) {
   localStorage.facebook = JSON.stringify({
     token: "",
@@ -147,6 +150,7 @@ function update_accounts() {
     ${a.display_name}
     <button type="button" class="btn btn-xs btn-danger pull-right" data-twitch-id="${a.id}">Remove</button>
     <a class="btn btn-xs btn-default pull-right" href="irc://irc.chat.twitch.tv:6667/${a.username}" target="_self">IRC</a>
+    <a class="btn btn-xs btn-default pull-right" href="vlc://${root_url}/twitch/watch?url=${a.username}" target="_self">VLC</a>
     <a class="btn btn-xs btn-default pull-right" href="https://www.twitch.tv/${a.username}">Open</a>
   </div>
   <div class="panel-body">
