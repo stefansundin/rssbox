@@ -10,6 +10,14 @@ function fmt_filesize(bytes, digits=1) {
   return `${size} ${units[i]}`;
 }
 
+function toObject(arr) {
+  var obj = {};
+  arr.forEach(function(e) {
+    obj[e[0]] = e[1];
+  });
+  return obj;
+}
+
 $(document).ready(function() {
   window.dirty = 0;
   $(window).on("beforeunload", function(event) {
@@ -177,4 +185,9 @@ $(document).ready(function() {
     xhr.setRequestHeader("Accept", "application/json");
     xhr.send();
   });
+
+  var params = toObject(window.location.search.substr(1).split("&").map(function(arg){ return arg.split("="); }));
+  if (params.q) {
+    $('input[type="search"]').val(params.q);
+  }
 });
