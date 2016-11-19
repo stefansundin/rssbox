@@ -814,6 +814,47 @@ get "/twitch/download" do
   "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
 end
 
+get "/twitch/watch" do
+  content_type :text
+  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /^v?(?<vod_id>\d+)$/ =~ params[:url]
+    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+  elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
+    # https://www.twitch.tv/trevperson
+  else
+    channel_name = params[:url]
+  end
+
+  if vod_id
+    response = TwitchParty.get("/kraken/videos/v#{vod_id}")
+    return "Video does not exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+
+    response = TwitchParty.get("/api/vods/#{vod_id}/access_token")
+    raise TwitchError.new(response) if !response.success?
+    data = response.parsed_response
+    playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
+
+    response = HTTParty.get(playlist_url, type: :plain)
+    streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
+  elsif channel_name
+    response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
+    return "Channel does not seem to exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+
+    data = response.parsed_response
+    playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{channel_name}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
+
+    response = HTTParty.get(playlist_url)
+    return "Channel does not seem to be online." if response.code == 404
+    streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
+  end
+  if request.user_agent["Mozilla/"]
+    "Open this url in VLC and it will automatically open the top stream:\n\n#{streams.join("\n")}"
+  else
+    redirect streams[0]
+  end
+end
+
 get %r{/twitch/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
   @username = username

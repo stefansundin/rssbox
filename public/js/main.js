@@ -39,6 +39,11 @@ $(document).ready(function() {
       }
       btn.attr("href", url);
     });
+    form.find("[data-action]").each(function() {
+      btn = $(this);
+      url = `${form.attr("action")}/${btn.attr("data-action")}?url=${q}`;
+      btn.attr("href", url);
+    });
   });
 
   $("[data-submit-type]").click(function() {
