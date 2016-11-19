@@ -2,8 +2,7 @@ $setup_env = <<SCRIPT
 # To unset variables when restarting, set them to an empty string
 export RBENV_ROOT=/home/vagrant/.rbenv
 export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
-export RACK_ENV=production
-export RAILS_ENV=production
+export RACK_ENV=deployment
 export LOG_ENABLED=1
 
 export REDIS_URL=redis://localhost:6379/3
@@ -148,8 +147,8 @@ else
   git clone https://github.com/rkh/rbenv-update.git $RBENV_ROOT/plugins/rbenv-update
 fi
 
-rbenv install 2.3.0
-rbenv global 2.3.0
+rbenv install 2.3.2
+rbenv global 2.3.2
 
 gem install bundler
 

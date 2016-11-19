@@ -8,7 +8,7 @@
   "addons": ["heroku-redis"],
   "keywords": ["rss"],
   "env": {
-    "RACK_ENV": "production",
+    "RACK_ENV": "deployment",
     "TWITTER_ACCESS_TOKEN": {
       "description": "(Optional) Your Twitter access token. Read the README.md to learn how to generate this from the consumer key and consumer secret.",
       "required": false

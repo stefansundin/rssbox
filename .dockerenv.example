@@ -1,4 +1,4 @@
-RACK_ENV=production
+RACK_ENV=deployment
 
 REDIS_URL=redis://redis:6379
 
