@@ -75,9 +75,10 @@ function update_accounts() {
   $("#facebook_accounts").empty();
   facebook.accounts.forEach(function(a) {
     var panel = $(`
-<div class="panel panel-default">
+<div class="panel panel-default" data-facebook-id="${a.id}">
   <div class="panel-heading">
     ${a.username} (${a.id})
+    <span class="label label-success hidden" data-live-label>live now</span>
     <button type="button" class="btn btn-xs btn-danger pull-right" data-facebook-id="${a.id}">Remove</button>
     <a class="btn btn-xs btn-default pull-right" href="https://www.facebook.com/${a.id}/videos">Open</a>
   </div>
@@ -113,6 +114,7 @@ function update_accounts() {
 <div class="panel panel-default" data-youtube-id="${a.id}">
   <div class="panel-heading">
     ${a.username} (${a.id})
+    <span class="label label-success hidden" data-live-label>live now</span>
     <button type="button" class="btn btn-xs btn-danger pull-right" data-youtube-id="${a.id}">Remove</button>
     <a class="btn btn-xs btn-default pull-right" href="https://www.youtube.com/channel/${a.id}/live">Open</a>
   </div>
@@ -148,6 +150,7 @@ function update_accounts() {
 <div class="panel panel-default" data-twitch-id="${a.id}">
   <div class="panel-heading">
     ${a.display_name}
+    <span class="label label-success hidden" data-live-label>live now</span>
     <button type="button" class="btn btn-xs btn-danger pull-right" data-twitch-id="${a.id}">Remove</button>
     <a class="btn btn-xs btn-default pull-right" href="irc://irc.chat.twitch.tv:6667/${a.username}" target="_self">IRC</a>
     <a class="btn btn-xs btn-default pull-right" href="vlc://${root_url}/twitch/watch?url=${a.username}" target="_self">VLC</a>
@@ -203,9 +206,9 @@ function poll() {
           return;
         }
         var data = JSON.parse(r.body).data;
-        var live_videos = data.filter(function(v){ return v.live_status }).slice(0, 3);
-        log("facebook", a.username, new Date, live_videos);
-        live_videos.reverse().forEach(function(v) {
+        var videos = data.filter(function(v){ return v.live_status }).slice(0, 3);
+        log("facebook", a.username, new Date, videos);
+        videos.reverse().forEach(function(v) {
           var tbody = $(`tbody[data-facebook-id="${a.id}"]`);
           var tr_id = `${v.live_status}-${v.id}`;
           if (tbody.find(`#${tr_id}`).length > 0) {
@@ -235,6 +238,12 @@ function poll() {
             });
           }
         });
+        if (videos.some(function(v) { return v.live_status == "LIVE" })) {
+          $(`div[data-facebook-id="${a.id}"] [data-live-label]`).removeClass("hidden");
+        }
+        else {
+          $(`div[data-facebook-id="${a.id}"] [data-live-label]`).addClass("hidden");
+        }
       });
       $("time.timeago").timeago();
     });
@@ -303,6 +312,12 @@ function poll() {
             tr[0].scrollIntoView();
           });
         });
+        if (this.response.items.some(function(v) { return v.liveStreamingDetails && v.liveStreamingDetails.actualStartTime })) {
+          $(`div[data-youtube-id="${a.id}"] [data-live-label]`).removeClass("hidden");
+        }
+        else {
+          $(`div[data-youtube-id="${a.id}"] [data-live-label]`).addClass("hidden");
+        }
         $("time.timeago").timeago();
       });
       xhr2.send();
@@ -318,10 +333,10 @@ function poll() {
     xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
     xhr.setRequestHeader("Client-ID", twitch.client_id);
     xhr.addEventListener("load", function() {
-      var live_videos = this.response.videos.slice(0, 3);
-      log("twitch", a.username, new Date, live_videos);
+      var videos = this.response.videos.slice(0, 3);
+      log("twitch", a.username, new Date, videos);
       var tbody = $(`tbody[data-twitch-id="${a.id}"]`);
-      live_videos.reverse().forEach(function(v) {
+      videos.reverse().forEach(function(v) {
         var tr_id = `twitch-${v.status}-${v._id}`;
         if (tbody.find(`#${tr_id}`).length > 0) {
           return;
@@ -355,6 +370,12 @@ function poll() {
           });
         }
       });
+      if (videos.some(function(v) { return v.status == "recording" })) {
+        $(`div[data-twitch-id="${a.id}"] [data-live-label]`).removeClass("hidden");
+      }
+      else {
+        $(`div[data-twitch-id="${a.id}"] [data-live-label]`).addClass("hidden");
+      }
       $("time.timeago").timeago();
     });
     xhr.send();
