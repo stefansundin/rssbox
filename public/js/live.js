@@ -174,13 +174,13 @@ function update_accounts() {
 }
 
 function poll() {
-  var progress = $("#progress")[0];
-  progress.style.transition = "";
-  progress.style.width = "0";
-  setTimeout(function() {
-    progress.style.transition = "all 29500ms linear";
-    progress.style.width = "100%";
-  }, 300);
+  // var progress = $("#progress")[0];
+  // progress.style.transition = "";
+  // progress.style.width = "0";
+  // setTimeout(function() {
+  //   progress.style.transition = "all 29500ms linear";
+  //   progress.style.width = "100%";
+  // }, 300);
 
   var facebook = JSON.parse(localStorage.facebook);
   if (facebook.accounts.length > 0) {
