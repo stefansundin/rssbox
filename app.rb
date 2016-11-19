@@ -786,11 +786,15 @@ get "/twitch/download" do
     end
 
     response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
-    data = response.parsed_response
     return "Channel does not seem to exist." if response.code == 404
 
-    response = HTTParty.get("http://usher.ttvnw.net/api/channel/hls/#{channel_name}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true")
+    data = response.parsed_response
+    token_data = JSON.parse(data["token"])
+    playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
+
+    response = HTTParty.get(playlist_url)
     return "Channel does not seem to be online." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
     url = response.body.split("\n").find { |line| !line.start_with?("#") }
     fn = "#{Time.now.to_date} - #{channel_name} live.mp4".to_filename
   else
@@ -842,10 +846,12 @@ get "/twitch/watch" do
     raise TwitchError.new(response) if !response.success?
 
     data = response.parsed_response
-    playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{channel_name}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
+    token_data = JSON.parse(data["token"])
+    playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
     response = HTTParty.get(playlist_url)
     return "Channel does not seem to be online." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
   end
   if request.user_agent["Mozilla/"]
