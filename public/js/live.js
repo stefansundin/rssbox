@@ -1,3 +1,6 @@
+log=function(){};
+// log=console.log;
+
 if (!localStorage.facebook) {
   localStorage.facebook = JSON.stringify({
     token: "",
@@ -191,12 +194,12 @@ function poll() {
       this.response.forEach(function(r, i) {
         var a = facebook.accounts[i];
         if (r.code != 200) {
-          console.log(r);
+          log(r);
           return;
         }
         var data = JSON.parse(r.body).data;
         var live_videos = data.filter(function(v){ return v.live_status }).slice(0, 3);
-        console.log("facebook", a.username, new Date, live_videos);
+        log("facebook", a.username, new Date, live_videos);
         live_videos.reverse().forEach(function(v) {
           var tbody = $(`tbody[data-facebook-id="${a.id}"]`);
           var tr_id = `${v.live_status}-${v.id}`;
@@ -252,7 +255,7 @@ function poll() {
       xhr2.responseType = "json";
       xhr2.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${ids.join(",")}&key=${youtube.key}`);
       xhr2.addEventListener("load", function() {
-        console.log("youtube", a.username, new Date, this.response.items);
+        log("youtube", a.username, new Date, this.response.items);
         var tbody = $(`tbody[data-youtube-id="${a.id}"]`);
         this.response.items.reverse().forEach(function(v) {
           var live_status, live_text, notification_text;
@@ -311,7 +314,7 @@ function poll() {
     xhr.setRequestHeader("Client-ID", twitch.client_id);
     xhr.addEventListener("load", function() {
       var live_videos = this.response.videos.slice(0, 3);
-      console.log("twitch", a.username, new Date, live_videos);
+      log("twitch", a.username, new Date, live_videos);
       var tbody = $(`tbody[data-twitch-id="${a.id}"]`);
       live_videos.reverse().forEach(function(v) {
         var tr_id = `twitch-${v.status}-${v._id}`;
@@ -607,7 +610,7 @@ $(document).ready(function() {
     $('input[type="search"]').val(args.q);
   }
 
-  console.log(`Notification permissions: ${Notification.permission}`);
+  log(`Notification permissions: ${Notification.permission}`);
   if (Notification.permission !== "granted") {
     Notification.requestPermission();
   }
