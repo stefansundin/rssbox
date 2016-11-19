@@ -31,29 +31,31 @@
       <label><input type="checkbox" id="mute_notifications"> Mute notifications</label>
     </div>
 
-    <form class="input-group" id="facebook_form">
-      <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
-      <input class="form-control" type="search" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
-      <span class="input-group-btn">
-        <button class="btn btn-primary" type="submit">Add</button>
-      </span>
-    </form>
+    <div id="submit_section">
+      <form class="input-group" id="facebook_form">
+        <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
+        <input class="form-control" type="search" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="submit">Add</button>
+        </span>
+      </form>
 
-    <form class="input-group" id="youtube_form">
-      <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
-      <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
-      <span class="input-group-btn">
-        <button class="btn btn-primary" type="submit">Add</button>
-      </span>
-    </form>
+      <form class="input-group" id="youtube_form">
+        <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
+        <input class="form-control" type="search" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="submit">Add</button>
+        </span>
+      </form>
 
-    <form class="input-group" id="twitch_form">
-      <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
-      <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
-      <span class="input-group-btn">
-        <button class="btn btn-primary" type="submit">Add</button>
-      </span>
-    </form>
+      <form class="input-group" id="twitch_form">
+        <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
+        <input class="form-control" type="search" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
+        <span class="input-group-btn">
+          <button class="btn btn-primary" type="submit">Add</button>
+        </span>
+      </form>
+    </div>
 
     <p>Polled <span id="counter">0</span> times (last updated at <span id="last_updated">N/A</span>).</p>
 

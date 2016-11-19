@@ -605,9 +605,9 @@ $(document).ready(function() {
   setInterval(poll, 30000);
   poll();
 
-  var args = toObject(window.location.search.substr(1).split("&").map(function(arg){ return arg.split("="); }));
-  if (args.q) {
-    $('input[type="search"]').val(args.q);
+  var params = toObject(window.location.search.substr(1).split("&").map(function(arg){ return arg.split("="); }));
+  if (params.q) {
+    $('#submit_section input[type="search"]').val(params.q);
   }
 
   log(`Notification permissions: ${Notification.permission}`);
