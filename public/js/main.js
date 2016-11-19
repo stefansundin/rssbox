@@ -18,6 +18,12 @@ function toObject(arr) {
   return obj;
 }
 
+function basename(url) {
+  url = url.substr(0, url.indexOf("?")) || url;
+  url = url.substr(0, url.indexOf("#")) || url;
+  return url.substr(url.lastIndexOf("/")+1);
+}
+
 $(document).ready(function() {
   window.dirty = 0;
   $(window).on("beforeunload", function(event) {
@@ -41,8 +47,11 @@ $(document).ready(function() {
     });
     form.find("[data-action]").each(function() {
       btn = $(this);
-      url = `${form.attr("action")}/${btn.attr("data-action")}?url=${q}`;
-      btn.attr("href", url);
+      btn.attr("href", `${form.attr("action")}/${btn.attr("data-action")}?url=${q}`);
+    });
+    form.find("[data-irc]").each(function() {
+      btn = $(this);
+      btn.attr("href", `irc://${btn.attr("data-irc")}/${basename(q)}`);
     });
   });
 

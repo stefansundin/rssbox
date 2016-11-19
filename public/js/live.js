@@ -146,6 +146,7 @@ function update_accounts() {
   <div class="panel-heading">
     ${a.display_name}
     <button type="button" class="btn btn-xs btn-danger pull-right" data-twitch-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-default pull-right" href="irc://irc.chat.twitch.tv:6667/${a.username}" target="_self">IRC</a>
     <a class="btn btn-xs btn-default pull-right" href="https://www.twitch.tv/${a.username}">Open</a>
   </div>
   <div class="panel-body">
