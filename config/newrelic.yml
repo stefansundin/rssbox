@@ -149,3 +149,7 @@ test:
 production:
   <<: *default_settings
   monitor_mode: true
+
+deployment:
+  <<: *default_settings
+  monitor_mode: true
