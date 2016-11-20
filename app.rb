@@ -166,7 +166,7 @@ get "/youtube/:channel_id/:username" do
   @username = params[:username]
   @tz = params[:tz]
 
-  query = { part: "snippet", type: "video", order: "date", channelId: params[:channel_id], maxResults: 50 }
+  query = { part: "id", type: "video", order: "date", channelId: params[:channel_id], maxResults: 50 }
   if params[:q]
     query[:q] = params[:q]
     @title = "\"#{params[:q]}\" from #{@username}"
@@ -174,27 +174,22 @@ get "/youtube/:channel_id/:username" do
     @title = "#{@username} on YouTube"
   end
 
-  if params[:eventType]
-    @data = params[:eventType].split(",").map do |eventType|
+  ids = if params[:eventType]
+    params[:eventType].split(",").map do |eventType|
       query[:eventType] = eventType
       response = GoogleParty.get("/youtube/v3/search", query: query)
+      raise GoogleError.new(response) if !response.success?
       response.parsed_response["items"]
     end.flatten.uniq { |v| v["id"]["videoId"] }.sort_by { |v| v["snippet"]["publishedAt"] }.reverse
   else
     response = GoogleParty.get("/youtube/v3/search", query: query)
-    @data = response.parsed_response["items"]
-  end
+    raise GoogleError.new(response) if !response.success?
+    response.parsed_response["items"]
+  end.map { |v| v["id"]["videoId"] }
 
-  ids = @data.select { |v| %w[upcoming live].include?(v["snippet"]["liveBroadcastContent"]) }.map { |v| v["id"]["videoId"] }
-  if ids.any?
-    request = GoogleParty.get("/youtube/v3/videos", query: { part: "liveStreamingDetails", id: ids.join(",") })
-    if request.success?
-      request.parsed_response["items"].each do |data|
-        i = @data.find_index { |v| v["id"]["videoId"] == data["id"] }
-        @data[i]["liveStreamingDetails"] = data["liveStreamingDetails"]
-      end
-    end
-  end
+  response = GoogleParty.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails", id: ids.join(",") })
+  raise GoogleError.new(response) if !response.success?
+  @data = response.parsed_response["items"]
 
   content_type :atom
   erb :youtube_feed
