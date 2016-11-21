@@ -847,6 +847,7 @@ get "/twitch/watch" do
     streams = [playlist_url]
   end
   if request.user_agent["Mozilla/"]
+    redirect "vlc://#{streams[0]}" if params.has_key?("open")
     "Open this url in VLC and it will automatically open the top stream:\n\n#{streams.join("\n")}"
   else
     redirect streams[0]
