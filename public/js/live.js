@@ -234,7 +234,7 @@ function poll() {
               notification.close();
               window.focus();
               tr.addClass("success");
-              tr[0].scrollIntoView();
+              tbody.parents("div.panel")[0].scrollIntoView();
             });
           }
         });
@@ -309,7 +309,7 @@ function poll() {
             notification.close();
             window.focus();
             tr.addClass("success");
-            tr[0].scrollIntoView();
+            tbody.parents("div.panel")[0].scrollIntoView();
           });
         });
         if (this.response.items.some(function(v) { return v.liveStreamingDetails && v.liveStreamingDetails.actualStartTime })) {
@@ -366,7 +366,7 @@ function poll() {
             notification.close();
             window.focus();
             tr.addClass("success");
-            tr[0].scrollIntoView();
+            tbody.parents("div.panel")[0].scrollIntoView();
           });
         }
       });
