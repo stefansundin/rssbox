@@ -64,7 +64,7 @@ GEM
       pry (~> 0.9)
       slop (~> 3.0)
     public_suffix (2.0.4)
-    puma (3.6.1)
+    puma (3.6.2)
     rack (1.6.5)
     rack-protection (1.5.3)
       rack
