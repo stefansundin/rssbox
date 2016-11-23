@@ -197,7 +197,7 @@ function poll() {
   if (facebook.accounts.length > 0) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("POST", "https://graph.facebook.com/v2.7");
+    xhr.open("POST", "https://graph.facebook.com/v2.8");
     xhr.addEventListener("load", function() {
       this.response.forEach(function(r, i) {
         var a = facebook.accounts[i];
@@ -404,7 +404,7 @@ $(document).ready(function() {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://graph.facebook.com/v2.7/${q}?fields=username&access_token=${facebook.token}`);
+    xhr.open("GET", `https://graph.facebook.com/v2.8/${q}?fields=username&access_token=${facebook.token}`);
     xhr.addEventListener("load", function() {
       var data = this.response;
       if (this.response.error) {
@@ -509,7 +509,7 @@ $(document).ready(function() {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://graph.facebook.com/v2.7/debug_token?input_token=${token}&access_token=${token}`);
+    xhr.open("GET", `https://graph.facebook.com/v2.8/debug_token?input_token=${token}&access_token=${token}`);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
         form.addClass("has-error");
