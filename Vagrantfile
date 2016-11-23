@@ -147,8 +147,9 @@ else
   git clone https://github.com/rkh/rbenv-update.git $RBENV_ROOT/plugins/rbenv-update
 fi
 
-rbenv install 2.3.2
-rbenv global 2.3.2
+export RUBY_VERSION=$(cat /vagrant/.ruby-version)
+rbenv install $RUBY_VERSION
+rbenv global $RUBY_VERSION
 
 gem install bundler
 
