@@ -11,7 +11,7 @@
   post["link"] = post["link"].resolve_url if post["link"]
   id = post["id"]
   id += ":#{post["live_status"]}" if post["live_status"]
-  /_(?<object_id>\d+)$/ =~ (post["parent_id"] || post["id"])
+  /(^|_)(?<object_id>\d+)$/ =~ (post["parent_id"] || post["id"])
 
   type = post["type"] || @type
   if type[-1] == "s"
