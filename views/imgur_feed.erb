@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>imgur:<%= @user_id %></id>
-  <title><%= @username %> on Imgur</title>
+  <id>imgur:<%= @user_id || "r:#{@subreddit}" %></id>
+  <title><%= @username || "r/#{@subreddit}" %> on Imgur</title>
   <icon>https://s.imgur.com/images/favicon-96x96.png</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
-  <link href="https://imgur.com/user/<%= @username %>" rel="alternate" />
+  <link href="https://imgur.com/<%= @username ? "user/#{@username}" : "r/#{@subreddit}" %>" rel="alternate" />
   <updated><%= Time.at(@data[0]["datetime"].to_i) if @data[0] %></updated>
 <%-
 @data.each do |image|

@@ -980,10 +980,11 @@ get "/imgur" do
     # https://imgur.com/user/thebookofgray
   elsif /imgur\.com\/a\/(?<album_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/a/IwyIm
-  elsif /imgur\.com\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q] or /(?:reddit\.com)?\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
+  elsif /(?:(?:imgur|reddit)\.com)?\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
-    redirect "https://imgur.com/r/#{subreddit}/rss"
+    redirect "/imgur/r/#{subreddit}"
+    return
   elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] and username != "i"
     # https://thebookofgray.imgur.com/
   elsif /imgur\.com\/(gallery\/)?(?<image_id>[a-zA-Z0-9]+)/ =~ params[:q]
@@ -1017,6 +1018,17 @@ get "/imgur" do
   else
     redirect "/imgur/#{user_id}/#{username}"
   end
+end
+
+get "/imgur/r/:subreddit" do
+  @subreddit = params[:subreddit]
+
+  response = ImgurParty.get("/gallery/r/#{@subreddit}")
+  raise ImgurError.new(response) if !response.success?
+  @data = response.parsed_response["data"]
+
+  content_type :atom
+  erb :imgur_feed
 end
 
 get "/imgur/:user_id/:username" do
