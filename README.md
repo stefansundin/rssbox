@@ -1,4 +1,8 @@
-# RSS Box [![Code Climate](https://codeclimate.com/github/stefansundin/rssbox/badges/gpa.svg)](https://codeclimate.com/github/stefansundin/rssbox)
+# RSS Box
+
+This app uses the API of other websites and gives you an RSS feed in return. Quick and simple.
+
+To open vlc:// links, see [vlc-protocol](https://github.com/stefansundin/vlc-protocol).
 
 You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.com/).
 

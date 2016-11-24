@@ -204,7 +204,7 @@ get "/googleplus" do
   elsif /plus\.google\.com\/(u\/\d+\/)?(?<user>\d+)/ =~ params[:q]
     # https://plus.google.com/112161921284629501085
   else
-    # it's probably a user name
+    # it's probably a username
     user = params[:q]
     user = "+#{user}" if user[0] != "+" and !user.numeric?
   end
@@ -848,7 +848,7 @@ get "/twitch/watch" do
   end
   if request.user_agent["Mozilla/"]
     redirect "vlc://#{streams[0]}" if params.has_key?("open")
-    "Open this url in VLC and it will automatically open the top stream:\n\n#{streams.join("\n")}"
+    "Open this url in VLC and it will automatically open the top stream.\nTo open vlc:// links, see: https://github.com/stefansundin/vlc-protocol\n\n#{streams.join("\n")}"
   else
     redirect streams[0]
   end
@@ -936,7 +936,7 @@ get "/dailymotion" do
     # http://www.dailymotion.com/user/GeneralGrin/1
     # http://www.dailymotion.com/GeneralGrin
   else
-    # it's probably a user name
+    # it's probably a username
     user = params[:q]
   end
 

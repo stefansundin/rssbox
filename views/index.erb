@@ -202,7 +202,7 @@
 <% if ENV["IMGUR_CLIENT_ID"] %>
     <form class="input-group" method="get" action="imgur">
       <div class="input-group-addon"><label for="imgur_q">Imgur</label></div>
-      <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur user name or a url. Or subreddit url." required>
+      <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur username or a url. Or subreddit url." required>
       <span class="input-group-btn">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
@@ -223,6 +223,7 @@
       <li>YouTube lets you subscribe to a channel's recent videos, but it is difficult to find the url. Playlists also work.</li>
       <li>Vimeo also has RSS feeds, but are easier to find than YouTube's feeds.</li>
       <li>You can download Facebook videos, Vine videos and SoundCloud tracks, just paste the url and use the dropdown.</li>
+      <li>To open <tt>vlc://</tt> links, see <a href="https://github.com/stefansundin/vlc-protocol">vlc-protocol</a>.</li>
     </ul>
 
     <p><a href="https://github.com/stefansundin/rssbox">This app is free software.</a></p>
