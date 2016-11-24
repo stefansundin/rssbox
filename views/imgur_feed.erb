@@ -12,8 +12,9 @@
     id = "imgur:album:#{image["id"]}"
     title = "Album: #{image["title"]} (#{image["images_count"]} images)"
     link = "https://imgur.com/a/#{image["id"]}"
+    img_src = "https://i.imgur.com/#{image["cover"]}h.jpg"
     body = <<-EOF.undent.esc
-      <a href="#{link}"><img src="https://i.imgur.com/#{image["cover"]}h.jpg"></a>
+      <a href="#{link}"><img src="#{img_src}"></a>
 
       #{image["description"].to_paragraphs}
       <p><a href="http://s.imgur.com/a/#{image["id"]}/zip">Download album</a></p>
@@ -23,8 +24,9 @@
     title = "#{image["title"]} [#{image["width"]}x#{image["height"]}]"
     link = "https://imgur.com/#{image["id"]}"
     ext = image["type"].split("/")[1]
+    img_src = "https://i.imgur.com/#{image["id"]}h.#{ext}"
     body = <<-EOF.undent.esc
-      <a href="#{link}.#{ext}"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}"></a>
+      <a href="#{link}.#{ext}"><img src="#{img_src}"></a>
 
       #{image["description"].to_paragraphs}
       <p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}">Download</a></p>
@@ -37,6 +39,7 @@
     <id><%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= title.to_line.esc %></title>
     <link href="<%= link.esc %>" />
+    <link href="<%= img_src.esc %>" rel="enclosure" />
     <updated><%= Time.at(image["datetime"].to_i) %></updated>
     <author><name><%= @username %></name></author>
     <content type="html">
