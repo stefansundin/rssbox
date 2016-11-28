@@ -768,7 +768,7 @@ get "/twitch" do
   raise TwitchError.new(response) if !response.success?
   data = response.parsed_response
 
-  redirect "/twitch/#{data["_id"]}/#{data["name"]}"
+  redirect "/twitch/#{data["_id"]}/#{data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
 get "/twitch/download" do
@@ -858,12 +858,17 @@ get %r{/twitch/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @id = id
   @username = username
 
-  response = TwitchParty.get("/kraken/channels/#{username}/videos", query: { broadcast_type: "all" })
+  type = %w[all highlight archive].pick(params[:type]) || "all"
+  response = TwitchParty.get("/kraken/channels/#{username}/videos", query: { broadcast_type: type })
   raise TwitchError.new(response) if !response.success?
 
   @data = response.parsed_response["videos"].select { |video| video["status"] != "recording" }
   @username = @data[0]["channel"]["name"] rescue username
   @user = @data[0]["channel"]["display_name"] rescue username
+
+  @title = @user
+  @title += "'s highlights" if type == "highlight"
+  @title += " on Twitch"
 
   content_type :atom
   erb :twitch_feed

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>twitch:<%= @id %></id>
-  <title><%= @user %> on Twitch</title>
+  <title><%= @title %></title>
   <icon>https://www.twitch.tv/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.twitch.tv/<%= @username %>" rel="alternate" />
