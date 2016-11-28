@@ -980,7 +980,7 @@ get "/imgur" do
     # https://imgur.com/user/thebookofgray
   elsif /imgur\.com\/a\/(?<album_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/a/IwyIm
-  elsif /(?:(?:imgur|reddit)\.com)?\/r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
+  elsif /(?:(?:imgur|reddit)\.com)?\/?r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
     redirect "/imgur/r/#{subreddit}"
