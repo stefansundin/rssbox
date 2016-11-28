@@ -773,32 +773,16 @@ end
 
 get "/twitch/download" do
   content_type :text
-  if params[:type] == "live"
-    if /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
-      # https://www.twitch.tv/trevperson
-    else
-      channel_name = params[:url]
-    end
-
-    response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
-    return "Channel does not seem to exist." if response.code == 404
-
-    data = response.parsed_response
-    token_data = JSON.parse(data["token"])
-    playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
-
-    response = HTTParty.get(playlist_url)
-    return "Channel does not seem to be online." if response.code == 404
-    raise TwitchError.new(response) if !response.success?
-    url = response.body.split("\n").find { |line| !line.start_with?("#") }
-    fn = "#{Time.now.to_date} - #{channel_name} live.mp4".to_filename
+  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+    # https://player.twitch.tv/?video=v103620362
+  elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
+    # https://www.twitch.tv/trevperson
   else
-    if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /^v?(?<vod_id>\d+)$/ =~ params[:url]
-      # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
-    else
-      return "Please use an URL to a video."
-    end
+    channel_name = params[:url]
+  end
 
+  if vod_id
     response = TwitchParty.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
@@ -807,16 +791,28 @@ get "/twitch/download" do
     response = TwitchParty.get("/api/vods/#{vod_id}/access_token")
     raise TwitchError.new(response) if !response.success?
     vod_data = response.parsed_response
+
     url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
     fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
+  elsif channel_name
+    response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
+    return "Channel does not seem to exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+
+    data = response.parsed_response
+    token_data = JSON.parse(data["token"])
+
+    url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
+    fn = "#{Time.now.to_date} - #{channel_name} live.mp4".to_filename
   end
   "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
 end
 
 get "/twitch/watch" do
   content_type :text
-  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /^v?(?<vod_id>\d+)$/ =~ params[:url]
+  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+    # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
