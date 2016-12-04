@@ -20,7 +20,7 @@
     <title><%= title.to_line.esc %></title>
     <link href="<%= post["permalinkUrl"].esc %>" />
     <updated><%= Time.parse(post["created"]) %></updated>
-    <author><name><%= post["username"] %></name></author>
+    <author><name><%= post["username"].esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
   <iframe width="600" height="600" scrolling="no" frameborder="no" src="#{post["permalinkUrl"]}/embed/simple" allowfullscreen></iframe>

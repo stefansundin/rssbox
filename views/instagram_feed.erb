@@ -24,7 +24,7 @@
     <title><%= "Video: " if post["is_video"] %><%= post["caption"].to_line.esc rescue "No title" %></title>
     <link href="https://www.instagram.com/p/<%= post["code"] %>/" />
     <updated><%= Time.at(post["date"]) %></updated>
-    <author><name><%= @data["full_name"] %></name></author>
+    <author><name><%= @data["full_name"].esc %></name></author>
     <content type="html">
 <%=
 if post["is_video"]

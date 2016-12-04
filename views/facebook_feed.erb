@@ -64,7 +64,7 @@ end
 %></title>
     <link href="<%= link.esc %>" />
     <updated><%= Time.parse(post["updated_time"]) %></updated>
-    <author><name><%= post["from"]["name"] %></name></author>
+    <author><name><%= post["from"]["name"].esc %></name></author>
     <content type="html">
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
 <%= (post["message"] || post["description"]).linkify.to_paragraphs.esc %>

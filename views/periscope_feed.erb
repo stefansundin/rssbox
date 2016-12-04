@@ -13,7 +13,7 @@
     <title><%= post["status"].to_line.esc %></title>
     <link href="https://www.periscope.tv/<%= "#{post["username"]}/#{post["id"]}" %>" />
     <updated><%= Time.parse(post["created_at"]) %></updated>
-    <author><name><%= post["user_display_name"] %></name></author>
+    <author><name><%= post["user_display_name"].esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
   <p><em>Live in #{post["city"]}.</em></p>

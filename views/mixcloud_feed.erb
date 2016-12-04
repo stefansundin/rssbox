@@ -13,7 +13,7 @@
     <title>[<%= track["audio_length"].to_duration %>] <%= track["name"].to_line.esc %></title>
     <link href="<%= track["url"].esc %>" />
     <updated><%= Time.parse(track["created_time"]) %></updated>
-    <author><name><%= track["user"]["username"] %></name></author>
+    <author><name><%= track["user"]["username"].esc %></name></author>
     <content type="html">
 <%=
 <<-EOF.undent.esc

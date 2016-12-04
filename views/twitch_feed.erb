@@ -13,7 +13,7 @@
     <title><%= "* " if video["broadcast_type"] == "highlight" %>[<%= video["length"].to_i.to_duration %>] <%= video["title"].to_line.esc %></title>
     <link href="<%= "https://www.twitch.tv/#{video["channel"]["name"]}/v/#{video["_id"][1..-1]}" %>" />
     <updated><%= Time.parse(video["created_at"]) %></updated>
-    <author><name><%= video["channel"]["display_name"] %></name></author>
+    <author><name><%= video["channel"]["display_name"].esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
   <p><em>#{video["channel"]["display_name"]} was #{video["game"] ? "playing #{video["game"]}" : "live"}.</em></p>

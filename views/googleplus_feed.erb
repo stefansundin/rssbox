@@ -13,7 +13,7 @@
     <title><%= post["title"].to_line.esc %></title>
     <link href="<%= post["url"].esc %>" />
     <updated><%= Time.parse(post["updated"]) %></updated>
-    <author><name><%= post["actor"]["displayName"] %></name></author>
+    <author><name><%= post["actor"]["displayName"].esc %></name></author>
     <content type="html">
 <%= post["object"]["content"].to_paragraphs(/<br[ \/]*>/).esc %>
 <%- if post["object"]["attachments"] -%>

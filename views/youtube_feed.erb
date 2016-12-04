@@ -31,7 +31,7 @@
     <title><%= title.esc %></title>
     <link href="https://www.youtube.com/watch?v=<%= video["id"] %>" />
     <updated><%= updated %></updated>
-    <author><name><%= @username %></name></author>
+    <author><name><%= @username.esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
   <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen></iframe>

@@ -13,7 +13,7 @@
     <title>[<%= video["length"].to_i.to_duration %>] <%= video["title"].to_line.esc %></title>
     <link href="<%= video["url"].esc %>" />
     <updated><%= Time.at(video["created_at"]) %></updated>
-    <author><name><%= video["owner"]["username"] %></name></author>
+    <author><name><%= video["owner"]["username"].esc %></name></author>
     <content type="html">
 &lt;iframe width="480" height="270" scrolling="no" frameborder="no" src="https://www.ustream.tv/embed/recorded/<%= video["id"] %>?html5ui" allowfullscreen>&lt;/iframe>
 

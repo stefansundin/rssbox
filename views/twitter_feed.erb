@@ -52,7 +52,7 @@
     <title><%= title.to_line.esc %></title>
     <link href="https://twitter.com/<%= @username %>/status/<%= tweet["id_str"] %>" />
     <updated><%= Time.parse(tweet["created_at"]) %></updated>
-    <author><name><%= @username %></name></author>
+    <author><name><%= @username.esc %></name></author>
     <content type="html">
 <%= body.to_paragraphs.esc %>
     </content>

@@ -41,7 +41,7 @@
     <link href="<%= link.esc %>" />
     <link href="<%= img_src.esc %>" rel="enclosure" />
     <updated><%= Time.at(image["datetime"].to_i) %></updated>
-    <author><name><%= @username %></name></author>
+    <author><name><%= @username.esc %></name></author>
     <content type="html">
 <%= body -%>
     </content>
