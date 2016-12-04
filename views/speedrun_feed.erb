@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>speedrun:runs:<%= @id %></id>
+  <title><%= SpeedrunParty.resolve_id("game", @id) %> on Speedrun.com</title>
+  <icon>https://www.speedrun.com/favicon.ico</icon>
+  <link href="<%= request.original_url.esc %>" rel="self" />
+  <link href="https://www.speedrun.com/<%= @abbr %>" rel="alternate" />
+  <updated><%= @data[0]["submitted"] || Time.parse(@data[0]["date"]) if @data[0] %></updated>
+<%-
+@data.each do |run|
+  players = run["players"].map { |player| player["name"] || SpeedrunParty.resolve_id("user", player["id"]) }.join(", ")
+  videos = if run["videos"]
+    run["videos"]["links"].map { |link| link["uri"] }.join("\n").embed_html(request)
+  else
+    "No video"
+  end
+  category = SpeedrunParty.resolve_id("category", run["category"])
+  category_link = SpeedrunParty.resolve_id("category_link", run["category"])
+  platform = SpeedrunParty.resolve_id("platform", run["system"]["platform"])
+  platform += " (#{SpeedrunParty.resolve_id("region", run["system"]["region"])})" if run["system"]["region"]
+-%>
+
+  <entry>
+    <id>speedrun:run:<%= run["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title>[<%= run["times"]["primary_t"].round.to_duration %>] <%= players.esc %> - <%= category %><%= " [emu]" if run["system"]["emulated"] %></title>
+    <link href="<%= "https://www.speedrun.com/run/#{run["id"]}" %>" />
+    <updated><%= run["submitted"] || Time.parse(run["date"]) %></updated>
+    <author><name><%= players.esc %></name></author>
+    <content type="html">
+<%= <<-EOF.undent.esc
+  #{videos}
+
+  #{run["comment"].to_paragraphs}
+
+  <p>Category: <a href="https://www.speedrun.com/#{@abbr}##{category_link}">#{category}</a></p>
+  <p>Platform: #{platform}</p>
+EOF
+-%>
+    </content>
+  </entry>
+<%- end -%>
+</feed>

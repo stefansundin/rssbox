@@ -870,6 +870,35 @@ get %r{/twitch/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   erb :twitch_feed
 end
 
+get "/speedrun" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if /speedrun\.com\/(?<abbr>[^\/?#]+)/ =~ params[:q]
+    # https://www.speedrun.com/alttp#No_Major_Glitches
+  else
+    abbr = params[:q]
+  end
+
+  response = SpeedrunParty.get("/games/#{abbr}")
+  return "Can't find a game with that name. Sorry." if response.code == 404
+  raise SpeedrunError.new(response) if !response.success?
+  data = response.parsed_response["data"]
+
+  redirect "/speedrun/#{data["id"]}/#{data["abbreviation"]}"
+end
+
+get "/speedrun/:id/:abbr" do |id, abbr|
+  @id = id
+  @abbr = abbr
+
+  response = SpeedrunParty.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id })
+  raise SpeedrunError.new(response) if !response.success?
+  @data = response.parsed_response["data"]
+
+  content_type :atom
+  erb :speedrun_feed
+end
+
 get "/ustream" do
   return "Insufficient parameters" if params[:q].empty?
 
