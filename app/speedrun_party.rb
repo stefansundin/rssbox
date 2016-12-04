@@ -5,9 +5,16 @@ class SpeedrunParty
   base_uri "https://www.speedrun.com/api/v1"
   format :json
 
+  @@cache = {}
+
   def self.resolve_id(type, id)
+    @@cache[type] ||= {}
+    return @@cache[type][id] if @@cache[type][id]
     value = $redis.hget("speedrun", "#{type}:#{id}")
-    return value if value
+    if value
+      @@cache[type][id] = value
+      return value
+    end
 
     value = if type == "game"
       response = SpeedrunParty.get("/games/#{id}")
@@ -36,6 +43,7 @@ class SpeedrunParty
     end
 
     $redis.hset("speedrun", "#{type}:#{id}", value)
+    @@cache[type][id] = value
     return value
   end
 end
