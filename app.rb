@@ -36,6 +36,8 @@ get "/go" do
     redirect "/mixcloud?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?twitch\.tv/ =~ params[:q]
     redirect "/twitch?#{params.to_querystring}"
+  elsif /^https?:\/\/(www\.)?speedrun\.com/ =~ params[:q]
+    redirect "/speedrun?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?ustream\.tv/ =~ params[:q]
     redirect "/ustream?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?dailymotion\.com/ =~ params[:q]
