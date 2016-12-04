@@ -8,7 +8,7 @@ class String
   end
 
   def to_paragraphs(split="\n")
-    self.split(split).reject { |line| line.ustrip == "" }.map { |line| "<p>#{line}</p>" }.join("\n")
+    self.split(split).reject { |line| line.ustrip == "" }.map { |line| "<p>#{line.strip}</p>" }.join("\n")
   end
 
   def to_filename
