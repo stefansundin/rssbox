@@ -151,8 +151,7 @@ class String
     if %r{^https?://www\.facebook\.com/.*/videos/(?<id>\d+)} =~ self
       <<-EOF.undent
         <iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
-        <p><a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a></p>
-        <p><a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a></p>
+        <p><a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a></p>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
@@ -175,10 +174,11 @@ class String
       url += "&video=v#{vod_id}" if vod_id
       url += "&time=#{t}" if t
       html = "<iframe width='853' height='480' src='#{url}' frameborder='0' scrolling='no' allowfullscreen></iframe>\n"
+      html += "<p><a href='#{url}'>Open embed</a> | "
       if vod_id
-        html += "<p><a href='#{request.root_url}/twitch/download?url=#{vod_id}'>Download video</a></p>"
+        html += "<a href='#{request.root_url}/twitch/download?url=#{vod_id}'>Download video</a></p>"
       else
-        html += "<p><a href='#{request.root_url}/twitch/download?url=#{channel_name}&type=live'>Download live stream</a></p>"
+        html += "<a href='#{request.root_url}/twitch/download?url=#{channel_name}'>Download live stream</a></p>"
       end
       html
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self
