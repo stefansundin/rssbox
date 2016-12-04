@@ -170,8 +170,8 @@ class String
     elsif %r{^https?://(?:www\.)?twitch\.tv/(?<channel_name>[^/]+)(?:/v/(?<vod_id>\d+))?.*(?:[?&#](?<t>t=[^&#]+))?} =~ self
       # https://www.twitch.tv/gamesdonequick
       # https://www.twitch.tv/gamesdonequick/v/76877760?t=20h38m50s
-      url = "https://player.twitch.tv/?channel=#{channel_name}"
-      url += "&video=v#{vod_id}" if vod_id
+      url = "https://player.twitch.tv/?"
+      url += vod_id ? "video=v#{vod_id}" : "channel=#{channel_name}"
       url += "&time=#{t}" if t
       html = "<iframe width='853' height='480' src='#{url}' frameborder='0' scrolling='no' allowfullscreen></iframe>\n"
       html += "<p><a href='#{url}'>Open embed</a> | "
