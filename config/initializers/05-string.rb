@@ -87,6 +87,7 @@ class String
                 ://www.linkedin.com/uas/login
                 ://www.theaustralian.com.au/remote/check_cookie.html
                 ://signin.aws.amazon.com/
+                ://accounts.google.com/ServiceLogin
               ].any? { |s| response["location"].include?(s) }
                 throw :done
               end
