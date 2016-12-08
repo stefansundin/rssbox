@@ -174,14 +174,10 @@ class String
       url = "https://player.twitch.tv/?"
       url += vod_id ? "video=v#{vod_id}" : "channel=#{channel_name}"
       url += "&time=#{t}" if t
-      html = "<iframe width='853' height='480' src='#{url}' frameborder='0' scrolling='no' allowfullscreen></iframe>\n"
-      html += "<p><a href='#{url}'>Open embed</a> | "
-      if vod_id
-        html += "<a href='#{request.root_url}/twitch/download?url=#{vod_id}'>Download video</a></p>"
-      else
-        html += "<a href='#{request.root_url}/twitch/download?url=#{channel_name}'>Download live stream</a></p>"
-      end
-      html
+      <<-EOF.undent
+        <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen></iframe>
+        <p><a href="#{url}">Open embed</a> | <a href="#{request.root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{request.root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a></p>
+      EOF
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self
       # https://soundcloud.com/infectedmushroom/liquid-smoke
       # https://soundcloud.com/infectedmushroom/sets/fields-of-grey-remixes
