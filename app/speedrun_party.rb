@@ -23,11 +23,11 @@ class SpeedrunParty
     elsif type == "category"
       response = SpeedrunParty.get("/categories/#{id}")
       raise SpeedrunError.new(response) if !response.success?
-      response.parsed_response["data"]["name"]
-    elsif type == "category_link"
-      response = SpeedrunParty.get("/categories/#{id}")
+      response.parsed_response["data"]["weblink"].partition("#")[2] + "|" + response.parsed_response["data"]["name"]
+    elsif type == "level"
+      response = SpeedrunParty.get("/levels/#{id}")
       raise SpeedrunError.new(response) if !response.success?
-      response.parsed_response["data"]["weblink"].partition("#")[2]
+      response.parsed_response["data"]["weblink"].split("/")[-1] + "|" + response.parsed_response["data"]["name"]
     elsif type == "user"
       response = SpeedrunParty.get("/users/#{id}")
       raise SpeedrunError.new(response) if !response.success?

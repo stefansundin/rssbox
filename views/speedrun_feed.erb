@@ -14,8 +14,15 @@
   else
     "No video"
   end
-  category = SpeedrunParty.resolve_id("category", run["category"])
-  category_link = SpeedrunParty.resolve_id("category_link", run["category"])
+  cat = SpeedrunParty.resolve_id("category", run["category"]).partition("|")
+  if run["level"]
+    level = SpeedrunParty.resolve_id("level", run["level"]).partition("|")
+    category_link = "https://www.speedrun.com/#{@abbr}/#{level[0]}"
+    category = "#{cat[2]}: #{level[2]}"
+  else
+    category_link = "https://www.speedrun.com/#{@abbr}##{cat[0]}"
+    category = cat[2]
+  end
   platform = SpeedrunParty.resolve_id("platform", run["system"]["platform"])
   platform += " (#{SpeedrunParty.resolve_id("region", run["system"]["region"])})" if run["system"]["region"]
 -%>
@@ -32,7 +39,7 @@
 
   #{run["comment"].to_paragraphs}
 
-  <p>Category: <a href="https://www.speedrun.com/#{@abbr}##{category_link}">#{category}</a></p>
+  <p>Category: <a href="#{category_link}">#{category}</a></p>
   <p>Platform: #{platform}</p>
 EOF
 -%>
