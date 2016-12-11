@@ -8,11 +8,6 @@ a {
 .container {
   padding: 0;
 }
-@media (min-width: 768px) {
-  .container {
-    max-width: 768px;
-  }
-}
 
 header {
   margin-top: 25px;
