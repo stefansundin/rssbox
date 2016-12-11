@@ -388,9 +388,14 @@ function poll() {
 $(document).ready(function() {
   $.timeago.settings.allowFuture = true;
   update_accounts();
-  $("#mute_notifications").attr("checked", JSON.parse(localStorage.mute_notifications));
+  $("#mute_notifications").prop("checked", JSON.parse(localStorage.mute_notifications));
   $("#mute_notifications").change(function() {
     localStorage.mute_notifications = JSON.stringify(this.checked);
+    if (this.checked) {
+      notifications.forEach(function(notification) {
+        notification.close();
+      });
+    }
   });
 
   $("#facebook_form").submit(function(e) {
