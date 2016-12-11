@@ -350,7 +350,7 @@ function poll() {
   <td>${to_duration(v.length)}</td>
   <td>${v.status}</td>
   <td><a href="${url}">${v.title}</a></td>
-  <td>${v.game}</td>
+  <td>${v.game || "N/A"}</td>
   <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ")}</time></td>
 </tr>`);
         tbody.prepend(tr);
@@ -358,7 +358,7 @@ function poll() {
           return;
         }
         if (v.status == "recording") {
-          var notification = notify(`${v.channel.display_name} is playing ${v.game}`, {
+          var notification = notify(`${v.channel.display_name} is ${v.game ? `playing ${v.game}` : "live on Twitch"}`, {
             body: `Started ${$.timeago(v.created_at)}.\n${v.title}`,
             icon: v.thumbnails[0].url,
           });
