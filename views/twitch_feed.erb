@@ -27,7 +27,7 @@
     <a href="#{request.root_url}/twitch/download?url=#{video["_id"]}">Download video</a>
   </p>
 
-  #{video["description"].to_paragraphs}
+  #{video["description"].linkify.to_paragraphs}
 EOF
 -%>
     </content>

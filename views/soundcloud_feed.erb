@@ -19,7 +19,7 @@
 
 <%= "<p><img src='#{track["artwork_url"]}'></p>".esc if track["artwork_url"] %>
 
-<%= track["description"].to_paragraphs.esc %>
+<%= track["description"].linkify.to_paragraphs.esc %>
 
 &lt;p>&lt;a href="<%= request.root_url %>/soundcloud/download?url=<%= track["permalink_url"] %>">Download track&lt;/a>&lt;/p>
     </content>
