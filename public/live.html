@@ -52,9 +52,38 @@
         <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
         <input class="form-control" type="search" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
         <span class="input-group-btn">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a data-toggle="modal" data-target="#twitch-import-modal">Import following</a></li>
+          </ul>
           <button class="btn btn-primary" type="submit">Add</button>
         </span>
       </form>
+
+      <div class="modal" id="twitch-import-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Import Twitch following</h4>
+            </div>
+            <div class="modal-body">
+              <form class="input-group">
+                <input class="form-control" type="search" placeholder="Enter a Twitch username." required>
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="submit">Get following</button>
+                </span>
+              </form>
+              <h3>Channels <small>&mdash; <a id="twitch-import-select-all">select all</a></small></h3>
+              <div id="twitch-import-list"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" disabled>Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <p>Polled <span id="counter">0</span> times (last updated at <span id="last_updated">N/A</span>).</p>

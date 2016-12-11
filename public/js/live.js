@@ -506,6 +506,93 @@ $(document).ready(function() {
     });
     xhr.send();
   });
+  $("#twitch-import-modal").on("show.bs.modal", function(event) {
+    var modal = $(this);
+    var q = $("#twitch_q").val();
+    if (q) {
+      var input = modal.find("input[type='search']");
+      input.val(q);
+      modal.find("form").submit();
+    }
+  });
+  $("#twitch-import-select-all").click(function() {
+    var list = $("#twitch-import-list");
+    list.find("input:enabled").prop("checked", list.find("input:enabled:not(:checked)").length != 0).change();
+  });
+  $("#twitch-import-modal form").submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var q = form.find("input[type='search']").val();
+    var submit = form.find("button[type='submit']");
+    var modal = form.parents(".modal");
+    var add_button = modal.find(".btn-primary");
+    var list = modal.find("#twitch-import-list");
+    list.html(`<span class="glyphicon glyphicon-refresh spin"></span> Loading...`);
+    submit.attr("disabled", true);
+    add_button.attr("disabled", true);
+
+    var twitch = JSON.parse(localStorage.twitch);
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", `https://api.twitch.tv/kraken/users/${encodeURIComponent(q)}/follows/channels`);
+    xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v3+json");
+    xhr.setRequestHeader("Client-ID", twitch.client_id);
+    xhr.addEventListener("load", function() {
+      submit.prop("disabled", false);
+      if (this.status == 404) {
+        list.text(`The user ${q} does not exist.`);
+        return;
+      }
+      if (this.status != 200) {
+        list.text(`Error ${this.status}.`);
+        return;
+      }
+      if (this.response.follows.length == 0) {
+        list.text("This user is not following anyone.");
+      }
+      var ul = $("<ul></ul>");
+      list.empty();
+      list.append(ul);
+      this.response.follows.sort(function(a,b) {
+        return a.channel.name.localeCompare(b.channel.name);
+      }).forEach(function(follow) {
+        var li = $(`<li class="checkbox"><label><input type="checkbox"></label></li>`)
+        var checkbox = li.find("input");
+        checkbox.val(JSON.stringify({
+          id: follow.channel._id,
+          username: follow.channel.name,
+          display_name: follow.channel.display_name,
+        }));
+        if (twitch.accounts.some(function(a) { return a.id == follow.channel._id })) {
+          checkbox.prop("disabled", true).prop("checked", true);
+        }
+        li.find("label").append(document.createTextNode(" "+follow.channel.display_name))
+        li.append(" ");
+        li.append($('<a target="_blank"><span class="glyphicon glyphicon glyphicon-new-window"></span></a>').prop("href", `https://www.twitch.tv/${follow.channel.name}`));
+        ul.append(li);
+      });
+      list.find("input").on("change", function() {
+        add_button.prop("disabled", ul.find("input:enabled:checked").length == 0);
+      });
+    });
+    xhr.addEventListener("error", function() {
+      submit.prop("disabled", false);
+      list.text(`Error ${this.status}.`);
+    });
+    xhr.send();
+  });
+  $("#twitch-import-modal .btn-primary").click(function() {
+    var modal = $(this).parents(".modal");
+    var list = modal.find("#twitch-import-list");
+    var twitch = JSON.parse(localStorage.twitch);
+    list.find("input:checked:enabled").each(function(i, input) {
+      var a = JSON.parse(input.value);
+      twitch.accounts.push(a);
+    });
+    localStorage.twitch = JSON.stringify(twitch);
+    modal.modal("toggle");
+    update_accounts();
+  });
 
   $("#facebook_token").parents("form").submit(function(e) {
     e.preventDefault();
