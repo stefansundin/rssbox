@@ -107,7 +107,7 @@ class String
               throw :done
             end
           end
-        rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED
+        rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, OpenSSL::SSL::SSLError
           throw :done
         end
       end
