@@ -678,10 +678,16 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = SoundcloudParty.get("/users", query: { q: username })
+  response = SoundcloudParty.get("/resolve", query: { url: "https://soundcloud.com/#{username}" }, follow_redirects: false)
+  return "Can't find a user with that name. Sorry." if response.code == 404
+  raise SoundcloudError.new(response) if response.code != 302
+  uri = URI.parse response.parsed_response["location"]
+  return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
+  id = uri.path[/\d+/]
+
+  response = SoundcloudParty.get("/users/#{id}")
   raise SoundcloudError.new(response) if !response.success?
-  data = response.parsed_response.first
-  return "Can't find a user with that name. Sorry." if !data
+  data = response.parsed_response
 
   redirect "/soundcloud/#{data["id"]}/#{data["permalink"]}"
 end
