@@ -86,10 +86,11 @@ function update_accounts() {
     <table class="table table-striped table-hover">
       <thead>
         <tr>
-          <th>length</th>
-          <th>status</th>
+          <th class="fit">length</th>
+          <th class="fit">status</th>
           <th>title</th>
-          <th>date</th>
+          <th class="fit">date</th>
+          <th class="fit"></th>
         </tr>
       </thead>
       <tbody data-facebook-id="${a.id}"></tbody>
@@ -122,10 +123,10 @@ function update_accounts() {
     <table class="table table-striped table-hover">
       <thead>
         <tr>
-          <th>status</th>
+          <th class="fit">status</th>
           <th>title</th>
-          <th>date</th>
-          <th>viewers</th>
+          <th class="fit">date</th>
+          <th class="fit">viewers</th>
         </tr>
       </thead>
       <tbody data-youtube-id="${a.id}"></tbody>
@@ -153,18 +154,18 @@ function update_accounts() {
     <span class="label label-success hidden" data-live-label>live now</span>
     <button type="button" class="btn btn-xs btn-danger pull-right" data-twitch-id="${a.id}">Remove</button>
     <a class="btn btn-xs btn-default pull-right" href="irc://irc.chat.twitch.tv:6667/${a.username}" target="_self">IRC</a>
-    <a class="btn btn-xs btn-default pull-right" href="vlc://${root_url}/twitch/watch?url=${a.username}" target="_self">VLC</a>
     <a class="btn btn-xs btn-default pull-right" href="https://www.twitch.tv/${a.username}">Open</a>
   </div>
   <div class="panel-body">
     <table class="table table-striped table-hover">
       <thead>
         <tr>
-          <th>length</th>
-          <th>status</th>
+          <th class="fit">length</th>
+          <th class="fit">status</th>
           <th>title</th>
-          <th>game</th>
-          <th>date</th>
+          <th class="fit">game</th>
+          <th class="fit">date</th>
+          <th class="fit"></th>
         </tr>
       </thead>
       <tbody data-twitch-id="${a.id}"></tbody>
@@ -208,7 +209,7 @@ function poll() {
         var data = JSON.parse(r.body).data;
         var videos = data.filter(function(v){ return v.live_status }).slice(0, 3);
         log("facebook", a.username, new Date, videos);
-        videos.reverse().forEach(function(v) {
+        videos.slice().reverse().forEach(function(v) {
           var tbody = $(`tbody[data-facebook-id="${a.id}"]`);
           var tr_id = `${v.live_status}-${v.id}`;
           if (tbody.find(`#${tr_id}`).length > 0) {
@@ -216,10 +217,11 @@ function poll() {
           }
           var tr = $(`
 <tr id="${tr_id}">
-  <td>${to_duration(v.length)}</td>
-  <td>${v.live_status}</td>
+  <td class="fit">${to_duration(v.length)}</td>
+  <td class="fit">${v.live_status}</td>
   <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.description || "Untitled"}</a></td>
-  <td><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+"," +")}</time></td>
+  <td class="fit"><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+"," +")}</time></td>
+  <td class="fit"><a class="btn btn-xs btn-default" href="vlc://https://www.facebook.com/video/playback/playlist.m3u8?v=${videos[0].id}&q=HD" target="_self">VLC</a></td>
 </tr>`);
           tbody.prepend(tr);
           if ($("#mute_notifications").prop("checked")) {
@@ -271,10 +273,14 @@ function poll() {
       xhr2.addEventListener("load", function() {
         log("youtube", a.username, new Date, this.response.items);
         var tbody = $(`tbody[data-youtube-id="${a.id}"]`);
-        this.response.items.reverse().forEach(function(v) {
+        this.response.items.slice().reverse().forEach(function(v) {
           var live_status, live_text, notification_text;
           if (v.liveStreamingDetails) {
-            if (v.liveStreamingDetails.actualStartTime) {
+            if (v.liveStreamingDetails.actualEndTime) {
+              live_status = "ended";
+              live_text = `ended <time class="timeago" datetime="${v.liveStreamingDetails.actualEndTime}">${v.liveStreamingDetails.actualEndTime.replace("T"," ")}</time>`;
+            }
+            else if (v.liveStreamingDetails.actualStartTime) {
               live_status = "live";
               live_text = `started <time class="timeago" datetime="${v.liveStreamingDetails.actualStartTime}">${v.liveStreamingDetails.actualStartTime.replace("T"," ")}</time>`;
               notification_text = `Started ${$.timeago(v.liveStreamingDetails.actualStartTime)}\n${v.snippet.title}`;
@@ -282,37 +288,39 @@ function poll() {
             else if (v.liveStreamingDetails.scheduledStartTime) {
               live_status = "scheduled";
               live_text = `scheduled to start <time class="timeago"; datetime="${v.liveStreamingDetails.scheduledStartTime}">${v.liveStreamingDetails.scheduledStartTime.replace("T"," ")}</time>`;
-              notification_text = `Scheduled to start ${$.timeago(v.liveStreamingDetails.scheduledStartTime)}\n${v.snippet.title}`;
             }
           }
+          var concurrent_viewers = v.liveStreamingDetails.concurrentViewers ? `${add_commas(v.liveStreamingDetails.concurrentViewers)} viewers` : "not live";
           var tr_id = `youtube-${live_status}-${v.id}`;
           if (tbody.find(`#${tr_id}`).length > 0) {
-            $(`#${tr_id} > td[data-concurrent-viewers]`).text(`${add_commas(v.liveStreamingDetails.concurrentViewers)} viewers`);
+            $(`#${tr_id} > td[data-concurrent-viewers]`).text(concurrent_viewers);
             return;
           }
           var tr = $(`
 <tr id="${tr_id}">
-  <td>${live_status}</td>
+  <td class="fit">${live_status}</td>
   <td><a href="https://www.youtube.com/watch?v=${v.id}">${v.snippet.title}</a></td>
-  <td>${live_text}</td>
-  <td data-concurrent-viewers>${add_commas(v.liveStreamingDetails.concurrentViewers)} viewers</td>
+  <td class="fit">${live_text}</td>
+  <td class="fit" data-concurrent-viewers>${concurrent_viewers}</td>
 </tr>`);
           tbody.prepend(tr);
           if ($("#mute_notifications").prop("checked")) {
             return;
           }
-          var notification = notify(`${v.snippet.channelTitle} is live on YouTube`, {
-            body: notification_text,
-            icon: v.snippet.thumbnails.default.url,
-          });
-          notification.addEventListener("click", function(e) {
-            notification.close();
-            window.focus();
-            tr.addClass("success");
-            tbody.parents("div.panel")[0].scrollIntoView();
-          });
+          if (live_status == "live") {
+            var notification = notify(`${v.snippet.channelTitle} is live on YouTube`, {
+              body: notification_text,
+              icon: v.snippet.thumbnails.default.url,
+            });
+            notification.addEventListener("click", function(e) {
+              notification.close();
+              window.focus();
+              tr.addClass("success");
+              tbody.parents("div.panel")[0].scrollIntoView();
+            });
+          }
         });
-        if (this.response.items.some(function(v) { return v.liveStreamingDetails && v.liveStreamingDetails.actualStartTime })) {
+        if (this.response.items.some(function(v) { return v.liveStreamingDetails && v.liveStreamingDetails.actualStartTime && !v.liveStreamingDetails.actualEndTime })) {
           $(`div[data-youtube-id="${a.id}"] [data-live-label]`).removeClass("hidden");
         }
         else {
@@ -336,7 +344,7 @@ function poll() {
       var videos = this.response.videos.slice(0, 3);
       log("twitch", a.username, new Date, videos);
       var tbody = $(`tbody[data-twitch-id="${a.id}"]`);
-      videos.reverse().forEach(function(v) {
+      videos.slice().reverse().forEach(function(v) {
         var tr_id = `twitch-${v.status}-${v._id}`;
         if (tbody.find(`#${tr_id}`).length > 0) {
           return;
@@ -350,8 +358,9 @@ function poll() {
   <td>${to_duration(v.length)}</td>
   <td>${v.status}</td>
   <td><a href="${url}">${v.title}</a></td>
-  <td>${v.game || "N/A"}</td>
+  <td class="fit">${v.game || "N/A"}</td>
   <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ")}</time></td>
+  <td><a class="btn btn-xs btn-default" href="vlc://${root_url}/twitch/watch?url=${v._id}" target="_self">VLC</a></td>
 </tr>`);
         tbody.prepend(tr);
         if ($("#mute_notifications").prop("checked")) {
@@ -536,8 +545,8 @@ $(document).ready(function() {
     var add_button = modal.find(".btn-primary");
     var list = modal.find("#twitch-import-list");
     list.html(`<span class="glyphicon glyphicon-refresh spin"></span> Loading...`);
-    submit.attr("disabled", true);
-    add_button.attr("disabled", true);
+    submit.prop("disabled", true);
+    add_button.prop("disabled", true);
 
     var twitch = JSON.parse(localStorage.twitch);
     var xhr = new XMLHttpRequest();

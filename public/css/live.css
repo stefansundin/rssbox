@@ -10,6 +10,12 @@
 .table {
   margin: 0;
 }
+.table td.fit,
+.table th.fit {
+  white-space: nowrap;
+  width: 1%;
+}
+
 time {
   white-space: nowrap;
 }
