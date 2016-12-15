@@ -36,9 +36,9 @@
       text += " #{video["url"]}"
     end
   end
-  body = text.dup
   title = text.dup
-  URI.extract(-text, %w[http https]) do |url|
+  body = text.dup
+  URI.extract(text, %w[http https]).uniq.each do |url|
     dest = url.resolve_url
     title.gsub!(url, "[#{dest.short_host}]")
     body.gsub!(url, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")

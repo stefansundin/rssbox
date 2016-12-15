@@ -141,18 +141,30 @@ class String
   end
 
   def linkify
-    URI.extract(-self, %w[http https]) do |url|
+    result = self.dup
+    URI.extract(self, %w[http https]).uniq.each do |url|
       dest = url.resolve_url
-      self.gsub!(url, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
+      result.gsub!(/\b#{Regexp.quote(url)}\b/, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
     end
-    return self
+    return result
+  end
+
+  def linkify_and_embed(request)
+    result = self.dup
+    URI.extract(self, %w[http https]).uniq.each do |url|
+      dest = url.resolve_url
+      html = dest.embed_html(request)
+      result.gsub!(/\b#{Regexp.quote(url)}\b/, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
+      result += "\n#{html}" if html
+    end
+    return result
   end
 
   def embed_html(request)
     if %r{^https?://www\.facebook\.com/.*/videos/(?<id>\d+)} =~ self
       <<-EOF.undent
         <iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
-        <p><a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a></p>
+        <a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{request.root_url}/facebook/download?url=#{id}">Download video</a>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
@@ -176,7 +188,7 @@ class String
       url += "&time=#{t}" if t
       <<-EOF.undent
         <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen></iframe>
-        <p><a href="#{url}">Open embed</a> | <a href="#{request.root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{request.root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a></p>
+        <a href="#{url}">Open embed</a> | <a href="#{request.root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{request.root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a>
       EOF
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self
       # https://soundcloud.com/infectedmushroom/liquid-smoke

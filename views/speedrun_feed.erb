@@ -10,10 +10,11 @@
 @data.each do |run|
   players = run["players"].map { |player| player["name"] || SpeedrunParty.resolve_id("user", player["id"]) }.join(", ")
   videos = if run["videos"]
-    run["videos"]["links"].map { |link| link["uri"] }.join("\n").embed_html(request)
+    "Videos:\n" + run["videos"]["links"].map { |link| "- #{link["uri"]}" }.join("\n")
   else
     "No video"
   end
+
   cat = SpeedrunParty.resolve_id("category", run["category"]).partition("|")
   if run["level"]
     level = SpeedrunParty.resolve_id("level", run["level"]).partition("|")
@@ -35,9 +36,9 @@
     <author><name><%= players.esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
-  #{videos}
+  #{videos.linkify_and_embed(request).to_paragraphs}
 
-  #{run["comment"].to_paragraphs}
+  #{run["comment"].linkify.to_paragraphs}
 
   <p>Category: <a href="#{category_link}">#{category}</a></p>
   <p>Platform: #{platform}</p>

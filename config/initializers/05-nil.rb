@@ -19,6 +19,14 @@ class NilClass
     nil
   end
 
+  def linkify_and_embed(request)
+    nil
+  end
+
+  def embed_html(request)
+    nil
+  end
+
   def [](key)
     false
   end
