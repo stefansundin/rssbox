@@ -438,9 +438,17 @@ $(document).ready(function() {
     var q = $("#youtube_q").val();
     var youtube = JSON.parse(localStorage.youtube);
 
+    var url, re;
+    if (re=/(?:UC|S)[0-9a-zA-Z]{22}/.exec(q)) {
+      url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${re[0]}&key=${youtube.key}`;
+    }
+    else {
+      url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=${q}&key=${youtube.key}`;
+    }
+
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=${q}&key=${youtube.key}`);
+    xhr.open("GET", url);
     xhr.addEventListener("load", function() {
       if (this.response.items.length == 0) {
         form.addClass("has-error");
