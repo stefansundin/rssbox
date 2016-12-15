@@ -107,7 +107,7 @@ class String
               throw :done
             end
           end
-        rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, OpenSSL::SSL::SSLError
+        rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, OpenSSL::SSL::SSLError, EOFError
           throw :done
         end
       end
@@ -117,6 +117,8 @@ class String
     if %r{^https?://soundcloud\.com/.+(?<tracking>/s-[0-9a-zA-Z]+)} =~ self
       dest = dest.gsub(tracking, "")
     end
+    # Remove youtu.be crap
+    dest = dest.gsub("&feature=youtu.be", "")
     # Remove mysterious prclt tracking code
     dest = dest.gsub(/(?:__)?prclt[=-][^&]+/, "")
     # Remove utm_ and sc_ codes
