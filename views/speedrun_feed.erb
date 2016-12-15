@@ -10,7 +10,7 @@
 @data.each do |run|
   players = run["players"].map { |player| player["name"] || SpeedrunParty.resolve_id("user", player["id"]) }.join(", ")
   videos = if run["videos"]
-    "Videos:\n" + run["videos"]["links"].map { |link| "- #{link["uri"]}" }.join("\n")
+    "Videos: " + run["videos"]["links"].map { |link| link["uri"] }.join(" | ")
   else
     "No video"
   end
