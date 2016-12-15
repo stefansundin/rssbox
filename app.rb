@@ -881,13 +881,18 @@ end
 get "/speedrun" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /speedrun\.com\/(?<abbr>[^\/?#]+)/ =~ params[:q]
+  if /speedrun\.com\/run\/(?<run_id>[^\/?#]+)/ =~ params[:q]
+    # https://www.speedrun.com/run/1zx0qkez
+    response = SpeedrunParty.get("/runs/#{run_id}")
+    raise SpeedrunError.new(response) if !response.success?
+    game = response.parsed_response["data"]["game"]
+  elsif /speedrun\.com\/(?<game>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/alttp#No_Major_Glitches
   else
-    abbr = params[:q]
+    game = params[:q]
   end
 
-  response = SpeedrunParty.get("/games/#{abbr}")
+  response = SpeedrunParty.get("/games/#{game}")
   return "Can't find a game with that name. Sorry." if response.code == 404
   raise SpeedrunError.new(response) if !response.success?
   data = response.parsed_response["data"]
@@ -901,7 +906,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
 
   response = SpeedrunParty.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id })
   raise SpeedrunError.new(response) if !response.success?
-  @data = response.parsed_response["data"]
+  @data = response.parsed_response["data"].reject { |run| run["videos"].nil? }
 
   content_type :atom
   erb :speedrun_feed
