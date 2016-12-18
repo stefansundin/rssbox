@@ -118,7 +118,7 @@ class String
       dest = dest.gsub(tracking, "")
     end
     # Remove youtu.be crap
-    dest = dest.gsub("&feature=youtu.be", "")
+    dest = dest.gsub(/&feature=youtu\.be(?=&|#|$)/, "")
     # Remove mysterious prclt tracking code
     dest = dest.gsub(/(?:__)?prclt[=-][^&]+/, "")
     # Remove utm_ and sc_ codes
