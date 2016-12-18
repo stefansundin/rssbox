@@ -360,7 +360,7 @@ function poll() {
   <td><a href="${url}">${v.title}</a></td>
   <td class="fit">${v.game || "N/A"}</td>
   <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ")}</time></td>
-  <td><a class="btn btn-xs btn-default" href="vlc://${root_url}/twitch/watch?url=${v._id}" target="_self">VLC</a></td>
+  <td><a class="btn btn-xs btn-default" href="vlc://${root_url}/twitch/watch?url=${v.status == "recording" ? a.username : v._id}" target="_self">VLC</a></td>
 </tr>`);
         tbody.prepend(tr);
         if ($("#mute_notifications").prop("checked")) {
