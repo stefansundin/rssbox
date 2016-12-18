@@ -402,7 +402,7 @@ get %r{/facebook/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @edge = "videos" if @type == "live"
   fields = {
     "posts"  => "updated_time,from,parent_id,type,story,name,message,description,link,source,picture,full_picture,properties",
-    "videos" => "updated_time,from,title,description,embeddable,embed_html,length,live_status",
+    "videos" => "updated_time,from,title,description,embed_html,length,live_status",
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@edge]
 

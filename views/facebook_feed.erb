@@ -67,17 +67,13 @@ end
     <author><name><%= post["from"]["name"].esc %></name></author>
     <content type="html">
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
-<%= (post["message"] || post["description"]).linkify_and_embed(request).to_paragraphs.esc %>
-<%= post["link"].embed_html(request).to_paragraphs.esc if post["link"] %>
+<%= post.val(:message, :description, :link).linkify_and_embed(request).to_paragraphs.esc %>
 <%= post["embed_html"].to_paragraphs.esc if post["embed_html"] %>
 <%=
 if type == "photo" and post["source"]
   "<p><img src='#{post["source"]}'></p>".esc
 elsif @edge == "videos" and post["id"]
-  <<-EOF.undent.esc
-    <p><a href="https://www.facebook.com/video/embed?video_id=#{post["id"]}">Open embed</a></p>
-    <p><a href="#{request.root_url}/facebook/download?url=#{post["id"]}">Download video</a></p>
-  EOF
+  "<p><a href='https://www.facebook.com/video/embed?video_id=#{post["id"]}'>Open embed</a> | <a href='#{request.root_url}/facebook/download?url=#{post["id"]}'>Download video</a></p>".esc
 elsif type == "photo"
   <<-EOF.undent.esc
     <p><a href="#{post["full_picture"]}"><img src="#{post["picture"]}"></a></p>

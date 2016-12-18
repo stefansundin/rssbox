@@ -151,13 +151,15 @@ class String
     return result
   end
 
-  def linkify_and_embed(request)
+  def linkify_and_embed(request, embed_only="", skip=[])
     result = self.dup
-    URI.extract(self, %w[http https]).uniq.each do |url|
+    URI.extract(self+"\n"+embed_only, %w[http https]).uniq.each do |url|
       dest = url.resolve_url
-      html = dest.embed_html(request)
       result.gsub!(/\b#{Regexp.quote(url)}\b/, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
-      result += "\n#{html}" if html
+      if !skip.include?(dest) and html = dest.embed_html(request)
+        result += "\n#{html}"
+        skip.push(dest)
+      end
     end
     return result
   end
