@@ -219,7 +219,7 @@ function poll() {
 <tr id="${tr_id}">
   <td class="fit">${to_duration(v.length)}</td>
   <td class="fit">${v.live_status}</td>
-  <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.description || "Untitled"}</a></td>
+  <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.title || v.description || "Untitled"}</a></td>
   <td class="fit"><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+"," +")}</time></td>
   <td class="fit"><a class="btn btn-xs btn-default" href="vlc://https://www.facebook.com/video/playback/playlist.m3u8?v=${videos[0].id}&q=HD" target="_self">VLC</a></td>
 </tr>`);
@@ -229,7 +229,7 @@ function poll() {
           }
           if (v.live_status == "LIVE") {
             var notification = notify(`${v.from.name} is live on Facebook`, {
-              body: `Started ${$.timeago(v.created_time)}.\n${v.description || ""}`,
+              body: `Started ${$.timeago(v.created_time)}.\n${v.title || v.description || ""}`,
               icon: `https://graph.facebook.com/${a.id}/picture`,
             });
             notification.addEventListener("click", function(e) {
@@ -254,7 +254,7 @@ function poll() {
     form.append("batch", JSON.stringify(facebook.accounts.map(function(a) {
       return {
         method: "GET",
-        relative_url: `${a.id}/videos?fields=created_time,from,title,description,embeddable,embed_html,length,live_status`,
+        relative_url: `${a.id}/videos?fields=created_time,from,title,description,length,live_status`,
       };
     })));
     xhr.send(form);
