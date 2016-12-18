@@ -369,7 +369,7 @@ function poll() {
         if (v.status == "recording") {
           var notification = notify(`${v.channel.display_name} is ${v.game ? `playing ${v.game}` : "live on Twitch"}`, {
             body: `Started ${$.timeago(v.created_at)}.\n${v.title}`,
-            icon: v.thumbnails[0].url,
+            icon: v.thumbnails.length > 0 ? v.thumbnails[0].url : `https://static-cdn.jtvnw.net/ttv-boxart/${encodeURIComponent(v.game)}-138x190.jpg`,
           });
           notification.addEventListener("click", function(e) {
             notification.close();
