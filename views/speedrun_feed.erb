@@ -8,32 +8,28 @@
   <updated><%= @data[0]["submitted"] || Time.parse(@data[0]["date"]) if @data[0] %></updated>
 <%-
 @data.each do |run|
-  players = run["players"].map { |player| player["name"] || SpeedrunParty.resolve_id("user", player["id"]) }.join(", ")
+  players = run["players"]["data"].map { |player| player["name"] || player["names"]["international"] }
   videos = if run["videos"]
     "Videos: " + run["videos"]["links"].map { |link| link["uri"] }.join(" | ")
   else
     "No video"
   end
 
-  cat = SpeedrunParty.resolve_id("category", run["category"]).partition("|")
-  if run["level"]
-    level = SpeedrunParty.resolve_id("level", run["level"]).partition("|")
-    category_link = "https://www.speedrun.com/#{@abbr}/#{level[0]}"
-    category = "#{cat[2]}: #{level[2]}"
+  if !run["level"]["data"].empty?
+    category_link = "https://www.speedrun.com/#{@abbr}/#{run["level"]["data"]["weblink"].split("/")[-1]}"
+    category = "#{run["category"]["data"]["name"]}: #{run["level"]["data"]["name"]}"
   else
-    category_link = "https://www.speedrun.com/#{@abbr}##{cat[0]}"
-    category = cat[2]
+    category_link = "https://www.speedrun.com/#{@abbr}##{run["category"]["data"]["weblink"].partition("#")[2]}"
+    category = run["category"]["data"]["name"]
   end
-  platform = SpeedrunParty.resolve_id("platform", run["system"]["platform"])
-  platform += " (#{SpeedrunParty.resolve_id("region", run["system"]["region"])})" if run["system"]["region"]
 -%>
 
   <entry>
     <id>speedrun:run:<%= run["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= run["times"]["primary_t"].round.to_duration %>] <%= players.esc %> - <%= category %><%= " [emu]" if run["system"]["emulated"] %></title>
+    <title>[<%= run["times"]["primary_t"].round.to_duration %>] <%= players.join(", ").esc %> - <%= category %><%= " [emu]" if run["system"]["emulated"] %></title>
     <link href="<%= "https://www.speedrun.com/run/#{run["id"]}" %>" />
     <updated><%= run["submitted"] || Time.parse(run["date"]) %></updated>
-    <author><name><%= players.esc %></name></author>
+    <author><name><%= players.join(", ").esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
   #{videos.linkify_and_embed(request).to_paragraphs}
@@ -41,7 +37,8 @@
   #{run["comment"].linkify.to_paragraphs}
 
   <p>Category: <a href="#{category_link}">#{category}</a></p>
-  <p>Platform: #{platform}</p>
+  <p>Runners: #{players.map { |name| "<a href='https://www.speedrun.com/user/#{name}'>#{name}</a>" }.join(", ")}</p>
+  <p>Platform: #{run["platform"]["data"]["name"]}#{" (#{run["region"]["data"]["name"]})" if run["system"]["region"]}</p>
 EOF
 -%>
     </content>

@@ -904,7 +904,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   @id = id
   @abbr = abbr
 
-  response = SpeedrunParty.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id })
+  response = SpeedrunParty.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
   raise SpeedrunError.new(response) if !response.success?
   @data = response.parsed_response["data"].reject { |run| run["videos"].nil? }
 
