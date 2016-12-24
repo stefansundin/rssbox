@@ -221,7 +221,7 @@ function poll() {
   <td class="fit">${v.live_status}</td>
   <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.title || v.description || "Untitled"}</a></td>
   <td class="fit"><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+"," +")}</time></td>
-  <td class="fit"><a class="btn btn-xs btn-default" href="vlc://https://www.facebook.com/video/playback/playlist.m3u8?v=${videos[0].id}&q=HD" target="_self">VLC</a></td>
+  <td class="fit"><a class="btn btn-xs btn-default" href="vlc://https://www.facebook.com/video/playback/playlist.m3u8?v=${videos[0].id}" target="_self">VLC</a></td>
 </tr>`);
           tbody.prepend(tr);
           if ($("#mute_notifications").prop("checked")) {
