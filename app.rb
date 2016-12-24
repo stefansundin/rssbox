@@ -849,7 +849,10 @@ get "/twitch/watch" do
     token_data = JSON.parse(data["token"])
     playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
-    streams = [playlist_url]
+    response = HTTParty.get(playlist_url)
+    return "Channel does not seem to be online." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+    streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
   end
   if request.user_agent["Mozilla/"]
     redirect "vlc://#{streams[0]}" if params.has_key?("open")
