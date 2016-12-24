@@ -36,14 +36,10 @@
       text += " #{video["url"]}"
     end
   end
-  title = text.dup
-  body = text.dup
-  URI.extract(text, %w[http https]).uniq.each do |url|
+  body = text.linkify_and_embed(request)
+  title = text.gsub(String::URL_REGEXP) do |url|
     dest = url.resolve_url
-    title.gsub!(url, "[#{dest.short_host}]")
-    body.gsub!(url, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
-    embed_html = dest.embed_html(request)
-    body += "\n#{embed_html}" if embed_html
+    "[#{dest.short_host}]"
   end
 -%>
 

@@ -3,6 +3,8 @@ require "uri"
 require "resolv-replace.rb"
 
 class String
+  URL_REGEXP = /\bhttps?:\/\/[a-z0-9\/\-+=_#%\.~?\[\]@!$&'()*,;:\|]+(?<![%\.~?\[\]@!$&'()*,;:])/i
+
   def to_line
     self.gsub("\n", " ")
   end
@@ -143,25 +145,26 @@ class String
   end
 
   def linkify
-    result = self.dup
-    URI.extract(self, %w[http https]).uniq.each do |url|
+    self.gsub(URL_REGEXP) do |url|
       dest = url.resolve_url
-      result.gsub!(/\b#{Regexp.quote(url)}\b/, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
+      "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>"
     end
-    return result
   end
 
-  def linkify_and_embed(request, embed_only="", skip=[])
-    result = self.dup
-    URI.extract(self+"\n"+embed_only, %w[http https]).uniq.each do |url|
+  def linkify_and_embed(request, embed_only="")
+    embeds = []
+    result = self.gsub(URL_REGEXP) do |url|
       dest = url.resolve_url
-      result.gsub!(/\b#{Regexp.quote(url)}\b/, "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>")
-      if !skip.include?(dest) and html = dest.embed_html(request)
-        result += "\n#{html}"
-        skip.push(dest)
-      end
+      html = dest.embed_html(request)
+      embeds.push(html) if html and !embeds.include?(html)
+      "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>"
     end
-    return result
+    embed_only.match(URL_REGEXP) do |url|
+      dest = url.resolve_url
+      html = dest.embed_html(request)
+      embeds.push(html) if html and !embeds.include?(html)
+    end
+    return result + embeds.map { |html| "\n" + html }.join
   end
 
   def embed_html(request)

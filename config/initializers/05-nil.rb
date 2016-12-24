@@ -19,7 +19,7 @@ class NilClass
     nil
   end
 
-  def linkify_and_embed(request, embed_only="", skip=[])
+  def linkify_and_embed(request, embed_only="")
     nil
   end
 
