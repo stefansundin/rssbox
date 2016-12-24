@@ -315,6 +315,7 @@ get "/facebook/download" do
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
   elsif /\d+_(?<id>\d+)/ =~ params[:url]
+  elsif /v=(?<id>\d+)/ =~ params[:url]
   elsif /(?<id>\d+)/ =~ params[:url]
   else
     id = params[:url]
