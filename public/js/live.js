@@ -80,7 +80,7 @@ function update_accounts() {
     ${a.username} (${a.id})
     <span class="label label-success hidden" data-live-label>live now</span>
     <button type="button" class="btn btn-xs btn-danger pull-right" data-facebook-id="${a.id}">Remove</button>
-    <a class="btn btn-xs btn-default pull-right" href="https://www.facebook.com/${a.id}/videos">Open</a>
+    <a class="btn btn-xs btn-default pull-right" href="https://www.facebook.com/${a.username}/videos">Open</a>
   </div>
   <div class="panel-body">
     <table class="table table-striped table-hover">

@@ -280,7 +280,7 @@ get "/facebook" do
     # https://www.facebook.com/video/embed?video_id=1192228974143110
   elsif /facebook\.com\/[^\/]+-(?<id>[\d]+)/ =~ params[:q]
     # https://www.facebook.com/TNG-Recuts-867357396651373/
-  elsif /facebook\.com\/(?<id>[^\/?#]+)/ =~ params[:q]
+  elsif /facebook\.com\/(?:pg\/)?(?<id>[^\/?#]+)/ =~ params[:q]
     # https://www.facebook.com/celldweller/info?tab=overview
   else
     id = params[:q]
