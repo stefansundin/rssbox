@@ -47,6 +47,15 @@ function to_duration(t) {
   }
 }
 
+function extract_urls(str) {
+  var urls = [];
+  var regex = /\b(https?:\/\/[a-z0-9\/\-+=_#%\.~?\[\]@!$&'()*,;:\|]+)([%\.~?\[\]@!$&'()*,;:]|\b)/ig;
+  while ((re=regex.exec(str)) !== null) {
+    urls.push(re[1]);
+  }
+  return urls;
+}
+
 function toObject(arr) {
   var obj = {};
   arr.forEach(function(e) {
@@ -353,11 +362,12 @@ function poll() {
         if (v.status == "recording") {
           url = `https://www.twitch.tv/${a.username}`;
         }
+        var urls = extract_urls(v.title);
         var tr = $(`
 <tr id="${tr_id}">
   <td>${to_duration(v.length)}</td>
   <td>${v.status}</td>
-  <td><a href="${url}">${v.title}</a></td>
+  <td><a href="${url}">${v.title}</a> ${urls.map((url,i) => `[<a href="${url}">${i+1}</a>]`).join(" ")}</td>
   <td class="fit">${v.game || "N/A"}</td>
   <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ")}</time></td>
   <td><a class="btn btn-xs btn-default" href="vlc://${root_url}/twitch/watch?url=${v.status == "recording" ? a.username : v._id}" target="_self">VLC</a></td>
