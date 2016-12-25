@@ -2,7 +2,7 @@
 
 This app uses the API of other websites and gives you an RSS feed in return. Quick and simple.
 
-To open vlc:// links, see [vlc-protocol](https://github.com/stefansundin/vlc-protocol).
+To open `vlc://` links, see [vlc-protocol](https://github.com/stefansundin/vlc-protocol).
 
 You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.com/).
 
