@@ -401,9 +401,13 @@ $(document).ready(function() {
   $("#mute_notifications").change(function() {
     localStorage.mute_notifications = JSON.stringify(this.checked);
     if (this.checked) {
-      notifications.forEach(function(notification) {
-        notification.close();
-      });
+      notifications.forEach(function(n) { n.close(); });
+    }
+  });
+
+  $(document).keydown(function(e) {
+    if (e.keyCode == 27) {
+      notifications.forEach(function(n) { n.close(); });
     }
   });
 
