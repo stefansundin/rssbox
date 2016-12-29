@@ -159,8 +159,8 @@ class String
       embeds.push(html) if html and !embeds.include?(html)
       "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>"
     end
-    embed_only.match(URL_REGEXP) do |url|
-      dest = url[0].resolve_url
+    embed_only.scan(URL_REGEXP) do |url|
+      dest = url.resolve_url
       html = dest.embed_html(request)
       embeds.push(html) if html and !embeds.include?(html)
     end
