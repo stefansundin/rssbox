@@ -18,7 +18,7 @@
     type = type[0..-2]
   end
 
-  link = if @edge == "videos" or post["type"] == "video"
+  link = if @edge == "videos" or (post["type"] == "video" and post["link"].start_with?("https://www.facebook.com/"))
     "https://www.facebook.com/video/embed?video_id=#{object_id}"
   else
     post["link"] || "https://www.facebook.com/#{post["id"]}"
