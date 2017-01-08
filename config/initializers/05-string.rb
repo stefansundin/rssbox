@@ -91,6 +91,18 @@ class String
             response = http.head(uri.request_uri)
             case response
             when Net::HTTPRedirection then
+              if response["location"][0] == "/"
+                # relative redirect
+                uri = URI.parse(url)
+                redirect_url = uri.scheme + "://" + uri.host + response["location"]
+              elsif /^https?:\/\/./ =~ response["location"]
+                # absolute redirect
+                redirect_url = response["location"]
+              else
+                # bad redirect
+                throw :done
+              end
+              redirect_url = URI.escape(redirect_url) # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
               if %w[
                 ://www.youtube.com/das_captcha
                 ://www.nytimes.com/glogin
@@ -100,21 +112,10 @@ class String
                 ://www.theaustralian.com.au/remote/check_cookie.html
                 ://signin.aws.amazon.com/
                 ://accounts.google.com/ServiceLogin
-              ].any? { |s| response["location"].include?(s) }
+              ].any? { |s| redirect_url.include?(s) }
                 throw :done
               end
-              if response["location"][0] == "/"
-                # relative redirect
-                uri = URI.parse(url)
-                dest = uri.scheme + "://" + uri.host + response["location"]
-              elsif /^https?:\/\/./ =~ response["location"]
-                # absolute redirect
-                dest = response["location"]
-              else
-                # bad redirect
-                throw :done
-              end
-              dest = URI.escape(dest) # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
+              dest = redirect_url
             else
               throw :done
             end
