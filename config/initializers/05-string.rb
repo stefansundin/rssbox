@@ -4,6 +4,7 @@ require "resolv-replace.rb"
 
 class String
   URL_REGEXP = /\bhttps?:\/\/[a-z0-9\/\-+=_#%\.~?\[\]@!$&'()*,;:\|]+(?<![%\.~?\[\]@!$&'()*,;:])/i
+  SPOTIFY_REGEXP = /\bspotify:(?:artist|album|track|user):[0-9a-zA-Z:]+\b/
 
   @@url_cache = {}
 
@@ -159,7 +160,10 @@ class String
   end
 
   def linkify
-    self.gsub(URL_REGEXP) do |url|
+    result = self.gsub(SPOTIFY_REGEXP) do |uri|
+      "https://play.spotify.com/#{uri.gsub(":","/")}"
+    end
+    result.gsub(URL_REGEXP) do |url|
       dest = url.resolve_url
       "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>"
     end
@@ -167,7 +171,10 @@ class String
 
   def linkify_and_embed(request, embed_only="")
     embeds = []
-    result = self.gsub(URL_REGEXP) do |url|
+    result = self.gsub(SPOTIFY_REGEXP) do |uri|
+      "https://play.spotify.com/#{uri.gsub(":","/")}"
+    end
+    result.gsub!(URL_REGEXP) do |url|
       dest = url.resolve_url
       html = dest.embed_html(request)
       embeds.push(html) if html and !embeds.include?(html)
@@ -216,6 +223,8 @@ class String
       # https://soundcloud.com/infectedmushroom/sets/fields-of-grey-remixes
       height = set ? 450 : 166
       "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+    elsif %r{^https?://(?:open|play)\.spotify\.com/(?<path>[^?#]+)} =~ self
+      "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(?:www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
       "<img src='https://i.giphy.com/#{id}.gif'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
