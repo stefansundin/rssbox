@@ -230,7 +230,10 @@ class String
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
       "<img src='#{self}'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
-      "<iframe width='640' height='538' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      query = CGI.parse(URI.parse(self).query)
+      width = query["w"][0] || "640"
+      height = query["h"][0] || "538"
+      "<iframe width='#{width}' height='#{height}' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://amp\.twimg\.com/v/.+}i =~ self
       "<iframe width='640' height='600' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     end

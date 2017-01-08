@@ -18,11 +18,6 @@
   for entity in t["entities"]["urls"]
     text.gsub!(entity["url"], entity["expanded_url"])
   end
-  if t["entities"]["media"]
-    for media in t["entities"]["media"]
-      text += " #{media["media_url_https"]}:large"
-    end
-  end
   if t["extended_entities"]
     for entity in t["extended_entities"]["media"]
       next if !entity["video_info"]
@@ -33,7 +28,12 @@
           b["content_type"].start_with?("video/") <=> a["content_type"].start_with?("video/")
         end
       end.first
-      text += " #{video["url"]}"
+      text += " #{video["url"]}?w=#{entity["sizes"]["large"]["w"]}&h=#{entity["sizes"]["large"]["h"]}"
+    end
+  end
+  if t["entities"]["media"]
+    for media in t["entities"]["media"]
+      text += " #{media["media_url_https"]}:large"
     end
   end
   body = text.linkify_and_embed(request)
