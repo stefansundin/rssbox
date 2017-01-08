@@ -5,6 +5,8 @@ require "resolv-replace.rb"
 class String
   URL_REGEXP = /\bhttps?:\/\/[a-z0-9\/\-+=_#%\.~?\[\]@!$&'()*,;:\|]+(?<![%\.~?\[\]@!$&'()*,;:])/i
 
+  @@url_cache = {}
+
   def to_line
     self.gsub("\n", " ")
   end
@@ -62,9 +64,17 @@ class String
 
   def resolve_url
     url = self.normalize_url
+    dest = @@url_cache[url]
+    if dest
+      return url if dest == ""
+      return dest
+    end
     dest = $redis.hget("urls", url)
-    return url if dest == ""
-    return dest if dest
+    if dest
+      @@url_cache[url] = dest
+      return url if dest == ""
+      return dest
+    end
 
     dest = url
     catch :done do
@@ -137,8 +147,11 @@ class String
     dest = dest.gsub(/[?&#]+$/, "")
 
     if url == dest
-      $redis.hset("urls", url, "") # save some redis space
+      # save some space
+      @@url_cache[url] = ""
+      $redis.hset("urls", url, "")
     else
+      @@url_cache[url] = dest
       $redis.hset("urls", url, dest)
     end
     dest
