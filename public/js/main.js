@@ -180,6 +180,7 @@ $(document).ready(function() {
       });
       xhr.addEventListener("error", function() {
         alert(`Network error downloading file:\n${data.filename}\n\nConsider opening the video and using the browser to download instead.`);
+        window.dirty--;
       });
       xhr.addEventListener("load", function() {
         var blob = new Blob([xhr.response]);
