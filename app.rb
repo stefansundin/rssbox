@@ -782,7 +782,10 @@ end
 
 get "/twitch/download" do
   content_type :text
-  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+  if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
+    # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
+  elsif /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
@@ -791,7 +794,15 @@ get "/twitch/download" do
     channel_name = params[:url]
   end
 
-  if vod_id
+  if clip_slug
+    response = HTTParty.get("https://clips.twitch.tv/embed?clip=#{clip_slug}", type: :plain)
+    return "Clip does not seem to exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+    url = response.body[/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/]
+    return "Can't find clip." if url.nil?
+    redirect url
+    return
+  elsif vod_id
     response = TwitchParty.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
@@ -819,7 +830,10 @@ end
 
 get "/twitch/watch" do
   content_type :text
-  if /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+  if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
+    # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
+  elsif /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
@@ -828,7 +842,13 @@ get "/twitch/watch" do
     channel_name = params[:url]
   end
 
-  if vod_id
+  if clip_slug
+    response = HTTParty.get("https://clips.twitch.tv/embed?clip=#{clip_slug}", type: :plain)
+    return "Clip does not seem to exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+    streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
+    return "Can't find clip." if streams.empty?
+  elsif vod_id
     response = TwitchParty.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
