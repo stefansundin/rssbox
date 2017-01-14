@@ -55,7 +55,12 @@ $(document).ready(function() {
     });
     form.find("[data-irc]").each(function() {
       btn = $(this);
-      btn.attr("href", `irc://${btn.attr("data-irc")}/${basename(q)}`);
+      var m = /(?:https?:\/\/(?:www\.|clips\.)?twitch\.tv\/)?([^/]+)/.exec(q);
+      if (m == null) {
+        return;
+      }
+      var channel = m[1];
+      btn.attr("href", `irc://${btn.attr("data-irc")}/${channel}`);
     });
   });
 
