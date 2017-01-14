@@ -19,11 +19,11 @@ class NilClass
     nil
   end
 
-  def linkify_and_embed(request, embed_only="")
+  def linkify_and_embed(request=nil, embed_only="")
     nil
   end
 
-  def embed_html(request)
+  def embed_html(request=nil)
     nil
   end
 
