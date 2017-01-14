@@ -232,6 +232,8 @@ class String
       "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(?:www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
       "<img src='https://i.giphy.com/#{id}.gif'>"
+    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.gifv}i =~ self
+      "<iframe width='640' height='538' src='#{self.https}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
       "<img src='#{self.https}'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
