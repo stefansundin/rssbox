@@ -9,8 +9,10 @@
 <%-
 @data.each do |run|
   players = run["players"]["data"].map { |player| player["name"] || player["names"]["international"] }
-  videos = if run["videos"]
+  videos = if run["videos"]["links"]
     "Videos: " + run["videos"]["links"].map { |link| link["uri"] }.join(" | ")
+  elsif run["videos"]["text"]
+    "Videos: " + run["videos"]["text"]
   else
     "No video"
   end
