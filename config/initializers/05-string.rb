@@ -54,6 +54,10 @@ class String
     URI::HTTP.new(uri.scheme.downcase, uri.userinfo, uri.host.downcase, port, uri.registry, path, uri.opaque, uri.query, uri.fragment).to_s
   end
 
+  def https
+    self.gsub(/^http:/, "https:")
+  end
+
   def short_host
     uri = URI.parse(self)
     if uri.host[0..3] == "www."
@@ -229,7 +233,7 @@ class String
     elsif %r{^https?://(?:www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
       "<img src='https://i.giphy.com/#{id}.gif'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
-      "<img src='#{self}'>"
+      "<img src='#{self.https}'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
       query = CGI.parse(URI.parse(self).query)
       width = query["w"][0] || "640"
