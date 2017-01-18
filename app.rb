@@ -680,11 +680,20 @@ get "/soundcloud" do
   end
 
   response = SoundcloudParty.get("/resolve", query: { url: "https://soundcloud.com/#{username}" }, follow_redirects: false)
-  return "Can't find a user with that name. Sorry." if response.code == 404
-  raise SoundcloudError.new(response) if response.code != 302
-  uri = URI.parse response.parsed_response["location"]
-  return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
-  id = uri.path[/\d+/]
+  if response.code == 302
+    uri = URI.parse response.parsed_response["location"]
+    return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
+    id = uri.path[/\d+/]
+  elsif response.code == 404 && username.numeric?
+    response = SoundcloudParty.get("/users/#{username}")
+    return "Can't find a user with that id. Sorry." if response.code == 404
+    raise SoundcloudError.new(response) if !response.success?
+    id = response.parsed_response["id"]
+  elsif response.code == 404
+    return "Can't find a user with that name. Sorry."
+  else
+    raise SoundcloudError.new(response)
+  end
 
   response = SoundcloudParty.get("/users/#{id}")
   raise SoundcloudError.new(response) if !response.success?
