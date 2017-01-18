@@ -24,6 +24,11 @@
     category_link = "https://www.speedrun.com/#{@abbr}##{run["category"]["data"]["weblink"].partition("#")[2]}"
     category = run["category"]["data"]["name"]
   end
+
+  if !run["level"]["data"].empty?
+    level_subcategories = SpeedrunParty.resolve_id("level-subcategories", run["level"]["data"]["id"])
+    category += level_subcategories.select { |id, values| run["values"][id] }.map { |id, values| " - " + values[run["values"][id]] }.join
+  end
 -%>
 
   <entry>

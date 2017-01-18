@@ -12,17 +12,33 @@ class SpeedrunParty
     return @@cache[type][id] if @@cache[type][id]
     value = $redis.hget("speedrun", "#{type}:#{id}")
     if value
-      @@cache[type][id] = value
-      return value
+      @@cache[type][id] = if type == "level-subcategories"
+        JSON.parse(value)
+      else
+        value
+      end
+      return @@cache[type][id]
     end
 
-    value = if type == "game"
+    if type == "game"
       response = SpeedrunParty.get("/games/#{id}")
       raise SpeedrunError.new(response) if !response.success?
-      response.parsed_response["data"]["names"]["international"]
+      redis_value = value = response.parsed_response["data"]["names"]["international"]
+    elsif type == "level-subcategories"
+      response = SpeedrunParty.get("/levels/#{id}/variables")
+      raise SpeedrunError.new(response) if !response.success?
+      value = response.parsed_response["data"].select { |var| var["is-subcategory"] }.map do |var|
+        [
+          var["id"],
+          var["values"]["values"].map do |id, val|
+            [id, val["label"]]
+          end.to_h
+        ]
+      end.to_h
+      redis_value = value.to_json
     end
 
-    $redis.hset("speedrun", "#{type}:#{id}", value)
+    $redis.hset("speedrun", "#{type}:#{id}", redis_value)
     @@cache[type][id] = value
     return value
   end
