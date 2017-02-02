@@ -760,10 +760,20 @@ end
 get "/twitch" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
+  if /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
+    # https://www.twitch.tv/videos/25133028
+  elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/majinphil
   else
     username = params[:q]
+  end
+
+  if vod_id
+    response = TwitchParty.get("/kraken/videos/v#{vod_id}")
+    return "Video does not exist." if response.code == 404
+    raise TwitchError.new(response) if !response.success?
+    data = response.parsed_response
+    username = data["channel"]["name"]
   end
 
   response = TwitchParty.get("/kraken/channels/#{username}")
@@ -779,7 +789,8 @@ get "/twitch/download" do
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
-  elsif /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] or /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+    # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
@@ -827,7 +838,8 @@ get "/twitch/watch" do
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
-  elsif /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] or /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+    # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]

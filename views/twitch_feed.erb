@@ -11,7 +11,7 @@
   <entry>
     <id>twitch:video:<%= video["_id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= "* " if video["broadcast_type"] == "highlight" %>[<%= video["length"].to_i.to_duration %>] <%= video["title"].to_line.esc %></title>
-    <link href="<%= "https://www.twitch.tv/#{video["channel"]["name"]}/v/#{video["_id"][1..-1]}" %>" />
+    <link href="<%= "https://www.twitch.tv/videos/#{video["_id"][1..-1]}" %>" />
     <updated><%= Time.parse(video["created_at"]) %></updated>
     <author><name><%= video["channel"]["display_name"].esc %></name></author>
     <content type="html">
