@@ -104,6 +104,8 @@ get "/youtube" do
   if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
     # https://www.youtube.com/channel/SWu5RTwuNMv6U
+  elsif /(?<channel_id>(UC|S)[^\/?#]+)/ =~ params[:q]
+    # it's a channel id
   elsif /youtube\.com\/user\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
   elsif /youtube\.com\/(?<channel_type>c|show)\/(?<channel_title>[^\/?#]+)/ =~ params[:q]
@@ -121,8 +123,6 @@ get "/youtube" do
     # https://www.youtube.com/khanacademy
   elsif /youtu\.be\/(?<video_id>[^?#]+)/ =~ params[:q]
     # https://youtu.be/vVXbgbMp0oY?t=1s
-  elsif /(?<channel_id>(UC|S)[^\/?#]+)/ =~ params[:q]
-    # it's a channel id
   else
     # it's probably a channel name
     user = params[:q]
