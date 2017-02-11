@@ -17,7 +17,7 @@ class String
   end
 
   def to_filename
-    self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ")
+    self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ").gsub(/\.+(\.[a-z]+)$/, '\1')
   end
 
   def esc
@@ -197,7 +197,7 @@ class String
     if %r{^https?://www\.facebook\.com/.*/videos/(?<id>\d+)} =~ self or %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
       <<-EOF.undent
         <iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
-        <a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a>
+        <a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a> | <a href="#{root_url}/?download=#{CGI.escape("https://www.facebook.com/video/embed?video_id=#{id}")}">Download video with nice filename</a>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s

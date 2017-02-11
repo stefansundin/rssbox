@@ -10,10 +10,10 @@ function fmt_filesize(bytes, digits=1) {
   return `${size} ${units[i]}`;
 }
 
-function toObject(arr) {
+function toObject(arr, f=decodeURIComponent) {
   var obj = {};
   arr.forEach(function(e) {
-    obj[e[0]] = e[1];
+    obj[e[0]] = f(e[1]);
   });
   return obj;
 }
@@ -110,6 +110,13 @@ $(document).ready(function() {
       xhr.responseType = "blob";
       var bigfile_warning = false;
       var chunk_size = 10000000;
+      $(progress).click(function() {
+        if (confirm(`Abort download of "${data.filename}"?`)) {
+          xhr.abort();
+          progress.value = progress.max;
+          window.dirty--;
+        }
+      });
       xhr.addEventListener("progress", function(e) {
         progress.value = e.loaded;
         progress.max = e.total;
@@ -210,8 +217,18 @@ $(document).ready(function() {
     xhr.send();
   });
 
-  var params = toObject(window.location.search.substr(1).split("&").map(function(arg){ return arg.split("="); }));
+  var params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
   if (params.q) {
     $('input[type="search"]').val(params.q);
+  }
+  if (params.download) {
+    var m = /([a-z]+)\.[^./]+\//.exec(params.download);
+    if (m) {
+      var input = $(`#${m[1]}_q`);
+      if (input) {
+        input.val(params.download);
+        input.parents("form").find("[data-download-filename]").click();
+      }
+    }
   }
 });

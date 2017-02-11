@@ -1097,7 +1097,7 @@ get "/imgur/r/:subreddit" do
   @subreddit = params[:subreddit]
 
   response = ImgurParty.get("/gallery/r/#{@subreddit}")
-  raise ImgurError.new(response) if !response.success?
+  raise ImgurError.new(response) if !response.success? or response.body.empty?
   @data = response.parsed_response["data"]
 
   content_type :atom

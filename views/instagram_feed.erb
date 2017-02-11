@@ -40,6 +40,11 @@ else
   EOF
 end
 -%>
+<%=
+<<-EOF.undent.esc
+  <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{post["code"]}")}">Download with nice filename</a></p>
+EOF
+-%>
     </content>
   </entry>
 <%- end -%>
