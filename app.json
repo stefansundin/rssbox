@@ -5,40 +5,47 @@
   "website": "https://github.com/stefansundin/rssbox",
   "logo": "https://stefansundin.github.io/rssbox/img/icon128.png",
   "success_url": "/",
-  "addons": ["heroku-redis"],
+  "addons": [
+    {
+      "plan": "heroku-redis",
+      "options": {
+        "maxmemory": "allkeys-lru"
+      }
+    }
+  ],
   "keywords": ["rss"],
   "env": {
     "RACK_ENV": "deployment",
     "TWITTER_ACCESS_TOKEN": {
-      "description": "(Optional) Your Twitter access token. Read the README.md to learn how to generate this from the consumer key and consumer secret.",
+      "description": "Your Twitter access token. Read the README.md to learn how to generate this from the consumer key and consumer secret.",
       "required": false
     },
     "GOOGLE_API_KEY": {
-      "description": "(Optional) Your Google API key for YouTube and Google+.",
+      "description": "Your Google API key for YouTube and Google+.",
       "required": false
     },
     "VIMEO_ACCESS_TOKEN": {
-      "description": "(Optional) Your Vimeo access token.",
+      "description": "Your Vimeo access token.",
       "required": false
     },
     "FACEBOOK_APP_ID": {
-      "description": "(Optional) Your Facebook app id.",
+      "description": "Your Facebook app id.",
       "required": false
     },
     "FACEBOOK_APP_SECRET": {
-      "description": "(Optional) Your Facebook app secret.",
+      "description": "Your Facebook app secret.",
       "required": false
     },
     "SOUNDCLOUD_CLIENT_ID": {
-      "description": "(Optional) Your SoundCloud client id.",
+      "description": "Your SoundCloud client id.",
       "required": false
     },
     "TWITCH_CLIENT_ID": {
-      "description": "(Optional) Your Twitch client id.",
+      "description": "Your Twitch client id.",
       "required": false
     },
     "IMGUR_CLIENT_ID": {
-      "description": "(Optional) Your Imgur client id.",
+      "description": "Your Imgur client id.",
       "required": false
     }
   }
