@@ -3,7 +3,7 @@ require "uri"
 require "resolv-replace.rb"
 
 class String
-  URL_REGEXP = /\bhttps?:\/\/[a-z0-9\/\-+=_#%\.~?\[\]@!$&'()*,;:\|]+(?<![%\.~?\[\]@!$&'()*,;:])/i
+  URL_REGEXP = /\bhttps?:\/\/(?:[a-z0-9\/\-+=_#%\.~?\[\]@!$&'*,;:\|]|\([a-z0-9\/\-+=_#%\.~?\[\]@!$&'*,;:\|]+\))+(?<![%\.~?\[\]@!$&'*,;:])/i
   SPOTIFY_REGEXP = /\bspotify:(?:artist|album|track|user):[0-9a-zA-Z:]+\b/
 
   @@url_cache = {}
