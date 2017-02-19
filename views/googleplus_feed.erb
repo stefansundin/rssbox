@@ -5,7 +5,7 @@
   <icon>https://ssl.gstatic.com/images/branding/product/ico/google_plus_alldp.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://plus.google.com/<%= @id %>" rel="alternate" />
-  <updated><%= Time.parse(@data["updated"]) if @data %></updated>
+  <updated><%= Time.parse(@data["updated"]) if @data["updated"] %></updated>
 <%- @data["items"].each do |post| -%>
 
   <entry>
