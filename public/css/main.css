@@ -36,10 +36,8 @@ progress {
 .input-group {
   margin: 10px 0 5px;
 }
-.input-group-addon {
-  min-width: 110px;
-}
 .input-group-addon label {
+  min-width: 100px;
   margin: 0;
 }
 .dropdown-toggle {
