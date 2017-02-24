@@ -1,9 +1,15 @@
-web:
-  build: .
-  ports:
-   - "3000:8080"
-  links:
-   - redis
-  env_file: .dockerenv
-redis:
-  image: redis
+version: "3.1"
+services:
+  web:
+    build: .
+    command: bin/server
+    environment:
+      - PORT=80
+      - REDIS_URL=redis://redis:6379/3
+    env_file: .dockerenv
+    ports:
+      - "3000:80"
+    links:
+      - redis
+  redis:
+    image: redis

@@ -5,8 +5,8 @@
 /.dockerenv
 /.vagrant
 /.otto*
-/.bundle
 Thumbs.db
 .DS_Store
 *.swp
+*~
 ubuntu-*-cloudimg-console.log

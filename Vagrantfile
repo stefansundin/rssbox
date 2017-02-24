@@ -113,7 +113,7 @@ source ~/rssbox.env
 EOF
 
 cd /vagrant
-bundle install --without development:test
+bundle install
 SCRIPT
 
 
