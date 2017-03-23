@@ -95,6 +95,7 @@ get %r{/twitter/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
     exclude_replies: params[:exclude_replies] || "0",
     tweet_mode: "extended"
   })
+  return response.message if response.code == 401
   raise TwitterError.new(response) if !response.success?
 
   @data = response.parsed_response
