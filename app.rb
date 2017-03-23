@@ -3,12 +3,18 @@ require "./config/application"
 require "active_support/core_ext/string"
 require "open-uri"
 
+before do
+  content_type :text
+end
+
 get "/" do
+  content_type :html
   SecureHeaders.use_secure_headers_override(request, :index)
   erb :index
 end
 
 get "/live" do
+  content_type :html
   SecureHeaders.use_secure_headers_override(request, :live)
   send_file File.join(settings.public_folder, 'live.html')
 end
@@ -311,7 +317,6 @@ get "/facebook" do
 end
 
 get "/facebook/download" do
-  content_type :text
   if /\/(?<id>\d+)/ =~ params[:url]
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
@@ -505,7 +510,6 @@ end
 
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
-  content_type :text
 
   response = InstagramParty.get("/#{username}/")
   return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/query/?q=ig_user(#{@user_id})%7Busername%7D" if response.code == 404
@@ -786,7 +790,6 @@ get "/twitch" do
 end
 
 get "/twitch/download" do
-  content_type :text
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
@@ -835,7 +838,6 @@ get "/twitch/download" do
 end
 
 get "/twitch/watch" do
-  content_type :text
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
@@ -978,7 +980,6 @@ get %r{/ustream/(?<id>\d+)(?:/(?<title>.+))?} do |id, title|
 end
 
 get "/ustream/download" do
-  content_type :text
   if /ustream\.tv\/recorded\/(?<id>\d+)/ =~ params[:url]
     # http://www.ustream.tv/recorded/74562214
   elsif params[:url].numeric?
@@ -1030,7 +1031,6 @@ get "/dailymotion" do
     screenname = response.parsed_response["screenname"]
     redirect "/dailymotion/#{user_id}/#{screenname}"
   else
-    content_type :text
     "Could not find a user with the name #{user}. Sorry."
   end
 end
@@ -1191,7 +1191,6 @@ end
 if ENV["LOADERIO_VERIFICATION_TOKEN"]
   /(loaderio-)?(?<loaderio_token>[0-9a-f]+)/ =~ ENV["LOADERIO_VERIFICATION_TOKEN"]
   get Regexp.new("^/loaderio-#{loaderio_token}") do
-    content_type :text
     "loaderio-#{loaderio_token}"
   end
 end
