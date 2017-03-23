@@ -1068,6 +1068,7 @@ get "/imgur" do
     username = response.parsed_response["data"]["account_url"]
   elsif username
     response = ImgurParty.get("/account/#{CGI.escape(username)}")
+    return "Can't find a user with that name. Sorry. If you want a feed for a subreddit, enter \"r/#{username}\"." if response.code == 404
     raise ImgurError.new(response) if !response.success?
     user_id = response.parsed_response["data"]["id"]
     username = response.parsed_response["data"]["url"]
