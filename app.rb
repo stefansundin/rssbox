@@ -8,7 +8,6 @@ before do
 end
 
 get "/" do
-  content_type :html
   SecureHeaders.use_secure_headers_override(request, :index)
   erb :index
 end
@@ -101,7 +100,6 @@ get %r{/twitter/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @data = response.parsed_response
   @username = @data[0]["user"]["screen_name"] rescue username
 
-  content_type :atom
   erb :twitter_feed
 end
 
@@ -200,7 +198,6 @@ get "/youtube/:channel_id/:username" do
   raise GoogleError.new(response) if !response.success?
   @data = response.parsed_response["items"]
 
-  content_type :atom
   erb :youtube_feed
 end
 
@@ -245,7 +242,6 @@ get %r{/googleplus/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
     username
   end
 
-  content_type :atom
   erb :googleplus_feed
 end
 
@@ -446,7 +442,6 @@ get %r{/facebook/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   end
   @title += " on Facebook"
 
-  content_type :atom
   erb :facebook_feed
 end
 
@@ -529,7 +524,6 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @title += "'s #{type}" if type != "posts"
   @title += " on Instagram"
 
-  content_type :atom
   erb :instagram_feed
 end
 
@@ -585,7 +579,6 @@ get %r{/vine/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
     @data.first["username"]
   end
 
-  content_type :atom
   erb :vine_feed
 end
 
@@ -656,7 +649,6 @@ get %r{/periscope/(?<id>[^/]+)(?:/(?<username>.+))?} do |id, username|
     @username
   end
 
-  content_type :atom
   erb :periscope_feed
 end
 
@@ -729,7 +721,6 @@ get %r{/soundcloud/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @username = @data[0]["user"]["permalink"] rescue username
   @user = @data[0]["user"]["username"] rescue username
 
-  content_type :atom
   erb :soundcloud_feed
 end
 
@@ -758,7 +749,6 @@ get %r{/mixcloud/(?<username>[^/]+)(?:/(?<user>.+))?} do |username, user|
   @username = @data[0]["user"]["username"] rescue username
   @user = @data[0]["user"]["name"] rescue (user || username)
 
-  content_type :atom
   erb :mixcloud_feed
 end
 
@@ -907,7 +897,6 @@ get %r{/twitch/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
 
-  content_type :atom
   erb :twitch_feed
 end
 
@@ -941,7 +930,6 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   raise SpeedrunError.new(response) if !response.success?
   @data = response.parsed_response["data"].reject { |run| run["videos"].nil? }
 
-  content_type :atom
   erb :speedrun_feed
 end
 
@@ -975,7 +963,6 @@ get %r{/ustream/(?<id>\d+)(?:/(?<title>.+))?} do |id, title|
   raise UstreamError.new(response) if !response.success?
   @data = response.parsed_response["videos"]
 
-  content_type :atom
   erb :ustream_feed
 end
 
@@ -1043,7 +1030,6 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)(?:/(?<screenname>.+))?} do |user_id, s
   raise DailymotionError.new(response) if !response.success?
   @data = response.parsed_response["list"]
 
-  content_type :atom
   erb :dailymotion_feed
 end
 
@@ -1101,7 +1087,6 @@ get "/imgur/r/:subreddit" do
   raise ImgurError.new(response) if !response.success? or response.body.empty?
   @data = response.parsed_response["data"]
 
-  content_type :atom
   erb :imgur_feed
 end
 
@@ -1114,7 +1099,6 @@ get "/imgur/:user_id/:username" do
   raise ImgurError.new(response) if !response.success?
   @data = response.parsed_response["data"]
 
-  content_type :atom
   erb :imgur_feed
 end
 
@@ -1164,7 +1148,6 @@ get "/dilbert" do
     })
   end
 
-  content_type :atom
   erb :dilbert
 end
 
@@ -1177,7 +1160,6 @@ get %r{^/apple-touch-icon} do
 end
 
 get "/opensearch.xml" do
-  content_type :opensearch
   erb :opensearch
 end
 
