@@ -36,6 +36,9 @@ progress {
 .input-group {
   margin: 10px 0 5px;
 }
+.form-inline .input-group {
+  margin: 0 5px 0;
+}
 .input-group-addon label {
   min-width: 100px;
   margin: 0;
@@ -50,6 +53,7 @@ progress {
 
 .expander {
   display: none;
+  margin-top: 15px;
 }
 
 .glyphicon.spin {
