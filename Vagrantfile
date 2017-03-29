@@ -88,6 +88,7 @@ else
   git clone https://github.com/sstephenson/ruby-build.git $RBENV_ROOT/plugins/ruby-build
   git clone https://github.com/sstephenson/rbenv-gem-rehash.git $RBENV_ROOT/plugins/rbenv-gem-rehash
   git clone https://github.com/rkh/rbenv-update.git $RBENV_ROOT/plugins/rbenv-update
+  echo 'gem: --no-document' >> ~/.gemrc
 fi
 
 export RUBY_VERSION=$(cat /vagrant/.ruby-version)
