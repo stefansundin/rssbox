@@ -5,7 +5,7 @@ ruby "~> 2.4.0"
 gem "rack"
 gem "sinatra"
 gem "bundler"
-gem "rake"
+gem "rake", require: false
 gem "puma"
 gem "dotenv"
 gem "redis"

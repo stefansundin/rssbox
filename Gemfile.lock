@@ -8,10 +8,10 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.0)
       public_suffix (~> 2.0, >= 2.0.2)
-    airbrake (5.8.1)
-      airbrake-ruby (~> 1.8)
-    airbrake-ruby (1.8.0)
-    backports (3.6.8)
+    airbrake (6.0.0)
+      airbrake-ruby (~> 2.0)
+    airbrake-ruby (2.0.0)
+    backports (3.7.0)
     better_errors (2.1.1)
       coderay (>= 1.0.0)
       erubis (>= 2.6.6)
@@ -48,8 +48,8 @@ GEM
     multi_json (1.12.1)
     multi_xml (0.6.0)
     multipart-post (2.0.0)
-    newrelic_rpm (3.18.1.330)
-    nokogiri (1.7.0.1)
+    newrelic_rpm (4.0.0.332)
+    nokogiri (1.7.1)
       mini_portile2 (~> 2.1.0)
     opengraph_parser (0.2.3)
       addressable
@@ -64,7 +64,7 @@ GEM
       pry (~> 0.9)
       slop (~> 3.0)
     public_suffix (2.0.5)
-    puma (3.8.1)
+    puma (3.8.2)
     rack (1.6.5)
     rack-protection (1.5.3)
       rack
@@ -94,8 +94,8 @@ GEM
     slop (3.6.0)
     thor (0.19.4)
     thread_safe (0.3.6)
-    tilt (2.0.6)
-    tzinfo (1.2.2)
+    tilt (2.0.7)
+    tzinfo (1.2.3)
       thread_safe (~> 0.1)
     useragent (0.16.8)
 
@@ -130,7 +130,7 @@ DEPENDENCIES
   sinatra-reloader
 
 RUBY VERSION
-   ruby 2.4.0p0
+   ruby 2.4.1p111
 
 BUNDLED WITH
    1.14.6
