@@ -48,7 +48,7 @@ class String
   end
 
   def normalize_url
-    uri = URI.parse(self)
+    uri = URI.parse(URI.escape(self))
     port = uri.port if (uri.scheme == "http" and uri.port != 80) or (uri.scheme == "https" and uri.port != 443)
     path = uri.path.empty? ? "/" : uri.path
     URI::HTTP.new(uri.scheme.downcase, uri.userinfo, uri.host.downcase, port, uri.registry, path, uri.opaque, uri.query, uri.fragment).to_s
