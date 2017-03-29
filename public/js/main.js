@@ -108,7 +108,6 @@ $(document).ready(function() {
       var xhr = new XMLHttpRequest();
       xhr.open("GET", data.url, true);
       xhr.responseType = "blob";
-      var bigfile_warning = false;
       var chunk_size = 10000000;
       $(progress).click(function() {
         if (confirm(`Abort download of "${data.filename}"?`)) {
@@ -117,13 +116,11 @@ $(document).ready(function() {
           window.dirty--;
         }
       });
-      xhr.addEventListener("progress", function(e) {
-        progress.value = e.loaded;
-        progress.max = e.total;
-        progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
-        if (e.total > 5*chunk_size && !bigfile_warning) {
-          bigfile_warning = true;
-          if (confirm(`This file is big (${fmt_filesize(e.total,0)}). Download with ${Math.ceil(e.total/chunk_size)} smaller and resumable requests instead?`)) {
+      if (form.attr("action") == "facebook") {
+        xhr.addEventListener("progress", function bigfile(e) {
+          if (e.total == 0) return;
+          xhr.removeEventListener("progress", bigfile);
+          if (e.total > 5*chunk_size && confirm(`This file is big (${fmt_filesize(e.total,0)}). Download with ${Math.ceil(e.total/chunk_size)} smaller and resumable requests instead?`)) {
             xhr.abort();
             $(progress).detach();
             var requests = [];
@@ -147,6 +144,7 @@ $(document).ready(function() {
                 });
                 xhr.addEventListener("error", function() {
                   console.log(`Network error downloading part ${j}.`);
+                  // TODO: Only retry if we got at least one byte. If we didn't get any bytes, it's reasonable to assume the OPTIONS request failed or something we can't fix with a retry.
                   // reuse xhr object and try again
                   var timer = setInterval(function() {
                     xhr.open("GET", data.url, true);
@@ -188,7 +186,12 @@ $(document).ready(function() {
               })(i, j);
             }
           }
-        }
+        });
+      }
+      xhr.addEventListener("progress", function(e) {
+        progress.value = e.loaded;
+        progress.max = e.total;
+        progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
       });
       xhr.addEventListener("error", function() {
         alert(`Network error downloading file:\n${data.filename}\n\nConsider opening the video and using the browser to download instead.`);
