@@ -16,8 +16,8 @@ class Sinatra::Request
 
   def root_url
     return base_url if !env["HTTP_X_FORWARDED_URL"]
-    forwarded_path = URI.parse(env["HTTP_X_FORWARDED_URL"]).path
-    uri = URI.parse url
+    forwarded_path = Addressable::URI.parse(env["HTTP_X_FORWARDED_URL"]).path
+    uri = Addressable::URI.parse(url)
     uri.path = forwarded_path[0..(forwarded_path.length-uri.path.length-1)]
     uri.query = uri.fragment = nil
     uri.to_s

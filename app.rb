@@ -664,7 +664,7 @@ get "/soundcloud" do
 
   response = SoundcloudParty.get("/resolve", query: { url: "https://soundcloud.com/#{username}" }, follow_redirects: false)
   if response.code == 302
-    uri = URI.parse response.parsed_response["location"]
+    uri = Addressable::URI.parse(response.parsed_response["location"])
     return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
     id = uri.path[/\d+/]
   elsif response.code == 404 && username.numeric?
@@ -691,7 +691,7 @@ get "/soundcloud/download" do
   response = SoundcloudParty.get("/resolve", query: { url: url }, follow_redirects: false)
   return "URL does not resolve." if response.code == 404
   raise SoundcloudError.new(response) if response.code != 302
-  uri = URI.parse response.parsed_response["location"]
+  uri = Addressable::URI.parse(response.parsed_response["location"])
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
   response = SoundcloudParty.get("#{uri.path}/stream", follow_redirects: false)
   raise SoundcloudError.new(response) if response.code != 302

@@ -1,5 +1,5 @@
+require "addressable/uri"
 require "net/http"
-require "uri"
 require "resolv-replace.rb"
 
 class String
@@ -43,15 +43,8 @@ class String
   end
 
   def url_ext
-    uri = URI.parse(self)
+    uri = Addressable::URI.parse(self)
     File.extname(uri.path)
-  end
-
-  def normalize_url
-    uri = URI.parse(URI.escape(self))
-    port = uri.port if (uri.scheme == "http" and uri.port != 80) or (uri.scheme == "https" and uri.port != 443)
-    path = uri.path.empty? ? "/" : uri.path
-    URI::HTTP.new(uri.scheme.downcase, uri.userinfo, uri.host.downcase, port, uri.registry, path, uri.opaque, uri.query, uri.fragment).to_s
   end
 
   def https
@@ -59,7 +52,7 @@ class String
   end
 
   def short_host
-    uri = URI.parse(self)
+    uri = Addressable::URI.parse(self).normalize!
     if uri.host[0..3] == "www."
       uri.host[4..-1]
     else
@@ -67,25 +60,27 @@ class String
     end
   end
 
-  def resolve_url
-    url = self.normalize_url
-    dest = @@url_cache[url]
-    if dest
-      return url if dest == ""
-      return dest
-    end
-    dest = $redis.hget("urls", url)
-    if dest
-      @@url_cache[url] = dest
-      return url if dest == ""
-      return dest
+  def resolve_url(force=false)
+    url = Addressable::URI.parse(self).normalize!.to_s
+    if !force
+      dest = @@url_cache[url]
+      if dest
+        return url if dest == ""
+        return dest
+      end
+      dest = $redis.hget("urls", url)
+      if dest
+        @@url_cache[url] = dest
+        return url if dest == ""
+        return dest
+      end
     end
 
     dest = url
     catch :done do
       5.times do
         begin
-          uri = URI.parse(dest)
+          uri = Addressable::URI.parse(dest)
           throw :done if uri.host.nil?
           opt = {
             use_ssl: uri.scheme == "https",
@@ -98,7 +93,7 @@ class String
             when Net::HTTPRedirection then
               if response["location"][0] == "/"
                 # relative redirect
-                uri = URI.parse(url)
+                uri = Addressable::URI.parse(url)
                 redirect_url = uri.scheme + "://" + uri.host + response["location"]
               elsif /^https?:\/\/./ =~ response["location"]
                 # absolute redirect
@@ -107,7 +102,7 @@ class String
                 # bad redirect
                 throw :done
               end
-              redirect_url = URI.escape(redirect_url) # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
+              redirect_url = Addressable::URI.escape(redirect_url) # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
               if %w[
                 ://www.youtube.com/das_captcha
                 ://www.nytimes.com/glogin
