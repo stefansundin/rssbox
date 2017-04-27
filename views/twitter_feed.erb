@@ -29,7 +29,7 @@
           b["content_type"].start_with?("video/") <=> a["content_type"].start_with?("video/")
         end
       end.first
-      text += " #{video["url"]}?w=#{entity["sizes"]["large"]["w"]}&h=#{entity["sizes"]["large"]["h"]}"
+      text += " #{video["url"]}"
     end
   end
   if t["entities"]["media"]
