@@ -29,6 +29,10 @@ class String
     self.gsub(/[\u00a0\u3000]/,"").strip
   end
 
+  def strip_tags
+    self.gsub(%r{</?[^>]+?>}, '')
+  end
+
   def undent
     # from https://github.com/Homebrew/brew/blob/c9c7f462d37500549127efba96c7a25e5c70de4a/Library/Homebrew/extend/string.rb#L2-L4
     gsub(/^[ \t]{#{(slice(/^[ \t]+/) || '').length}}/, "")

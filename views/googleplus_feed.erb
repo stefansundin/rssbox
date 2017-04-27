@@ -16,7 +16,7 @@
     <updated><%= Time.parse(post["updated"]) %></updated>
     <author><name><%= post["actor"]["displayName"].esc %></name></author>
     <content type="html">
-<%= post["object"]["content"].to_paragraphs(/<br[ \/]*>/).esc %>
+<%= post["object"]["content"].gsub("<br />", "\n").strip_tags.linkify.to_paragraphs.esc %>
 <%- if post["object"]["attachments"] -%>
 <%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "video" }.each do |attachment| -%>
 <%= "<a href='#{attachment["url"]}'><img src='#{attachment["image"]["url"]}'></a>".esc %>
