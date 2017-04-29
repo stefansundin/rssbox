@@ -65,7 +65,7 @@ class String
   end
 
   def resolve_url(force=false)
-    url = Addressable::URI.parse(self).normalize!.to_s
+    url = Addressable::URI.parse(self).normalize.to_s
     if !force
       dest = @@url_cache[url]
       if dest
@@ -106,7 +106,7 @@ class String
                 # bad redirect
                 throw :done
               end
-              redirect_url = Addressable::URI.escape(redirect_url) # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
+              redirect_url = Addressable::URI.parse(redirect_url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
               if %w[
                 ://www.youtube.com/das_captcha
                 ://www.nytimes.com/glogin
@@ -135,13 +135,14 @@ class String
       dest = dest.gsub(tracking, "")
     end
     # Remove youtu.be crap
-    dest = dest.gsub(/&feature=youtu\.be(?=&|#|$)/, "")
+    dest = dest.gsub(/(?<=[?&])feature=youtu\.be(?=&|#|$)/, "")
     # Remove mysterious prclt tracking code
-    dest = dest.gsub(/(?:__)?prclt[=-][^&]+/, "")
-    # Remove utm_ and sc_ codes
+    dest = dest.gsub(/(?<=[?&])(?:__)?prclt[=-][^&#]+/, "")
+    # Remove Amazon tracking codes
     # https://aws.amazon.com/podcasts/aws-podcast/?utm_content=bufferf4ae0&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
     # https://aws.amazon.com/about-aws/whats-new/2016/09/aws-config-console-now-displays-api-events-associated-with-configuration-changes/?sc_channel=sm&sc_campaign=launch_Config_ead85f34&sc_publisher=tw_go&sc_content=AWS_Config_add_support_for_viewing_CloudTrail_API_events_from_Config_console&sc_geo=globaly
-    dest = dest.gsub(/(?:utm|sc)_[^&]+/, "")
+    # https://aws.amazon.com/summits/washington-dc/?trkCampaign=DCSummit2017&trk=sm_twitter&adbsc=social_20170427_71906466&adbid=z123jzf53ojbjbm0l221ez2jtoeqijchx04&adbpl=gp&adbpr=100017971115449920316
+    dest = dest.gsub(/(?<=[?&])(?:(?:utm|sc)_[a-z]+|adb(?:sc|id|pr|pl)|trk(?:Campaign)?)=[^&#]+/, "")
     # Remove #_=_
     dest = dest.gsub(/#_=_$/, "")
     # Remove #. tracking codes
@@ -149,7 +150,7 @@ class String
     # Remove unnecessary ampersands (possibly caused by the above)
     dest = dest.gsub(/\?&+/, "?")
     # Remove trailing ?&#
-    dest = dest.gsub(/[?&#]+$/, "")
+    dest = dest.gsub(/[?&#]+($|(?=#))/, "")
 
     if url == dest
       # save some space
