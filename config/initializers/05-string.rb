@@ -196,7 +196,7 @@ class String
     root_url = request ? request.root_url : ""
     if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self or %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
       <<-EOF.undent
-        <iframe src="https://www.facebook.com/video/embed?video_id=#{id}" width="1280" height="720" frameborder="0" scrolling="no" allowfullscreen></iframe>
+        <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen></iframe>
         <a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a> | <a href="#{root_url}/?download=#{CGI.escape("https://www.facebook.com/video/embed?video_id=#{id}")}">Download video with nice filename</a>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|t=(?<t>[^&#]+)))*} =~ self
@@ -212,7 +212,7 @@ class String
     elsif %r{^https?://(?:www\.)?vimeo\.com/(?<id>\d+)} =~ self
       "<iframe width='853' height='480' src='https://player.vimeo.com/video/#{id}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(?:www\.)?instagram\.com/p/(?<id>[^/?#]+)} =~ self
-      "<iframe src='https://www.instagram.com/p/#{id}/embed/' width='612' height='710' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='612' height='710' src='https://www.instagram.com/p/#{id}/embed/' frameborder='0' scrolling='no' allowfullscreen></iframe>"
     elsif %r{^https?://(?:www\.)?twitch\.tv/(?:videos/(?<vod_id>\d+)|(?<channel_name>[^/]+)(?:/v/(?<vod_id>\d+))?).*(?:[?&#](?<t>t=[^&#]+))?} =~ self
       # https://www.twitch.tv/videos/25133028
       # https://www.twitch.tv/gamesdonequick
