@@ -1165,13 +1165,6 @@ if ENV["GOOGLE_VERIFICATION_TOKEN"]
   end
 end
 
-if ENV["LOADERIO_VERIFICATION_TOKEN"]
-  /(loaderio-)?(?<loaderio_token>[0-9a-f]+)/ =~ ENV["LOADERIO_VERIFICATION_TOKEN"]
-  get Regexp.new("^/loaderio-#{loaderio_token}") do
-    "loaderio-#{loaderio_token}"
-  end
-end
-
 
 error do |e|
   status 500
