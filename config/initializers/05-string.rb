@@ -86,27 +86,27 @@ class String
         begin
           uri = Addressable::URI.parse(dest)
           throw :done if uri.host.nil?
-          opt = {
+          opts = {
             use_ssl: uri.scheme == "https",
             open_timeout: 3,
             read_timeout: 3,
           }
-          Net::HTTP.start(uri.host, uri.port, opt) do |http|
+          Net::HTTP.start(uri.host, uri.port, opts) do |http|
             response = http.head(uri.request_uri)
             case response
             when Net::HTTPRedirection then
               if response["location"][0] == "/"
                 # relative redirect
-                uri = Addressable::URI.parse(url)
-                redirect_url = uri.scheme + "://" + uri.host + response["location"]
+                uri = Addressable::URI.parse(dest)
+                next_url = uri.scheme + "://" + uri.host + response["location"]
               elsif /^https?:\/\/./ =~ response["location"]
                 # absolute redirect
-                redirect_url = response["location"]
+                next_url = response["location"]
               else
                 # bad redirect
                 throw :done
               end
-              redirect_url = Addressable::URI.parse(redirect_url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
+              next_url = Addressable::URI.parse(next_url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
               if %w[
                 ://www.youtube.com/das_captcha
                 ://www.nytimes.com/glogin
@@ -116,10 +116,10 @@ class String
                 ://www.theaustralian.com.au/remote/check_cookie.html
                 ://signin.aws.amazon.com/
                 ://accounts.google.com/ServiceLogin
-              ].any? { |s| redirect_url.include?(s) }
+              ].any? { |s| next_url.include?(s) }
                 throw :done
               end
-              dest = redirect_url
+              dest = next_url
             else
               throw :done
             end
@@ -142,7 +142,7 @@ class String
     # https://aws.amazon.com/podcasts/aws-podcast/?utm_content=bufferf4ae0&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
     # https://aws.amazon.com/about-aws/whats-new/2016/09/aws-config-console-now-displays-api-events-associated-with-configuration-changes/?sc_channel=sm&sc_campaign=launch_Config_ead85f34&sc_publisher=tw_go&sc_content=AWS_Config_add_support_for_viewing_CloudTrail_API_events_from_Config_console&sc_geo=globaly
     # https://aws.amazon.com/summits/washington-dc/?trkCampaign=DCSummit2017&trk=sm_twitter&adbsc=social_20170427_71906466&adbid=z123jzf53ojbjbm0l221ez2jtoeqijchx04&adbpl=gp&adbpr=100017971115449920316
-    dest = dest.gsub(/(?<=[?&])(?:(?:utm|sc)_[a-z]+|adb(?:sc|id|pr|pl)|trk(?:Campaign)?)=[^&#]+/, "")
+    dest = dest.gsub(/(?<=[?&])(?:(?:utm|sc)_[a-z]+|adb(?:sc|id|pr|pl)|trk(?:Campaign)?|mkt_tok|campaign-id)=[^&#]+/, "")
     # Remove #_=_
     dest = dest.gsub(/#_=_$/, "")
     # Remove #. tracking codes
