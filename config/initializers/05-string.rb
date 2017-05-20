@@ -142,7 +142,7 @@ class String
     # https://aws.amazon.com/podcasts/aws-podcast/?utm_content=bufferf4ae0&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
     # https://aws.amazon.com/about-aws/whats-new/2016/09/aws-config-console-now-displays-api-events-associated-with-configuration-changes/?sc_channel=sm&sc_campaign=launch_Config_ead85f34&sc_publisher=tw_go&sc_content=AWS_Config_add_support_for_viewing_CloudTrail_API_events_from_Config_console&sc_geo=globaly
     # https://aws.amazon.com/summits/washington-dc/?trkCampaign=DCSummit2017&trk=sm_twitter&adbsc=social_20170427_71906466&adbid=z123jzf53ojbjbm0l221ez2jtoeqijchx04&adbpl=gp&adbpr=100017971115449920316
-    dest = dest.gsub(/(?<=[?&])(?:(?:utm|sc)_[a-z]+|adb(?:sc|id|pr|pl)|trk(?:Campaign)?|mkt_tok|campaign-id)=[^&#]+/, "")
+    dest = dest.gsub(/(?<=[?&])(?:(?:utm|sc)_[a-z]+|utm|adb(?:sc|id|pr|pl)|trk(?:Campaign)?|mkt_tok|campaign-id)=[^&#]+/, "")
     # Remove #_=_
     dest = dest.gsub(/#_=_$/, "")
     # Remove #. tracking codes
