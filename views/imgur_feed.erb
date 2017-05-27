@@ -13,9 +13,8 @@
     id = "imgur:album:#{image["id"]}"
     title = "Album: #{image["title"]} (#{image["images_count"]} images)"
     link = "https://imgur.com/a/#{image["id"]}"
-    img_src = "https://i.imgur.com/#{image["cover"]}h.jpg"
     body = <<-EOF.undent.esc
-      <a href="#{link}" rel="noreferrer"><img src="#{img_src}" referrerpolicy="no-referrer"></a>
+      <a href="#{link}" rel="noreferrer"><img src="https://i.imgur.com/#{image["cover"]}h.jpg" referrerpolicy="no-referrer"></a>
 
       #{image["description"].linkify.to_paragraphs}
       <p><a href="http://s.imgur.com/a/#{image["id"]}/zip" rel="noreferrer">Download album</a></p>
@@ -26,10 +25,9 @@
     link = "https://imgur.com/#{image["id"]}"
     if image["gifv"]
       title = "Gif: #{title}"
-      img_src = "https://i.imgur.com/#{image["id"]}.gif"
-      gifv_url = "#{img_src}v"
+      gifv_url = "https://i.imgur.com/#{image["id"]}.gifv"
       body = <<-EOF.undent.esc
-        <iframe width="#{image["width"]}" height="#{image["height"]}" src="#{gifv_url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+        <iframe width="#{image["width"]}" height="#{image["height"]+30}" src="#{gifv_url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
         <p><a href="#{gifv_url}" rel="noreferrer">Open embed</a></p>
 
         #{image["description"].linkify.to_paragraphs}
@@ -38,9 +36,8 @@
       EOF
     else
       ext = image["type"].split("/")[1]
-      img_src = "https://i.imgur.com/#{image["id"]}h.#{ext}"
       body = <<-EOF.undent.esc
-        <a href="#{link}.#{ext}" rel="noreferrer"><img src="#{img_src}" referrerpolicy="no-referrer"></a>
+        <a href="#{link}.#{ext}" rel="noreferrer"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}" referrerpolicy="no-referrer"></a>
 
         #{image["description"].linkify.to_paragraphs}
         <p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}" rel="noreferrer">Download</a></p>
@@ -54,7 +51,6 @@
     <id><%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= title.to_line.esc %></title>
     <link href="<%= link.esc %>" />
-    <link href="<%= img_src.esc %>" rel="enclosure" />
     <updated><%= Time.at(image["datetime"].to_i) %></updated>
     <author><name><%= @username.esc %></name></author>
     <content type="html">
