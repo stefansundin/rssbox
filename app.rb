@@ -96,6 +96,7 @@ get %r{/twitter/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
     tweet_mode: "extended"
   })
   return response.message if response.code == 401
+  return "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing." if response.code == 404
   raise TwitterError.new(response) if !response.success?
 
   @data = response.parsed_response
