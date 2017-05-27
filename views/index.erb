@@ -215,6 +215,12 @@
       <div class="input-group-addon"><label for="imgur_q">Imgur</label></div>
       <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur username or a url. Or subreddit url." required>
       <span class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li><a data-submit-type="animated=true">Animated only</a></li>
+          <li><a data-submit-type="animated=false">Pictures only</a></li>
+          <li><a data-submit-type="is_album=true">Albums only</a></li>
+        </ul>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </span>
     </form>

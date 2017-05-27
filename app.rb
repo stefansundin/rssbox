@@ -1045,7 +1045,7 @@ get "/imgur" do
   elsif /(?:(?:imgur|reddit)\.com)?\/?r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
-    redirect "/imgur/r/#{subreddit}"
+    redirect "/imgur/r/#{subreddit}#{"?#{params[:type]}" if !params[:type].empty?}"
     return
   elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] and username != "i"
     # https://thebookofgray.imgur.com/
@@ -1079,28 +1079,39 @@ get "/imgur" do
   if user_id.nil?
     "This image was probably uploaded anonymously. Sorry."
   else
-    redirect "/imgur/#{user_id}/#{username}"
+    redirect "/imgur/#{user_id}/#{username}#{"?#{params[:type]}" if !params[:type].empty?}"
   end
 end
 
-get "/imgur/r/:subreddit" do
-  @subreddit = params[:subreddit]
-
-  response = ImgurParty.get("/gallery/r/#{@subreddit}")
+get "/imgur/:user_id/:username" do
+  if params[:user_id] == "r"
+    @subreddit = params[:username]
+    response = ImgurParty.get("/gallery/r/#{@subreddit}")
+  else
+    @user_id = params[:user_id]
+    @username = params[:username]
+    # can't use user_id in this request unfortunately
+    response = ImgurParty.get("/account/#{@username}/submissions")
+  end
   raise ImgurError.new(response) if !response.success? or response.body.empty?
   @data = response.parsed_response["data"]
 
-  erb :imgur_feed
-end
-
-get "/imgur/:user_id/:username" do
-  @user_id = params[:user_id]
-  @username = params[:username]
-
-  # can't use user_id in this request unfortunately
-  response = ImgurParty.get("/account/#{@username}/submissions")
-  raise ImgurError.new(response) if !response.success?
-  @data = response.parsed_response["data"]
+  if params[:animated]
+    value = params[:animated] == "true"
+    @data.select! { |image| image["animated"] == value }
+  end
+  if params[:nsfw]
+    value = params[:nsfw] == "true"
+    @data.select! { |image| image["nsfw"] == value }
+  end
+  if params[:is_album]
+    value = params[:is_album] == "true"
+    @data.select! { |image| image["is_album"] == value }
+  end
+  if params[:min_score]
+    value = params[:min_score].to_i
+    @data.select! { |image| image["score"] >= value }
+  end
 
   erb :imgur_feed
 end
