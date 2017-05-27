@@ -71,16 +71,16 @@ end
 <%= post.val(:message, :description, :link).linkify_and_embed(request).to_paragraphs.esc %>
 <%=
 if type == "photo" and post["source"]
-  "<p><img src='#{post["source"]}'></p>".esc
+  "<p><img src='#{post["source"]}' referrerpolicy='no-referrer'></p>".esc
 elsif type == "photo"
   <<-EOF.undent.esc
-    <p><a href="#{post["full_picture"]}"><img src="#{post["picture"]}"></a></p>
+    <p><a href="#{post["full_picture"]}" rel="noreferrer"><img src="#{post["picture"]}" referrerpolicy="no-referrer"></a></p>
     <p><a href="#{request.root_url}/facebook/download?url=#{object_id}">Full size</a></p>
   EOF
 end
 %>
-<%= "<p>Link: <a href='#{post["link"]}'>#{post["link"]}</a></p>".esc if post["link"] %>
-<%= "<p>Post: <a href='https://www.facebook.com/#{post["id"]}'>https://www.facebook.com/#{post["id"]}</a></p>".esc %>
+<%= "<p>Link: <a href='#{post["link"]}' rel='noreferrer'>#{post["link"]}</a></p>".esc if post["link"] %>
+<%= "<p>Post: <a href='https://www.facebook.com/#{post["id"]}' rel='noreferrer'>https://www.facebook.com/#{post["id"]}</a></p>".esc %>
     </content>
   </entry>
 <%- end -%>

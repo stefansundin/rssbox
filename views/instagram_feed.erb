@@ -30,13 +30,13 @@
 <%=
 if post["is_video"]
   <<-EOF.undent.esc
-    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["code"]}/embed/" frameborder="0" scrolling="no" allowfullscreen></iframe>
+    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["code"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
     #{post["caption"].linkify.to_paragraphs}
     <p><a href="#{request.root_url}/instagram/download?url=#{post["code"]}">Download video</a></p>
   EOF
 else
   <<-EOF.undent.esc
-    <img src="#{post["display_src"]}">
+    <img src="#{post["display_src"]}" referrerpolicy="no-referrer">
     #{post["caption"].linkify.to_paragraphs}
   EOF
 end

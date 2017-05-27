@@ -24,7 +24,7 @@
     <author><name><%= post["username"].esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
-  <iframe width="600" height="600" scrolling="no" frameborder="no" src="#{post["permalinkUrl"]}/embed/simple" allowfullscreen></iframe>
+  <iframe width="600" height="600" src="#{post["permalinkUrl"]}/embed/simple" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
   <p>#{post["description"]}</p>
 

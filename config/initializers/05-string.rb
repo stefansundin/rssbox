@@ -196,8 +196,8 @@ class String
     root_url = request ? request.root_url : ""
     if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self or %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
       <<-EOF.undent
-        <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen></iframe>
-        <a href="https://www.facebook.com/video/embed?video_id=#{id}">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a> | <a href="#{root_url}/?download=#{CGI.escape("https://www.facebook.com/video/embed?video_id=#{id}")}">Download video with nice filename</a>
+        <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+        <a href="https://www.facebook.com/video/embed?video_id=#{id}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a> | <a href="#{root_url}/?download=#{CGI.escape("https://www.facebook.com/video/embed?video_id=#{id}")}">Download video with nice filename</a>
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))+} =~ self or %r{^https?://youtu\.be/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
@@ -210,11 +210,11 @@ class String
         end
         url += "&start=#{t}"
       end
-      "<iframe width='640' height='360' src='#{url}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='640' height='360' src='#{url}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?vimeo\.com/(?<id>\d+)} =~ self
-      "<iframe width='853' height='480' src='https://player.vimeo.com/video/#{id}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='853' height='480' src='https://player.vimeo.com/video/#{id}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?instagram\.com/p/(?<id>[^/?#]+)} =~ self
-      "<iframe width='612' height='710' src='https://www.instagram.com/p/#{id}/embed/' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='612' height='710' src='https://www.instagram.com/p/#{id}/embed/' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?twitch\.tv/(?:videos/(?<vod_id>\d+)|(?<channel_name>[^/]+)(?:/v/(?<vod_id>\d+))?).*(?:[?&#](?<t>t=[^&#]+))?} =~ self
       # https://www.twitch.tv/videos/25133028
       # https://www.twitch.tv/gamesdonequick
@@ -223,28 +223,28 @@ class String
       url += vod_id ? "video=v#{vod_id}" : "channel=#{channel_name}"
       url += "&time=#{t}" if t
       <<-EOF.undent
-        <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen></iframe>
-        <a href="#{url}">Open embed</a> | <a href="#{root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a>
+        <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy='no-referrer'></iframe>
+        <a href="#{url}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a>
       EOF
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self
       # https://soundcloud.com/infectedmushroom/liquid-smoke
       # https://soundcloud.com/infectedmushroom/sets/fields-of-grey-remixes
       height = set ? 450 : 166
-      "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:open|play)\.spotify\.com/(?<path>[^?#]+)} =~ self
-      "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
-      "<img src='https://i.giphy.com/#{id}.gif'>"
+      "<img src='https://i.giphy.com/#{id}.gif' referrerpolicy='no-referrer'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.gifv}i =~ self
-      "<iframe width='640' height='538' src='#{self.https}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='640' height='538' src='#{self.https}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
-      "<img src='#{self.https}'>"
+      "<img src='#{self.https}' referrerpolicy='no-referrer'>"
     elsif %r{^https?://video\.twimg\.com/ext_tw_video/.+/(?<width>\d+)x(?<height>\d+)/.+\.mp4}i =~ self
-      "<iframe width='#{width}' height='#{height}' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='#{width}' height='#{height}' src='#{self}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
-      "<iframe width='640' height='538' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='640' height='538' src='#{self}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://amp\.twimg\.com/v/.+}i =~ self
-      "<iframe width='640' height='600' src='#{self}' frameborder='0' scrolling='no' allowfullscreen></iframe>"
+      "<iframe width='640' height='600' src='#{self}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     end
   end
 end

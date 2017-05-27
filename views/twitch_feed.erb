@@ -19,10 +19,10 @@
 <%= <<-EOF.undent.esc
   <p><em>#{video["channel"]["display_name"]} was #{video["game"].empty? ? "live" : "playing #{video["game"]}"}.</em></p>
 
-  <iframe width="620" height="378" src="https://player.twitch.tv/?video=#{video["_id"]}" frameborder="0" scrolling="no" allowfullscreen></iframe>
+  <iframe width="620" height="378" src="https://player.twitch.tv/?video=#{video["_id"]}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
   <p>
-    <a href="https://player.twitch.tv/?video=#{video["_id"]}">Open embed</a> |
+    <a href="https://player.twitch.tv/?video=#{video["_id"]}" rel="noreferrer">Open embed</a> |
     <a href="#{request.root_url}/twitch/watch?url=#{video["_id"]}&open">Open in VLC</a> |
     <a href="#{request.root_url}/twitch/watch?url=#{video["_id"]}">Open in external program</a> |
     <a href="#{request.root_url}/twitch/download?url=#{video["_id"]}">Download video</a>

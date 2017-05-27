@@ -35,7 +35,7 @@
     <author><name><%= @username.esc %></name></author>
     <content type="html">
 <%= <<-EOF.undent.esc
-  <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen></iframe>
+  <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
   #{content_extra}
   #{video["snippet"]["description"].linkify.to_paragraphs}
 EOF

@@ -16,9 +16,9 @@
     <updated><%= Time.parse(track["created_at"]) %></updated>
     <author><name><%= track["user"]["username"].esc %></name></author>
     <content type="html">
-&lt;iframe width="100%" height="185" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/<%= track["id"] %>">&lt;/iframe>
+&lt;iframe width="100%" height="185" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/<%= track["id"] %>" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer">&lt;/iframe>
 
-<%= "<p><img src='#{track["artwork_url"]}'></p>".esc if track["artwork_url"] %>
+<%= "<p><img src='#{track["artwork_url"]}' referrerpolicy='no-referrer'></p>".esc if track["artwork_url"] %>
 
 <%= track["description"].linkify.to_paragraphs.esc %>
 

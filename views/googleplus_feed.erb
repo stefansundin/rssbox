@@ -19,15 +19,15 @@
 <%= CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags.linkify.to_paragraphs.esc %>
 <%- if post["object"]["attachments"] -%>
 <%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "video" }.each do |attachment| -%>
-<%= "<a href='#{attachment["url"]}'><img src='#{attachment["image"]["url"]}'></a>".esc %>
+<%= "<a href='#{attachment["url"]}' rel='noreferrer'><img src='#{attachment["image"]["url"]}' referrerpolicy='no-referrer'></a>".esc %>
 <%- end -%>
 <%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "photo" }.each do |attachment| -%>
-<%= "<a href='#{attachment["fullImage"]["url"]}' title='#{attachment["fullImage"]["width"]}x#{attachment["fullImage"]["height"]}'><img src='#{attachment["image"]["url"]}'></a>".esc %>
+<%= "<a href='#{attachment["fullImage"]["url"]}' title='#{attachment["fullImage"]["width"]}x#{attachment["fullImage"]["height"]}' rel='noreferrer'><img src='#{attachment["image"]["url"]}' referrerpolicy='no-referrer'></a>".esc %>
 <%- end -%>
 &lt;p>Attachments:&lt;/p>
 &lt;ul>
 <%- post["object"]["attachments"].each do |attachment| -%>
-<%= "  <li>#{attachment["objectType"].capitalize}: <a href='#{attachment["url"]}'>#{attachment["url"]}</a></li>".esc %>
+<%= "  <li>#{attachment["objectType"].capitalize}: <a href='#{attachment["url"]}' rel='noreferrer'>#{attachment["url"]}</a></li>".esc %>
 <%- end -%>
 &lt;/ul>
 <%- end -%>

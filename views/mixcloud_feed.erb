@@ -18,9 +18,9 @@
     <content type="html">
 <%=
 <<-EOF.undent.esc
-  <iframe width="100%" height="120" src="https://www.mixcloud.com/widget/iframe/?feed=#{track["url"]}&hide_cover=1&light=1" frameborder="0"></iframe>
+  <iframe width="100%" height="120" src="https://www.mixcloud.com/widget/iframe/?feed=#{track["url"]}&hide_cover=1&light=1" frameborder="0" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
-  <a href="#{track["pictures"]["extra_large"]}"><img src="#{track["pictures"]["medium"]}"></a>
+  <a href="#{track["pictures"]["extra_large"]}" rel="noreferrer"><img src="#{track["pictures"]["medium"]}" referrerpolicy="no-referrer"></a>
 
   #{track["name"].to_paragraphs}
 EOF
