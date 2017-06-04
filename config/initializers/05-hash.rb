@@ -1,6 +1,6 @@
 class Hash
   def to_querystring
-    self.map { |k,v| "#{k}=#{CGI.escape(v)}" }.join("&")
+    self.select { |k,v| v.is_a?(String) }.map { |k,v| "#{k}=#{CGI.escape(v)}" }.join("&")
   end
 
   def pluck(*keys)
