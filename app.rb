@@ -1162,7 +1162,7 @@ get "/favicon.ico" do
   redirect "/img/icon32.png"
 end
 
-get %r{^/apple-touch-icon} do
+get %r{/apple-touch-icon} do
   redirect "/img/icon128.png"
 end
 
@@ -1171,7 +1171,7 @@ get "/opensearch.xml" do
 end
 
 if ENV["GOOGLE_VERIFICATION_TOKEN"]
-  /(google)?(?<google_token>[0-9a-f]+)(\.html)?/ =~ ENV["GOOGLE_VERIFICATION_TOKEN"]
+  /(?:google)?(?<google_token>[0-9a-f]+)(?:\.html)?/ =~ ENV["GOOGLE_VERIFICATION_TOKEN"]
   get "/google#{google_token}.html" do
     "google-site-verification: google#{google_token}.html"
   end
