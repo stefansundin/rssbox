@@ -59,9 +59,11 @@ SCRIPT
 
 $root_provision = <<SCRIPT
 export DEBIAN_FRONTEND=noninteractive
+chmod -x /etc/cron.daily/apt-compat
+chmod -x /etc/cron.weekly/update-notifier-common
 
 apt-get update
-apt-get install -y git curl build-essential redis-server
+apt-get install -y git curl build-essential redis-server jq
 apt-get install -y libreadline-dev libxml2-dev libxslt1-dev libpq-dev libsqlite3-dev libssl-dev
 
 cat > /etc/systemd/system/puma.service << 'EOF'
@@ -83,9 +85,8 @@ export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
 if [ -d "$RBENV_ROOT" ]; then
   rbenv update
 else
-  git clone https://github.com/sstephenson/rbenv.git $RBENV_ROOT
-  git clone https://github.com/sstephenson/ruby-build.git $RBENV_ROOT/plugins/ruby-build
-  git clone https://github.com/sstephenson/rbenv-gem-rehash.git $RBENV_ROOT/plugins/rbenv-gem-rehash
+  git clone https://github.com/rbenv/rbenv.git $RBENV_ROOT
+  git clone https://github.com/rbenv/ruby-build.git $RBENV_ROOT/plugins/ruby-build
   git clone https://github.com/rkh/rbenv-update.git $RBENV_ROOT/plugins/rbenv-update
   echo 'gem: --no-document' >> ~/.gemrc
 fi
@@ -125,7 +126,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: $user_provision, privileged: false
   config.vm.provision "shell", inline: "systemctl start puma.socket puma.service", run: "always"
   config.vm.post_up_message = <<EOF
-Webserver should now be running at http://localhost:3000/"
-Please run 'vagrant ssh' and edit ~/rssbox.env, then run 'sudo systemctl restart puma.service'.
+Webserver should now be running at http://localhost:3000/
+Please run 'vagrant ssh' and edit ~/rssbox.env, then run: sudo systemctl restart puma.service
 EOF
 end
