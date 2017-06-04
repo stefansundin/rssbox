@@ -21,7 +21,7 @@ end
 get "/go" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /^https?:\/\/twitter\.com\// =~ params[:q]
+  if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
     redirect "/twitter?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.|gaming\.)?youtu(\.be|be\.com)/ =~ params[:q]
     redirect "/youtube?#{params.to_querystring}"
