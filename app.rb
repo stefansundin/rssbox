@@ -454,7 +454,7 @@ get "/instagram" do
     # https://www.instagram.com/p/4KaPsKSjni/
     response = InstagramParty.get("/p/#{post_id}/")
     return InstagramError.new(response) if !response.success?
-    user = response.parsed_response["media"]["owner"]
+    user = response.parsed_response["graphql"]["shortcode_media"]["owner"]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
   else
@@ -462,7 +462,7 @@ get "/instagram" do
   end
 
   if name
-    response = InstagramParty.get("/#{name}/")
+    response = InstagramParty.get("/#{CGI.escape(name)}/")
     if response.success?
       user = response.parsed_response["user"]
     else
@@ -489,16 +489,17 @@ get "/instagram/download" do
 
   response = InstagramParty.get("/p/#{post_id}/")
   return "Please use a URL directly to a post." if !response.success?
-  data = response.parsed_response["media"]
-  url = data["video_url"] || data["display_src"]
+  data = response.parsed_response["graphql"]["shortcode_media"]
+  url = data["video_url"] || data["display_url"]
 
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
     status response.code
-    created_at = Time.at(data["date"])
+    created_at = Time.at(data["taken_at_timestamp"])
+    caption = data["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
     return {
       url: url,
-      filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{data["caption"] || post_id}#{url.url_ext}".to_filename
+      filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename
     }.to_json
   end
 
