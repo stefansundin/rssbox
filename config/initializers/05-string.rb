@@ -9,7 +9,7 @@ class String
   @@url_cache = {}
 
   def to_line
-    self.gsub("\n", " ")
+    self.ustrip.gsub(/\s+/, " ")
   end
 
   def to_paragraphs(split="\n")
@@ -18,6 +18,17 @@ class String
 
   def to_filename
     self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ").gsub(/\.+(\.[a-z]+)$/, '\1')
+  end
+
+  def titelize
+    self.gsub(String::URL_REGEXP) do |url|
+      dest = url.resolve_url
+      "[#{dest.short_host}]"
+    end
+  end
+
+  def trunc(i=140)
+    self.truncate(i, separator: " ", omission: " …") # &hellip;
   end
 
   def esc

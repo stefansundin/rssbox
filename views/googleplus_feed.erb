@@ -7,16 +7,19 @@
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://plus.google.com/<%= @id %>" rel="alternate" />
   <updated><%= Time.parse(@data["updated"]) if @data["updated"] %></updated>
-<%- @data["items"].each do |post| -%>
+<%-
+@data["items"].each do |post|
+  body = CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags
+-%>
 
   <entry>
     <id>googleplus:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= post["title"].to_line.esc %></title>
+    <title><%= body.titelize.to_line.trunc.esc %></title>
     <link href="<%= post["url"].esc %>" />
     <updated><%= Time.parse(post["updated"]) %></updated>
     <author><name><%= post["actor"]["displayName"].esc %></name></author>
     <content type="html">
-<%= CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags.linkify.to_paragraphs.esc %>
+<%= body.linkify.to_paragraphs.esc %>
 <%- if post["object"]["attachments"] -%>
 <%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "video" }.each do |attachment| -%>
 <%= "<a href='#{attachment["url"]}' rel='noreferrer'><img src='#{attachment["image"]["url"]}' referrerpolicy='no-referrer'></a>".esc %>

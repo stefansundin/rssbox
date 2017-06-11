@@ -37,10 +37,6 @@
       text += " #{media["media_url_https"]}:large"
     end
   end
-  title = text.gsub(String::URL_REGEXP) do |url|
-    dest = url.resolve_url
-    "[#{dest.short_host}]"
-  end
   body = text.linkify_and_embed(request)
   if body["snappytv.com"]
     body += "\n<iframe width='560' height='314' src='https://twitter.com/i/videos/tweet/#{tweet["id_str"]}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
@@ -49,7 +45,7 @@
 
   <entry>
     <id>twitter:tweet:<%= tweet["id_str"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= title.to_line.esc %></title>
+    <title><%= text.titelize.esc %></title>
     <link href="https://twitter.com/<%= @username %>/status/<%= tweet["id_str"] %>" />
     <updated><%= Time.parse(tweet["created_at"]) %></updated>
     <author><name><%= @username.esc %></name></author>
