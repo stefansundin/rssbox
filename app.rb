@@ -61,9 +61,9 @@ end
 get "/twitter" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /twitter\.com\/i\// =~ params[:q] or /twitter\.com\/who_to_follow\// =~ params[:q]
+  if params[:q]["twitter.com/i/"] or params[:q]["twitter.com/who_to_follow/"]
     return "Unsupported url. Sorry."
-  elsif /twitter\.com\/hashtag\// =~ params[:q]
+  elsif params[:q]["twitter.com/hashtag/"]
     return "This app does not support hashtags. Sorry."
   elsif /twitter\.com\/(?:#!\/|@)?(?<user>[^\/?#]+)/ =~ params[:q] or /@(?<user>[^\/?#]+)/ =~ params[:q]
     # https://twitter.com/#!/infected
