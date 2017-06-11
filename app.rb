@@ -508,7 +508,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
 
   response = InstagramParty.get("/#{username}/")
-  return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/query/?q=ig_user(#{@user_id})%7Busername%7D" if response.code == 404
+  return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1" if response.code == 404
   raise InstagramError.new(response) if !response.success?
 
   @data = response.parsed_response["user"]
