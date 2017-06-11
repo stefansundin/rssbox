@@ -31,8 +31,6 @@ get "/go" do
     redirect "/facebook?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?instagram\.com/ =~ params[:q]
     redirect "/instagram?#{params.to_querystring}"
-  elsif /^https?:\/\/vine\.co/ =~ params[:q]
-    redirect "/vine?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?periscope\.tv/ =~ params[:q]
     redirect "/periscope?#{params.to_querystring}"
   elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
@@ -528,87 +526,6 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @title += " on Instagram"
 
   erb :instagram_feed
-end
-
-get "/vine" do
-  return "Insufficient parameters" if params[:q].empty?
-
-  if /vine\.co\/u\/(?<user_id>[^\/?#]+)/ =~ params[:q]
-    # https://vine.co/u/916394797705605120
-  elsif /vine\.co\/v\/(?<post_id>[^\/?#]+)/ =~ params[:q]
-    # https://vine.co/v/iJgLDBPKO3I
-  elsif /vine\.co\/(?<username>[^\/?#]+)/ =~ params[:q]
-    # https://vine.co/nasa
-  else
-    username = params[:q]
-  end
-
-  if user_id
-    response = VineParty.get("/users/profiles/#{user_id}")
-    raise VineError.new(response) if !response.success?
-    username = response.parsed_response["data"]["username"]
-  elsif post_id
-    response = VineParty.get("/timelines/posts/s/#{post_id}")
-    return "That post does not exist." if response.code == 404
-    raise VineError.new(response) if !response.success?
-    data = response.parsed_response["data"]["records"][0]
-    user_id = data["userId"]
-    username = data["vanityUrls"][0] || data["username"]
-  elsif username
-    response = VineParty.get("/users/profiles/vanity/#{CGI.escape(username)}")
-    return "That username does not exist." if response.code == 404
-    raise VineError.new(response) if !response.success?
-    data = response.parsed_response["data"]
-    user_id = data["userId"]
-    username = data["vanityUrls"][0] || data["username"]
-  end
-
-  redirect "/vine/#{user_id}/#{username}"
-end
-
-get %r{/vine/(?<id>\d+)(?:/(?<username>.+))?} do |id, username|
-  @id = id
-  @username = username
-
-  response = VineParty.get("/timelines/users/#{id}")
-  raise VineError.new(response) if !response.success?
-  @data = response.parsed_response["data"]["records"]
-
-  @user = if !@data.first
-    @username
-  elsif @data.first["repost"]
-    @data.first["repost"]["user"]["username"]
-  else
-    @data.first["username"]
-  end
-
-  erb :vine_feed
-end
-
-get "/vine/download" do
-  if /vine\.co\/v\/(?<post_id>[a-zA-Z0-9]+)/ =~ params[:url]
-    # https://vine.co/v/iJgLDBPKO3I
-  else
-    return "Please use a link directly to a post."
-  end
-
-  response = VineParty.get("/timelines/posts/s/#{post_id}")
-
-  if env["HTTP_ACCEPT"] == "application/json"
-    content_type :json
-    status response.code
-    data = response.parsed_response["data"]["records"][0]
-    created_at = Time.parse(data["created"])
-    return {
-      url: data["videoUrls"][0]["videoUrl"].gsub(/^http:/, "https:"),
-      filename: "#{created_at.to_date} - #{data["username"]} - #{post_id}.mp4".to_filename
-    }.to_json
-  end
-
-  return "Post does not exist." if response.code == 404
-  raise VineError.new(response) if !response.success?
-  data = response.parsed_response["data"]["records"][0]
-  redirect data["videoUrls"][0]["videoUrl"]
 end
 
 get "/periscope" do

@@ -43,7 +43,7 @@ SecureHeaders::Configuration.override(:index) do |config|
     font_src: %w(*.bootstrapcdn.com),
     img_src: %w('self' www.google-analytics.com),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com www.svtplay.se stefansundin.com www.paypal.com),
-    connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.cdn.vine.co *.sndcdn.com),
+    connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.sndcdn.com),
   })
 
   # Allow unsafe-inline for better_errors in development mode
