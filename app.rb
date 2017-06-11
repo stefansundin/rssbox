@@ -23,35 +23,35 @@ get "/go" do
 
   if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
     redirect "/twitter?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.|gaming\.)?youtu(\.be|be\.com)/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.|gaming\.)?youtu(?:\.be|be\.com)/ =~ params[:q]
     redirect "/youtube?#{params.to_querystring}"
   elsif /^https?:\/\/plus\.google\.com/ =~ params[:q]
     redirect "/googleplus?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?facebook\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?facebook\.com/ =~ params[:q]
     redirect "/facebook?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?instagram\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?instagram\.com/ =~ params[:q]
     redirect "/instagram?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?periscope\.tv/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?periscope\.tv/ =~ params[:q]
     redirect "/periscope?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?soundcloud\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?soundcloud\.com/ =~ params[:q]
     redirect "/soundcloud?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?mixcloud\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?mixcloud\.com/ =~ params[:q]
     redirect "/mixcloud?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?twitch\.tv/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?twitch\.tv/ =~ params[:q]
     redirect "/twitch?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?speedrun\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?speedrun\.com/ =~ params[:q]
     redirect "/speedrun?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?ustream\.tv/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?ustream\.tv/ =~ params[:q]
     redirect "/ustream?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?dailymotion\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?dailymotion\.com/ =~ params[:q]
     redirect "/dailymotion?#{params.to_querystring}"
-  elsif /^https?:\/\/(www\.)?vimeo\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?vimeo\.com/ =~ params[:q]
     redirect "/vimeo?#{params.to_querystring}"
-  elsif /^https?:\/\/([a-zA-Z0-9]+\.)?imgur\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:[a-zA-Z0-9]+\.)?imgur\.com/ =~ params[:q]
     redirect "/imgur?#{params.to_querystring}"
   elsif /^https?:\/\/(?<user>[a-zA-Z0-9\-]+)\.deviantart\.com/ =~ params[:q]
     redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
-  elsif /^https?:\/\/(www\.)?svtplay\.se/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?svtplay\.se/ =~ params[:q]
     redirect "/svtplay?#{params.to_querystring}"
   else
     "Unknown service"
