@@ -453,6 +453,8 @@ get "/instagram" do
     response = InstagramParty.get("/p/#{post_id}/")
     return InstagramError.new(response) if !response.success?
     user = response.parsed_response["graphql"]["shortcode_media"]["owner"]
+  elsif params[:q]["instagram.com/explore/"]
+    return "This app does not support hashtags. Sorry."
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
   else
