@@ -1097,6 +1097,16 @@ if ENV["GOOGLE_VERIFICATION_TOKEN"]
   end
 end
 
+if ENV["BING_VERIFICATION_TOKEN"]
+  get "/BingSiteAuth.xml" do
+    <<-EOF.undent
+      <?xml version="1.0"?>
+      <users>
+        <user>#{ENV["BING_VERIFICATION_TOKEN"]}</user>
+      </users>
+    EOF
+  end
+end
 
 error do |e|
   status 500
