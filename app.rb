@@ -198,6 +198,11 @@ get "/youtube/:channel_id/:username" do
   raise GoogleError.new(response) if !response.success?
   @data = response.parsed_response["items"]
 
+  if params[:q]
+    q = params[:q].downcase
+    @data.select! { |v| v["snippet"]["title"].downcase[q] }
+  end
+
   erb :youtube_feed
 end
 
