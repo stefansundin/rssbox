@@ -308,7 +308,7 @@ get "/facebook" do
     data = response.parsed_response
   end
   if data["metadata"]["fields"].any? { |field| field["name"] == "username" }
-    response = FacebookParty.get("/", query: { id: id, fields: "username", metadata: "1" })
+    response = FacebookParty.get("/", query: { id: id, fields: "username,name" })
     raise FacebookError.new(response) if !response.success?
     data = response.parsed_response
   end
@@ -438,7 +438,7 @@ get %r{/facebook/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
     @data.select! { |post| post["live_status"] != "LIVE" }
   end
 
-  @user = @data[0]["from"]["name"] rescue username
+  @user = @data[0]["from"]["name"] rescue (CGI.unescape(username) || id)
   @title = @user
   if @type == "live"
     @title += "'s live videos"
