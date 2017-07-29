@@ -414,7 +414,7 @@ get %r{/facebook/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@edge]
 
-  response = FacebookParty.get("/#{id}/#{@edge}", query: { fields: fields })
+  response = FacebookParty.get("/#{id}/#{@edge}", query: { fields: fields, since: Time.now.to_i-365*24*60*60 }) # date -v -1w +%s
   raise FacebookError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
