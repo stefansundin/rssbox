@@ -438,7 +438,7 @@ get %r{/facebook/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
     @data.select! { |post| post["live_status"] != "LIVE" }
   end
 
-  @user = @data[0]["from"]["name"] rescue (CGI.unescape(username) || id)
+  @user = @data[0]["from"]["name"] rescue CGI.unescape(username || id)
   @title = @user
   if @type == "live"
     @title += "'s live videos"
