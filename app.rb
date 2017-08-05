@@ -939,19 +939,19 @@ get "/dailymotion" do
     user = response.parsed_response["owner"]
   end
 
-  response = DailymotionParty.get("/user/#{CGI.escape(user)}")
+  response = DailymotionParty.get("/user/#{CGI.escape(user)}", query: { fields: "id,username" })
   if response.success?
     user_id = response.parsed_response["id"]
-    screenname = response.parsed_response["screenname"]
-    redirect "/dailymotion/#{user_id}/#{screenname}"
+    username = response.parsed_response["username"]
+    redirect "/dailymotion/#{user_id}/#{username}"
   else
     "Could not find a user with the name #{user}. Sorry."
   end
 end
 
-get %r{/dailymotion/(?<user_id>[a-z0-9]+)(?:/(?<screenname>.+)?)?} do |user_id, screenname|
+get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
-  @screenname = screenname
+  @username = CGI.unescape(username)
 
   response = DailymotionParty.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
   raise DailymotionError.new(response) if !response.success?
