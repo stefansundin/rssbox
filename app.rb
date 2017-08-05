@@ -83,7 +83,7 @@ get "/twitter" do
   redirect "/twitter/#{user_id}/#{screen_name}#{"?#{params[:type]}" if !params[:type].empty?}"
 end
 
-get %r{/twitter/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
+get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   @user_id = id
 
   response = TwitterParty.get("/statuses/user_timeline.json", query: {
@@ -98,7 +98,7 @@ get %r{/twitter/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
   raise TwitterError.new(response) if !response.success?
 
   @data = response.parsed_response
-  @username = @data[0]["user"]["screen_name"] rescue username
+  @username = @data[0]["user"]["screen_name"] rescue CGI.unescape(username)
 
   erb :twitter_feed
 end
@@ -234,7 +234,7 @@ get "/googleplus" do
   redirect "/googleplus/#{user_id}/#{username}"
 end
 
-get %r{/googleplus/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
+get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
   response = GoogleParty.get("/plus/v1/people/#{id}/activities/public")
@@ -244,7 +244,7 @@ get %r{/googleplus/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
   @user = if @data["items"][0]
     @data["items"][0]["actor"]["displayName"]
   else
-    username
+    CGI.unescape(username)
   end
 
   erb :googleplus_feed
@@ -403,7 +403,7 @@ get "/facebook/download" do
   end
 end
 
-get %r{/facebook/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
+get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
   @type = @edge = %w[videos photos live].pick(params[:type]) || "posts"
@@ -438,7 +438,7 @@ get %r{/facebook/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
     @data.select! { |post| post["live_status"] != "LIVE" }
   end
 
-  @user = @data[0]["from"]["name"] rescue CGI.unescape(username || id)
+  @user = @data[0]["from"]["name"] rescue CGI.unescape(username)
   @title = @user
   if @type == "live"
     @title += "'s live videos"
@@ -519,7 +519,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   raise InstagramError.new(response) if !response.success?
 
   @data = response.parsed_response["user"]
-  @user = @data["username"] rescue username
+  @user = @data["username"] rescue CGI.unescape(username)
 
   type = %w[videos photos].pick(params[:type]) || "posts"
   if type == "videos"
@@ -563,9 +563,9 @@ get "/periscope" do
   redirect "/periscope/#{user_id}/#{username}"
 end
 
-get %r{/periscope/(?<id>[^/]+)(?:/(?<username>.+)?)?} do |id, username|
+get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
   @id = id
-  @username = username
+  @username = CGI.unescape(username)
 
   response = PeriscopeParty.get_broadcasts(id)
   raise PeriscopeError.new(response) if !response.success?
@@ -638,15 +638,15 @@ get "/soundcloud/download" do
   redirect media_url
 end
 
-get %r{/soundcloud/(?<id>\d+)(?:/(?<username>.+)?)?} do |id, username|
+get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
   response = SoundcloudParty.get("/users/#{id}/tracks")
   raise SoundcloudError.new(response) if !response.success?
 
   @data = response.parsed_response
-  @username = @data[0]["user"]["permalink"] rescue username
-  @user = @data[0]["user"]["username"] rescue username
+  @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
+  @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
 
   erb :soundcloud_feed
 end
@@ -668,13 +668,13 @@ get "/mixcloud" do
   redirect "/mixcloud/#{data["username"]}/#{data["name"]}"
 end
 
-get %r{/mixcloud/(?<username>[^/]+)(?:/(?<user>.+)?)?} do |username, user|
+get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
   response = MixcloudParty.get("/#{username}/cloudcasts/")
   raise MixcloudError.new(response) if !response.success?
 
   @data = response.parsed_response["data"]
-  @username = @data[0]["user"]["username"] rescue username
-  @user = @data[0]["user"]["name"] rescue (user || username)
+  @username = @data[0]["user"]["username"] rescue CGI.unescape(username)
+  @user = @data[0]["user"]["name"] rescue CGI.unescape(user)
 
   erb :mixcloud_feed
 end
@@ -810,15 +810,14 @@ end
 
 get %r{/twitch/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
-  @username = username
 
   type = %w[all highlight archive].pick(params[:type]) || "all"
   response = TwitchParty.get("/kraken/channels/#{username}/videos", query: { broadcast_type: type })
   raise TwitchError.new(response) if !response.success?
 
   @data = response.parsed_response["videos"].select { |video| video["status"] != "recording" }
-  @username = @data[0]["channel"]["name"] rescue username
-  @user = @data[0]["channel"]["display_name"] rescue username
+  @username = @data[0]["channel"]["name"] rescue CGI.unescape(username)
+  @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(username)
 
   @title = @user
   @title += "'s highlights" if type == "highlight"
@@ -882,13 +881,13 @@ get "/ustream" do
   redirect "/ustream/#{channel_id}/#{channel_title}"
 end
 
-get %r{/ustream/(?<id>\d+)(?:/(?<title>.+)?)?} do |id, title|
+get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
   @id = id
+  @user = CGI.unescape(title)
 
   response = UstreamParty.get("/channels/#{id}/videos.json")
   raise UstreamError.new(response) if !response.success?
   @data = response.parsed_response["videos"]
-  @user = title || @data[0]["owner"]["username"] rescue id
 
   erb :ustream_feed
 end
