@@ -1,10 +1,10 @@
 # https://api.imgur.com/endpoints
 
-class ImgurParty
-  include HTTParty
-  base_uri "https://api.imgur.com/3"
-  headers Authorization: "Client-ID #{ENV["IMGUR_CLIENT_ID"]}"
-  format :json
+class ImgurParty < HTTP
+  BASE_URL = "https://api.imgur.com/3"
+  HEADERS = {
+    "Authorization": "Client-ID #{ENV["IMGUR_CLIENT_ID"]}",
+  }
 end
 
 class ImgurError < PartyError; end

@@ -1,9 +1,7 @@
 # https://github.com/speedruncom/api/tree/master/version1
 
-class SpeedrunParty
-  include HTTParty
-  base_uri "https://www.speedrun.com/api/v1"
-  format :json
+class SpeedrunParty < HTTP
+  BASE_URL = "https://www.speedrun.com/api/v1"
 
   @@cache = {}
 

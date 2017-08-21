@@ -1,9 +1,7 @@
 # https://developer.dailymotion.com/api
 
-class DailymotionParty
-  include HTTParty
-  base_uri "https://api.dailymotion.com"
-  format :json
+class DailymotionParty < HTTP
+  BASE_URL = "https://api.dailymotion.com"
 end
 
 class DailymotionError < PartyError; end

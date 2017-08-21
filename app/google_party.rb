@@ -1,11 +1,9 @@
 # https://developers.google.com/youtube/v3/docs/
 # https://developers.google.com/+/web/api/rest/
 
-class GoogleParty
-  include HTTParty
-  base_uri "https://www.googleapis.com"
-  default_params key: ENV["GOOGLE_API_KEY"]
-  format :json
+class GoogleParty < HTTP
+  BASE_URL = "https://www.googleapis.com"
+  PARAMS = "key=#{ENV["GOOGLE_API_KEY"]}"
 end
 
 class GoogleError < PartyError; end

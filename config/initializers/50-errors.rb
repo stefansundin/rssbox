@@ -17,7 +17,3 @@ class PartyError < StandardError
     "#{@request.code} #{@request.body}"
   end
 end
-
-def httparty_error(r)
-  "#{r.request.path.to_s}: #{r.code} #{r.message}: #{r.body}. #{r.headers.to_h.to_json}"
-end

@@ -11,7 +11,6 @@ gem "dotenv"
 gem "redis"
 gem "redis-namespace"
 gem "addressable"
-gem "httparty"
 gem "airbrake"
 gem "newrelic_rpm", require: false
 gem "rack-ssl-enforcer"

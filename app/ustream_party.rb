@@ -1,9 +1,7 @@
 # http://ustream.github.io/api-docs/broadcasting-api/channel.html
 
-class UstreamParty
-  include HTTParty
-  base_uri "https://api.ustream.tv"
-  format :json
+class UstreamParty < HTTP
+  BASE_URL = "https://api.ustream.tv"
 end
 
 class UstreamError < PartyError; end

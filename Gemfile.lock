@@ -114,7 +114,6 @@ DEPENDENCIES
   feedjira
   github-release-party
   heroku-env
-  httparty
   newrelic_rpm
   nokogiri
   opengraph_parser

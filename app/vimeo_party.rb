@@ -1,10 +1,10 @@
 # https://developer.vimeo.com/api/start
 
-class VimeoParty
-  include HTTParty
-  base_uri "https://api.vimeo.com"
-  headers Authorization: "bearer #{ENV["VIMEO_ACCESS_TOKEN"]}"
-  format :json
+class VimeoParty < HTTP
+  BASE_URL = "https://api.vimeo.com"
+  HEADERS = {
+    "Authorization": "bearer #{ENV["VIMEO_ACCESS_TOKEN"]}",
+  }
 end
 
 class VimeoError < PartyError; end

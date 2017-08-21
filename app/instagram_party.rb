@@ -1,10 +1,8 @@
 # https://www.instagram.com/developer/endpoints/
 
-class InstagramParty
-  include HTTParty
-  base_uri "https://www.instagram.com"
-  default_params __a: "1"
-  format :json
+class InstagramParty < HTTP
+  BASE_URL = "https://www.instagram.com"
+  PARAMS = "__a=1"
 end
 
 class InstagramError < PartyError; end

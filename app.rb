@@ -369,7 +369,7 @@ get "/facebook/download" do
       # The video/photo is probably uploaded by a regular Facebook user (i.e. not uploaded to a page), which we can't get info from via the API.
       # Video example: https://www.facebook.com/ofer.dikovsky/videos/10154633221533413/
       # Photo example: 1401133169914577
-      response = HTTParty.get("https://www.facebook.com/#{id}", type: :plain)
+      response = HTTP.get("https://www.facebook.com/#{id}")
       if response.success?
         if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
           title = title.gsub!(" | Facebook", "")
@@ -551,7 +551,7 @@ get "/periscope" do
   else
     "https://www.periscope.tv/#{CGI.escape(username)}"
   end
-  response = HTTParty.get(url)
+  response = HTTP.get(url)
   return "That username does not exist." if response.code == 404
   return "That broadcast has expired." if response.code == 410
   raise PeriscopeError.new(response) if !response.success?
@@ -588,7 +588,7 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = SoundcloudParty.get("/resolve", query: { url: "https://soundcloud.com/#{username}" }, follow_redirects: false)
+  response = SoundcloudParty.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
   if response.code == 302
     uri = Addressable::URI.parse(response.parsed_response["location"])
     return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
@@ -614,12 +614,12 @@ end
 get "/soundcloud/download" do
   url = params[:url]
   url = "https://#{url}" if !url.start_with?("http:", "https:")
-  response = SoundcloudParty.get("/resolve", query: { url: url }, follow_redirects: false)
+  response = SoundcloudParty.get("/resolve", query: { url: url })
   return "URL does not resolve." if response.code == 404
   raise SoundcloudError.new(response) if response.code != 302
   uri = Addressable::URI.parse(response.parsed_response["location"])
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
-  response = SoundcloudParty.get("#{uri.path}/stream", follow_redirects: false)
+  response = SoundcloudParty.get("#{uri.path}/stream")
   raise SoundcloudError.new(response) if response.code != 302
   media_url = response.parsed_response["location"]
 
@@ -721,7 +721,7 @@ get "/twitch/download" do
   end
 
   if clip_slug
-    response = HTTParty.get("https://clips.twitch.tv/embed?clip=#{clip_slug}", type: :plain)
+    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
     return "Clip does not seem to exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     url = response.body[/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/]
@@ -769,7 +769,7 @@ get "/twitch/watch" do
   end
 
   if clip_slug
-    response = HTTParty.get("https://clips.twitch.tv/embed?clip=#{clip_slug}", type: :plain)
+    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
     return "Clip does not seem to exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
@@ -784,7 +784,7 @@ get "/twitch/watch" do
     data = response.parsed_response
     playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
 
-    response = HTTParty.get(playlist_url, type: :plain)
+    response = HTTP.get(playlist_url)
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
     response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
@@ -795,7 +795,7 @@ get "/twitch/watch" do
     token_data = JSON.parse(data["token"])
     playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
-    response = HTTParty.get(playlist_url)
+    response = HTTP.get(playlist_url)
     return "Channel does not seem to be online." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
@@ -841,6 +841,10 @@ get "/speedrun" do
   end
 
   response = SpeedrunParty.get("/games/#{game}")
+  if response.redirect?
+    game = response.headers["location"].split("/")[-1]
+    response = SpeedrunParty.get("/games/#{game}")
+  end
   return "Can't find a game with that name. Sorry." if response.code == 404
   raise SpeedrunError.new(response) if !response.success?
   data = response.parsed_response["data"]
@@ -903,10 +907,10 @@ get "/ustream/download" do
 
   response = UstreamParty.get("/videos/#{id}.json")
   return "Video does not exist." if response.code == 404
-  return "#{response.request.uri} responded with #{response.code} #{response.message}." if response.code == 401
+  return "#{UstreamParty::BASE_URL}/videos/#{id}.json: #{response.code} #{response.message}." if response.code == 401
   raise UstreamError.new(response) if !response.success?
   url = response.parsed_response["video"]["media_urls"]["flv"]
-  return "#{response.request.uri}: Video flv url is null. This channel is probably protected or something." if url.nil?
+  return "#{UstreamParty::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something." if url.nil?
   redirect url
 end
 

@@ -1,10 +1,8 @@
 # https://developers.soundcloud.com/docs/api/reference
 
-class SoundcloudParty
-  include HTTParty
-  base_uri "https://api.soundcloud.com"
-  default_params client_id: ENV["SOUNDCLOUD_CLIENT_ID"]
-  format :json
+class SoundcloudParty < HTTP
+  BASE_URL = "https://api.soundcloud.com"
+  PARAMS = "client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}"
 end
 
 class SoundcloudError < PartyError; end

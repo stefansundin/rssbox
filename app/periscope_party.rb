@@ -1,12 +1,10 @@
 # No public API documentation
 
-class PeriscopeParty
-  include HTTParty
-  base_uri "https://api.periscope.tv/api/v2"
-  format :json
+class PeriscopeParty < HTTP
+  BASE_URL = "https://api.periscope.tv/api/v2"
 
   def self.get_broadcasts(user_id)
-    response = HTTParty.get("https://www.periscope.tv/cnn", format: :plain)
+    response = HTTP.get("https://www.periscope.tv/cnn")
     doc = Nokogiri::HTML(response.body)
     data = doc.at("div#page-container")["data-store"]
     json = JSON.parse(data)

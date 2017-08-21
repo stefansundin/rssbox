@@ -1,9 +1,7 @@
 # https://www.mixcloud.com/developers/
 
-class MixcloudParty
-  include HTTParty
-  base_uri "https://api.mixcloud.com"
-  format :json
+class MixcloudParty < HTTP
+  BASE_URL = "https://api.mixcloud.com"
 end
 
 class MixcloudError < PartyError; end

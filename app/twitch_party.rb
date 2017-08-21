@@ -1,11 +1,11 @@
 # https://github.com/justintv/Twitch-API/
 
-class TwitchParty
-  include HTTParty
-  base_uri "https://api.twitch.tv"
-  headers "Client-ID": ENV["TWITCH_CLIENT_ID"]
-  headers Accept: "application/vnd.twitchtv.v3+json"
-  format :json
+class TwitchParty < HTTP
+  BASE_URL = "https://api.twitch.tv"
+  HEADERS = {
+    "Accept": "application/vnd.twitchtv.v3+json",
+    "Client-ID": ENV["TWITCH_CLIENT_ID"],
+  }
 end
 
 class TwitchError < PartyError; end

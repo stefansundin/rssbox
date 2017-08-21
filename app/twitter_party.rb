@@ -1,10 +1,10 @@
 # https://dev.twitter.com/rest/reference/get/statuses/user_timeline
 
-class TwitterParty
-  include HTTParty
-  base_uri "https://api.twitter.com/1.1"
-  headers Authorization: "Bearer #{ENV["TWITTER_ACCESS_TOKEN"]}"
-  format :json
+class TwitterParty < HTTP
+  BASE_URL = "https://api.twitter.com/1.1"
+  HEADERS = {
+    "Authorization": "Bearer #{ENV["TWITTER_ACCESS_TOKEN"]}",
+  }
 end
 
 class TwitterError < PartyError; end
