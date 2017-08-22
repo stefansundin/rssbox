@@ -93,6 +93,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     exclude_replies: params[:exclude_replies] || "0",
     tweet_mode: "extended"
   })
+  status response.code
   return response.message if response.code == 401
   return "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing." if response.code == 404
   raise TwitterError.new(response) if !response.success?
@@ -988,11 +989,13 @@ get "/imgur" do
   if image_id
     response = ImgurParty.get("/gallery/image/#{image_id}")
     response = ImgurParty.get("/image/#{image_id}") if !response.success?
+    return "Can't identify #{image_id} as an image or gallery." if response.code == 404
     raise ImgurError.new(response) if !response.success?
     user_id = response.parsed_response["data"]["account_id"]
     username = response.parsed_response["data"]["account_url"]
   elsif album_id
     response = ImgurParty.get("/album/#{album_id}")
+    return "Can't identify #{album_id} as an album." if response.code == 404
     raise ImgurError.new(response) if !response.success?
     user_id = response.parsed_response["data"]["account_id"]
     username = response.parsed_response["data"]["account_url"]
