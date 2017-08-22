@@ -1093,7 +1093,7 @@ get "/favicon.ico" do
   redirect "/img/icon32.png"
 end
 
-get %r{/apple-touch-icon} do
+get %r{/apple-touch-icon.*} do
   redirect "/img/icon128.png"
 end
 
