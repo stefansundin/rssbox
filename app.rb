@@ -1123,3 +1123,7 @@ error do |e|
   status 500
   "Sorry, a nasty error occurred: #{e}"
 end
+
+not_found do
+  "Sorry, that route does not exist."
+end
