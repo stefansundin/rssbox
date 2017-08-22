@@ -62,7 +62,7 @@ class HTTP
       end
     end
 
-    uri = Addressable::URI.parse(url)
+    uri = Addressable::URI.parse(url).normalize
     opts = {
       use_ssl: uri.scheme == "https",
       open_timeout: 10,
@@ -72,9 +72,7 @@ class HTTP
       headers = {}
       headers.merge!(self::HEADERS) if defined?(self::HEADERS)
       headers.merge!(opts[:headers]) if opts[:headers]
-      endpoint = uri.path
-      endpoint += "?"+uri.query if uri.query
-      response = http.request_get(endpoint, headers)
+      response = http.request_get(uri.request_uri, headers)
       return HTTPResponse.new(response)
     end
   end
