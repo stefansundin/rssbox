@@ -94,7 +94,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     tweet_mode: "extended"
   })
   status response.code
-  return response.message if response.code == 401
+  return response.body if response.code == 401
   return "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing." if response.code == 404
   raise TwitterError.new(response) if !response.success?
 
@@ -908,7 +908,7 @@ get "/ustream/download" do
 
   response = UstreamParty.get("/videos/#{id}.json")
   return "Video does not exist." if response.code == 404
-  return "#{UstreamParty::BASE_URL}/videos/#{id}.json: #{response.code} #{response.message}." if response.code == 401
+  return "#{UstreamParty::BASE_URL}/videos/#{id}.json returned code #{response.code}." if response.code == 401
   raise UstreamError.new(response) if !response.success?
   url = response.parsed_response["video"]["media_urls"]["flv"]
   return "#{UstreamParty::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something." if url.nil?
