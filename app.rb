@@ -297,6 +297,7 @@ get "/facebook" do
 
   response = FacebookParty.get("/", query: { id: id, metadata: "1" })
   return "Can't find a page with that name. Sorry." if response.code == 404
+  return "#{FacebookParty::BASE_URL}/#{id} returned code #{response.code}." if response.code == 400
   raise FacebookError.new(response) if !response.success?
   data = response.parsed_response
   if data["metadata"]["fields"].any? { |field| field["name"] == "from" }
@@ -989,7 +990,7 @@ get "/imgur" do
   if image_id
     response = ImgurParty.get("/gallery/image/#{image_id}")
     response = ImgurParty.get("/image/#{image_id}") if !response.success?
-    return "Can't identify #{image_id} as an image or gallery." if response.code == 404
+    return "Can't identify #{image_id} as an image or gallery." if !response.success?
     raise ImgurError.new(response) if !response.success?
     user_id = response.parsed_response["data"]["account_id"]
     username = response.parsed_response["data"]["account_url"]
