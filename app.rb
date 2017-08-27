@@ -103,6 +103,10 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   @data = response.json
   @username = @data[0]["user"]["screen_name"] rescue CGI.unescape(username)
 
+  if params[:with_media]
+    @data.select! { |t| t["extended_entities"] }
+  end
+
   erb :twitter_feed
 end
 
