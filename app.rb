@@ -43,6 +43,8 @@ get "/go" do
     redirect "/speedrun?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?ustream\.tv/ =~ params[:q]
     redirect "/ustream?#{params.to_querystring}"
+  elsif /^https?:\/\/(?:www\.)?vid\.me/ =~ params[:q]
+    redirect "/vidme?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?dailymotion\.com/ =~ params[:q]
     redirect "/dailymotion?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?vimeo\.com/ =~ params[:q]
@@ -914,6 +916,42 @@ get "/ustream/download" do
   url = response.json["video"]["media_urls"]["flv"]
   return "#{Ustream::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something." if url.nil?
   redirect url
+end
+
+get "/vidme" do
+  return "Insufficient parameters" if params[:q].empty?
+
+  if params[:q]["vid.me/c/"]
+    return "Unsupported url. Sorry."
+  elsif /vid\.me\/(?<id>[a-zA-Z0-9]+)/ =~ params[:q]
+    # https://vid.me/yvi
+    # https://vid.me/vidmelocker
+  else
+    id = params[:q]
+  end
+
+  response = Vidme.get("/videoByUrl/#{id}")
+  if response.success?
+    user = response.json["video"]["user"]
+  else
+    response = Vidme.get("/userByUsername/#{id}")
+    return "Could not find a user or video with the name #{id}. Sorry." if response.code == 400
+    raise VidmeError.new(response) if !response.success?
+    user = response.json["user"]
+  end
+
+  redirect "/vidme/#{user["user_id"]}/#{user["username"]}"
+end
+
+get %r{/vidme/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username|
+  @user_id = user_id
+  @username = CGI.unescape(username)
+
+  response = Vidme.get("/user/#{user_id}/videos")
+  raise VidmeError.new(response) if !response.success?
+  @data = response.json["videos"]
+
+  erb :vidme_feed
 end
 
 get "/dailymotion" do
