@@ -919,8 +919,10 @@ end
 get "/dailymotion" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /dailymotion\.com\/video\/(?<video_id>[a-z0-9]+)/ =~ params[:q]
+  if /dailymotion\.com\/video\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q] or /dai\.ly\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
+    # http://www.dailymotion.com/video/k1ZotianZxwzm6fmny2
+    # http://dai.ly/x4bzwj4?start=60
   elsif /dailymotion\.com\/playlist\/(?<playlist_id>[a-z0-9]+)/ =~ params[:q]
     # http://www.dailymotion.com/playlist/x4bnhu_GeneralGrin_fair-use-recuts/1
   elsif /dailymotion\.com\/(?:(?:followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/?#]+)/ =~ params[:q]
