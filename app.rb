@@ -74,19 +74,19 @@ get "/twitter" do
     user = params[:q]
   end
 
-  response = TwitterParty.get("/users/lookup.json", query: { screen_name: user })
+  response = Twitter.get("/users/lookup.json", query: { screen_name: user })
   return "Can't find a user with that name. Sorry." if response.code == 404
   raise TwitterError.new(response) if !response.success?
 
-  user_id = response.parsed_response[0]["id_str"]
-  screen_name = response.parsed_response[0]["screen_name"]
+  user_id = response.json[0]["id_str"]
+  screen_name = response.json[0]["screen_name"]
   redirect "/twitter/#{user_id}/#{screen_name}#{"?#{params[:type]}" if !params[:type].empty?}"
 end
 
 get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   @user_id = id
 
-  response = TwitterParty.get("/statuses/user_timeline.json", query: {
+  response = Twitter.get("/statuses/user_timeline.json", query: {
     user_id: id,
     count: 100,
     include_rts: params[:include_rts] || "1",
@@ -98,7 +98,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   return "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing." if response.code == 404
   raise TwitterError.new(response) if !response.success?
 
-  @data = response.parsed_response
+  @data = response.json
   @username = @data[0]["user"]["screen_name"] rescue CGI.unescape(username)
 
   erb :twitter_feed
@@ -135,18 +135,18 @@ get "/youtube" do
   end
 
   if user
-    response = GoogleParty.get("/youtube/v3/channels", query: { part: "id", forUsername: user })
+    response = Google.get("/youtube/v3/channels", query: { part: "id", forUsername: user })
     raise GoogleError.new(response) if !response.success?
-    if response.parsed_response["items"].length > 0
-      channel_id = response.parsed_response["items"][0]["id"]
+    if response.json["items"].length > 0
+      channel_id = response.json["items"][0]["id"]
     end
   end
 
   if video_id
-    response = GoogleParty.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
+    response = Google.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
     raise GoogleError.new(response) if !response.success?
-    if response.parsed_response["items"].length > 0
-      channel_id = response.parsed_response["items"][0]["snippet"]["channelId"]
+    if response.json["items"].length > 0
+      channel_id = response.json["items"][0]["snippet"]["channelId"]
     end
   end
 
@@ -185,19 +185,19 @@ get "/youtube/:channel_id/:username" do
   ids = if params[:eventType]
     params[:eventType].split(",").map do |eventType|
       query[:eventType] = eventType
-      response = GoogleParty.get("/youtube/v3/search", query: query)
+      response = Google.get("/youtube/v3/search", query: query)
       raise GoogleError.new(response) if !response.success?
-      response.parsed_response["items"]
+      response.json["items"]
     end.flatten.uniq { |v| v["id"]["videoId"] }.sort_by { |v| v["snippet"]["publishedAt"] }.reverse
   else
-    response = GoogleParty.get("/youtube/v3/search", query: query)
+    response = Google.get("/youtube/v3/search", query: query)
     raise GoogleError.new(response) if !response.success?
-    response.parsed_response["items"]
+    response.json["items"]
   end.map { |v| v["id"]["videoId"] }
 
-  response = GoogleParty.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails", id: ids.join(",") })
+  response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails", id: ids.join(",") })
   raise GoogleError.new(response) if !response.success?
-  @data = response.parsed_response["items"]
+  @data = response.json["items"]
 
   if params[:q]
     q = params[:q].downcase
@@ -221,10 +221,10 @@ get "/googleplus" do
     user = "+#{user}" if user[0] != "+" and !user.numeric?
   end
 
-  response = GoogleParty.get("/plus/v1/people/#{CGI.escape(user)}")
+  response = Google.get("/plus/v1/people/#{CGI.escape(user)}")
   return "Can't find a page with that name. Sorry." if response.code == 404
   raise GoogleError.new(response) if !response.success?
-  data = response.parsed_response
+  data = response.json
   user_id = data["id"]
   if /\/\+(?<user>[a-zA-Z0-9]+)$/ =~ data["url"]
     username = user
@@ -238,9 +238,9 @@ end
 get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
-  response = GoogleParty.get("/plus/v1/people/#{id}/activities/public")
+  response = Google.get("/plus/v1/people/#{id}/activities/public")
   raise GoogleError.new(response) if !response.success?
-  @data = response.parsed_response
+  @data = response.json
 
   @user = if @data["items"][0]
     @data["items"][0]["actor"]["displayName"]
@@ -258,15 +258,15 @@ get "/vimeo" do
     # https://vimeo.com/user7103699
   elsif /vimeo\.com\/(?<video_id>\d+)/ =~ params[:q]
     # https://vimeo.com/155672086
-    response = VimeoParty.get("/videos/#{video_id}")
+    response = Vimeo.get("/videos/#{video_id}")
     raise VimeoError.new(response) if !response.success?
-    user_id = response.parsed_response["user"]["uri"].gsub("/users/","").to_i
+    user_id = response.json["user"]["uri"].gsub("/users/","").to_i
   elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/]+)/ =~ params[:q] or user = params[:q]
     # it's probably a channel name
-    response = VimeoParty.get("/users", query: { query: user })
+    response = Vimeo.get("/users", query: { query: user })
     raise VimeoError.new(response) if !response.success?
-    if response.parsed_response["data"].length > 0
-      user_id = response.parsed_response["data"][0]["uri"].gsub("/users/","").to_i
+    if response.json["data"].length > 0
+      user_id = response.json["data"][0]["uri"].gsub("/users/","").to_i
     end
   end
 
@@ -295,24 +295,24 @@ get "/facebook" do
     id = params[:q]
   end
 
-  response = FacebookParty.get("/", query: { id: id, metadata: "1" })
+  response = Facebook.get("/", query: { id: id, metadata: "1" })
   return "Can't find a page with that name. Sorry." if response.code == 404
-  return "#{FacebookParty::BASE_URL}/#{id} returned code #{response.code}." if response.code == 400
+  return "#{Facebook::BASE_URL}/#{id} returned code #{response.code}." if response.code == 400
   raise FacebookError.new(response) if !response.success?
-  data = response.parsed_response
+  data = response.json
   if data["metadata"]["fields"].any? { |field| field["name"] == "from" }
     # this is needed if the url is for e.g. a photo and not the main page
-    response = FacebookParty.get("/", query: { id: id, fields: "from", metadata: "1" })
+    response = Facebook.get("/", query: { id: id, fields: "from", metadata: "1" })
     raise FacebookError.new(response) if !response.success?
-    id = response.parsed_response["from"]["id"]
-    response = FacebookParty.get("/", query: { id: id, metadata: "1" })
+    id = response.json["from"]["id"]
+    response = Facebook.get("/", query: { id: id, metadata: "1" })
     raise FacebookError.new(response) if !response.success?
-    data = response.parsed_response
+    data = response.json
   end
   if data["metadata"]["fields"].any? { |field| field["name"] == "username" }
-    response = FacebookParty.get("/", query: { id: id, fields: "username,name" })
+    response = Facebook.get("/", query: { id: id, fields: "username,name" })
     raise FacebookError.new(response) if !response.success?
-    data = response.parsed_response
+    data = response.json
   end
 
   return "Please use a link directly to the Facebook page." if !data["id"].numeric?
@@ -330,13 +330,13 @@ get "/facebook/download" do
     id = params[:url]
   end
 
-  response = FacebookParty.get("/", query: { id: id, metadata: "1" })
+  response = Facebook.get("/", query: { id: id, metadata: "1" })
   if response.success?
-    type = response.parsed_response["metadata"]["type"]
+    type = response.json["metadata"]["type"]
     if type == "video"
-      response = FacebookParty.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
+      response = Facebook.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
       status response.code
-      data = response.parsed_response
+      data = response.json
       fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
       url = if data["live_status"] == "LIVE"
         "https://www.facebook.com/video/playback/playlist.m3u8?v=#{data["id"]}"
@@ -359,15 +359,15 @@ get "/facebook/download" do
         redirect url
       end
     elsif type == "photo"
-      response = FacebookParty.get("/", query: { id: id, fields: "images" })
-      data = response.parsed_response
+      response = Facebook.get("/", query: { id: id, fields: "images" })
+      data = response.json
       image = data["images"][0]
       redirect image["source"]
     else
       return "Unknown type (#{type})."
     end
   else
-    if response.parsed_response["error"]["code"] == 100
+    if response.json["error"]["code"] == 100
       # The video/photo is probably uploaded by a regular Facebook user (i.e. not uploaded to a page), which we can't get info from via the API.
       # Video example: https://www.facebook.com/ofer.dikovsky/videos/10154633221533413/
       # Photo example: 1401133169914577
@@ -400,7 +400,7 @@ get "/facebook/download" do
       end
     else
       status response.code
-      return response.parsed_response.to_json
+      return response.json.to_json
     end
   end
 end
@@ -416,10 +416,10 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@edge]
 
-  response = FacebookParty.get("/#{id}/#{@edge}", query: { fields: fields, since: Time.now.to_i-365*24*60*60 }) # date -v -1w +%s
+  response = Facebook.get("/#{id}/#{@edge}", query: { fields: fields, since: Time.now.to_i-365*24*60*60 }) # date -v -1w +%s
   raise FacebookError.new(response) if !response.success?
 
-  @data = response.parsed_response["data"]
+  @data = response.json["data"]
   if @edge == "posts"
     # copy down video length from properties array
     @data.each do |post|
@@ -457,9 +457,9 @@ get "/instagram" do
 
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/4KaPsKSjni/
-    response = InstagramParty.get("/p/#{post_id}/")
+    response = Instagram.get("/p/#{post_id}/")
     return InstagramError.new(response) if !response.success?
-    user = response.parsed_response["graphql"]["shortcode_media"]["owner"]
+    user = response.json["graphql"]["shortcode_media"]["owner"]
   elsif params[:q]["instagram.com/explore/"]
     return "This app does not support hashtags. Sorry."
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
@@ -469,14 +469,14 @@ get "/instagram" do
   end
 
   if name
-    response = InstagramParty.get("/#{CGI.escape(name)}/")
+    response = Instagram.get("/#{CGI.escape(name)}/")
     if response.success?
-      user = response.parsed_response["user"]
+      user = response.json["user"]
     else
       # https://www.instagram.com/web/search/topsearch/?query=infected
-      response = InstagramParty.get("/web/search/topsearch/", query: { query: name })
+      response = Instagram.get("/web/search/topsearch/", query: { query: name })
       raise InstagramError.new(response) if !response.success?
-      user = response.parsed_response["users"][0]["user"]
+      user = response.json["users"][0]["user"]
     end
   end
 
@@ -494,9 +494,9 @@ get "/instagram/download" do
     post_id = params[:url]
   end
 
-  response = InstagramParty.get("/p/#{post_id}/")
+  response = Instagram.get("/p/#{post_id}/")
   return "Please use a URL directly to a post." if !response.success?
-  data = response.parsed_response["graphql"]["shortcode_media"]
+  data = response.json["graphql"]["shortcode_media"]
   url = data["video_url"] || data["display_url"]
 
   if env["HTTP_ACCEPT"] == "application/json"
@@ -516,11 +516,11 @@ end
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
 
-  response = InstagramParty.get("/#{username}/")
+  response = Instagram.get("/#{username}/")
   return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1" if response.code == 404
   raise InstagramError.new(response) if !response.success?
 
-  @data = response.parsed_response["user"]
+  @data = response.json["user"]
   @user = @data["username"] rescue CGI.unescape(username)
 
   type = %w[videos photos].pick(params[:type]) || "posts"
@@ -569,9 +569,9 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
   @id = id
   @username = CGI.unescape(username)
 
-  response = PeriscopeParty.get_broadcasts(id)
+  response = Periscope.get_broadcasts(id)
   raise PeriscopeError.new(response) if !response.success?
-  @data = response.parsed_response["broadcasts"]
+  @data = response.json["broadcasts"]
   @user = if @data.first
     @data.first["user_display_name"]
   else
@@ -590,25 +590,25 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = SoundcloudParty.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
+  response = Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
   if response.code == 302
-    uri = Addressable::URI.parse(response.parsed_response["location"])
+    uri = Addressable::URI.parse(response.json["location"])
     return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
     id = uri.path[/\d+/]
   elsif response.code == 404 && username.numeric?
-    response = SoundcloudParty.get("/users/#{username}")
+    response = Soundcloud.get("/users/#{username}")
     return "Can't find a user with that id. Sorry." if response.code == 404
     raise SoundcloudError.new(response) if !response.success?
-    id = response.parsed_response["id"]
+    id = response.json["id"]
   elsif response.code == 404
     return "Can't find a user with that name. Sorry."
   else
     raise SoundcloudError.new(response)
   end
 
-  response = SoundcloudParty.get("/users/#{id}")
+  response = Soundcloud.get("/users/#{id}")
   raise SoundcloudError.new(response) if !response.success?
-  data = response.parsed_response
+  data = response.json
 
   redirect "/soundcloud/#{data["id"]}/#{data["permalink"]}"
 end
@@ -616,20 +616,20 @@ end
 get "/soundcloud/download" do
   url = params[:url]
   url = "https://#{url}" if !url.start_with?("http:", "https:")
-  response = SoundcloudParty.get("/resolve", query: { url: url })
+  response = Soundcloud.get("/resolve", query: { url: url })
   return "URL does not resolve." if response.code == 404
   raise SoundcloudError.new(response) if response.code != 302
-  uri = Addressable::URI.parse(response.parsed_response["location"])
+  uri = Addressable::URI.parse(response.json["location"])
   return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
-  response = SoundcloudParty.get("#{uri.path}/stream")
+  response = Soundcloud.get("#{uri.path}/stream")
   raise SoundcloudError.new(response) if response.code != 302
-  media_url = response.parsed_response["location"]
+  media_url = response.json["location"]
 
   if env["HTTP_ACCEPT"] == "application/json"
-    response = SoundcloudParty.get("#{uri.path}")
+    response = Soundcloud.get("#{uri.path}")
     content_type :json
     status response.code
-    data = response.parsed_response
+    data = response.json
     created_at = Time.parse(data["created_at"])
     return {
       url: media_url,
@@ -643,10 +643,10 @@ end
 get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
-  response = SoundcloudParty.get("/users/#{id}/tracks")
+  response = Soundcloud.get("/users/#{id}/tracks")
   raise SoundcloudError.new(response) if !response.success?
 
-  @data = response.parsed_response
+  @data = response.json
   @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
 
@@ -662,19 +662,19 @@ get "/mixcloud" do
     username = params[:q]
   end
 
-  response = MixcloudParty.get("/#{username}/")
+  response = Mixcloud.get("/#{username}/")
   return "Can't find a user with that name. Sorry." if response.code == 404
   raise MixcloudError.new(response) if !response.success?
-  data = response.parsed_response
+  data = response.json
 
   redirect "/mixcloud/#{data["username"]}/#{data["name"]}"
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
-  response = MixcloudParty.get("/#{username}/cloudcasts/")
+  response = Mixcloud.get("/#{username}/cloudcasts/")
   raise MixcloudError.new(response) if !response.success?
 
-  @data = response.parsed_response["data"]
+  @data = response.json["data"]
   @username = @data[0]["user"]["username"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["name"] rescue CGI.unescape(user)
 
@@ -693,17 +693,17 @@ get "/twitch" do
   end
 
   if vod_id
-    response = TwitchParty.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
-    data = response.parsed_response
+    data = response.json
     username = data["channel"]["name"]
   end
 
-  response = TwitchParty.get("/kraken/channels/#{username}")
+  response = Twitch.get("/kraken/channels/#{username}")
   return "Can't find a user with that name. Sorry." if response.code == 404
   raise TwitchError.new(response) if !response.success?
-  data = response.parsed_response
+  data = response.json
 
   redirect "/twitch/#{data["_id"]}/#{data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
@@ -731,23 +731,23 @@ get "/twitch/download" do
     redirect url
     return
   elsif vod_id
-    response = TwitchParty.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
-    data = response.parsed_response
+    data = response.json
 
-    response = TwitchParty.get("/api/vods/#{vod_id}/access_token")
+    response = Twitch.get("/api/vods/#{vod_id}/access_token")
     raise TwitchError.new(response) if !response.success?
-    vod_data = response.parsed_response
+    vod_data = response.json
 
     url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
     fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
-    response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
+    response = Twitch.get("/api/channels/#{channel_name}/access_token")
     return "Channel does not seem to exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
 
-    data = response.parsed_response
+    data = response.json
     token_data = JSON.parse(data["token"])
 
     url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
@@ -777,23 +777,23 @@ get "/twitch/watch" do
     streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
     return "Can't find clip." if streams.empty?
   elsif vod_id
-    response = TwitchParty.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/kraken/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
 
-    response = TwitchParty.get("/api/vods/#{vod_id}/access_token")
+    response = Twitch.get("/api/vods/#{vod_id}/access_token")
     raise TwitchError.new(response) if !response.success?
-    data = response.parsed_response
+    data = response.json
     playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
 
     response = HTTP.get(playlist_url)
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
-    response = TwitchParty.get("/api/channels/#{channel_name}/access_token")
+    response = Twitch.get("/api/channels/#{channel_name}/access_token")
     return "Channel does not seem to exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
 
-    data = response.parsed_response
+    data = response.json
     token_data = JSON.parse(data["token"])
     playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
@@ -814,10 +814,10 @@ get %r{/twitch/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
   type = %w[all highlight archive].pick(params[:type]) || "all"
-  response = TwitchParty.get("/kraken/channels/#{username}/videos", query: { broadcast_type: type })
+  response = Twitch.get("/kraken/channels/#{username}/videos", query: { broadcast_type: type })
   raise TwitchError.new(response) if !response.success?
 
-  @data = response.parsed_response["videos"].select { |video| video["status"] != "recording" }
+  @data = response.json["videos"].select { |video| video["status"] != "recording" }
   @username = @data[0]["channel"]["name"] rescue CGI.unescape(username)
   @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(username)
 
@@ -833,23 +833,23 @@ get "/speedrun" do
 
   if /speedrun\.com\/run\/(?<run_id>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/run/1zx0qkez
-    response = SpeedrunParty.get("/runs/#{run_id}")
+    response = Speedrun.get("/runs/#{run_id}")
     raise SpeedrunError.new(response) if !response.success?
-    game = response.parsed_response["data"]["game"]
+    game = response.json["data"]["game"]
   elsif /speedrun\.com\/(?<game>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/alttp#No_Major_Glitches
   else
     game = params[:q]
   end
 
-  response = SpeedrunParty.get("/games/#{game}")
+  response = Speedrun.get("/games/#{game}")
   if response.redirect?
     game = response.headers["location"].split("/")[-1]
-    response = SpeedrunParty.get("/games/#{game}")
+    response = Speedrun.get("/games/#{game}")
   end
   return "Can't find a game with that name. Sorry." if response.code == 404
   raise SpeedrunError.new(response) if !response.success?
-  data = response.parsed_response["data"]
+  data = response.json["data"]
 
   redirect "/speedrun/#{data["id"]}/#{data["abbreviation"]}"
 end
@@ -858,9 +858,9 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   @id = id
   @abbr = abbr
 
-  response = SpeedrunParty.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
+  response = Speedrun.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
   raise SpeedrunError.new(response) if !response.success?
-  @data = response.parsed_response["data"].reject { |run| run["videos"].nil? }
+  @data = response.json["data"].reject { |run| run["videos"].nil? }
 
   erb :speedrun_feed
 end
@@ -891,9 +891,9 @@ get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
   @id = id
   @user = CGI.unescape(title)
 
-  response = UstreamParty.get("/channels/#{id}/videos.json")
+  response = Ustream.get("/channels/#{id}/videos.json")
   raise UstreamError.new(response) if !response.success?
-  @data = response.parsed_response["videos"]
+  @data = response.json["videos"]
 
   erb :ustream_feed
 end
@@ -907,12 +907,12 @@ get "/ustream/download" do
     return "Please use a link directly to a video."
   end
 
-  response = UstreamParty.get("/videos/#{id}.json")
+  response = Ustream.get("/videos/#{id}.json")
   return "Video does not exist." if response.code == 404
-  return "#{UstreamParty::BASE_URL}/videos/#{id}.json returned code #{response.code}." if response.code == 401
+  return "#{Ustream::BASE_URL}/videos/#{id}.json returned code #{response.code}." if response.code == 401
   raise UstreamError.new(response) if !response.success?
-  url = response.parsed_response["video"]["media_urls"]["flv"]
-  return "#{UstreamParty::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something." if url.nil?
+  url = response.json["video"]["media_urls"]["flv"]
+  return "#{Ustream::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something." if url.nil?
   redirect url
 end
 
@@ -935,19 +935,19 @@ get "/dailymotion" do
   end
 
   if video_id
-    response = DailymotionParty.get("/video/#{video_id}")
+    response = Dailymotion.get("/video/#{video_id}")
     raise DailymotionError.new(response) if !response.success?
-    user = response.parsed_response["owner"]
+    user = response.json["owner"]
   elsif playlist_id
-    response = DailymotionParty.get("/playlist/#{playlist_id}")
+    response = Dailymotion.get("/playlist/#{playlist_id}")
     raise DailymotionError.new(response) if !response.success?
-    user = response.parsed_response["owner"]
+    user = response.json["owner"]
   end
 
-  response = DailymotionParty.get("/user/#{CGI.escape(user)}", query: { fields: "id,username" })
+  response = Dailymotion.get("/user/#{CGI.escape(user)}", query: { fields: "id,username" })
   if response.success?
-    user_id = response.parsed_response["id"]
-    username = response.parsed_response["username"]
+    user_id = response.json["id"]
+    username = response.json["username"]
     redirect "/dailymotion/#{user_id}/#{username}"
   else
     "Could not find a user with the name #{user}. Sorry."
@@ -958,9 +958,9 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   @user_id = user_id
   @username = CGI.unescape(username)
 
-  response = DailymotionParty.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
+  response = Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
   raise DailymotionError.new(response) if !response.success?
-  @data = response.parsed_response["list"]
+  @data = response.json["list"]
 
   erb :dailymotion_feed
 end
@@ -988,24 +988,24 @@ get "/imgur" do
   end
 
   if image_id
-    response = ImgurParty.get("/gallery/image/#{image_id}")
-    response = ImgurParty.get("/image/#{image_id}") if !response.success?
+    response = Imgur.get("/gallery/image/#{image_id}")
+    response = Imgur.get("/image/#{image_id}") if !response.success?
     return "Can't identify #{image_id} as an image or gallery." if !response.success?
     raise ImgurError.new(response) if !response.success?
-    user_id = response.parsed_response["data"]["account_id"]
-    username = response.parsed_response["data"]["account_url"]
+    user_id = response.json["data"]["account_id"]
+    username = response.json["data"]["account_url"]
   elsif album_id
-    response = ImgurParty.get("/album/#{album_id}")
+    response = Imgur.get("/album/#{album_id}")
     return "Can't identify #{album_id} as an album." if response.code == 404
     raise ImgurError.new(response) if !response.success?
-    user_id = response.parsed_response["data"]["account_id"]
-    username = response.parsed_response["data"]["account_url"]
+    user_id = response.json["data"]["account_id"]
+    username = response.json["data"]["account_url"]
   elsif username
-    response = ImgurParty.get("/account/#{CGI.escape(username)}")
+    response = Imgur.get("/account/#{CGI.escape(username)}")
     return "Can't find a user with that name. Sorry. If you want a feed for a subreddit, enter \"r/#{username}\"." if response.code == 404
     raise ImgurError.new(response) if !response.success?
-    user_id = response.parsed_response["data"]["id"]
-    username = response.parsed_response["data"]["url"]
+    user_id = response.json["data"]["id"]
+    username = response.json["data"]["url"]
   end
 
   if user_id.nil?
@@ -1018,15 +1018,15 @@ end
 get "/imgur/:user_id/:username" do
   if params[:user_id] == "r"
     @subreddit = params[:username]
-    response = ImgurParty.get("/gallery/r/#{@subreddit}")
+    response = Imgur.get("/gallery/r/#{@subreddit}")
   else
     @user_id = params[:user_id]
     @username = params[:username]
     # can't use user_id in this request unfortunately
-    response = ImgurParty.get("/account/#{@username}/submissions")
+    response = Imgur.get("/account/#{@username}/submissions")
   end
   raise ImgurError.new(response) if !response.success? or response.body.empty?
-  @data = response.parsed_response["data"]
+  @data = response.json["data"]
 
   if params[:animated]
     value = params[:animated] == "true"

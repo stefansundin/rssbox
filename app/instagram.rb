@@ -1,11 +1,11 @@
 # https://www.instagram.com/developer/endpoints/
 
-class InstagramParty < HTTP
+class Instagram < HTTP
   BASE_URL = "https://www.instagram.com"
   PARAMS = "__a=1"
 end
 
-class InstagramError < PartyError; end
+class InstagramError < HTTPError; end
 
 error InstagramError do |e|
   status 503

@@ -1,11 +1,11 @@
 # https://developers.soundcloud.com/docs/api/reference
 
-class SoundcloudParty < HTTP
+class Soundcloud < HTTP
   BASE_URL = "https://api.soundcloud.com"
   PARAMS = "client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}"
 end
 
-class SoundcloudError < PartyError; end
+class SoundcloudError < HTTPError; end
 
 error SoundcloudError do |e|
   status 503

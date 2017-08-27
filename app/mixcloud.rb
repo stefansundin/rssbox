@@ -1,10 +1,10 @@
 # https://www.mixcloud.com/developers/
 
-class MixcloudParty < HTTP
+class Mixcloud < HTTP
   BASE_URL = "https://api.mixcloud.com"
 end
 
-class MixcloudError < PartyError; end
+class MixcloudError < HTTPError; end
 
 error MixcloudError do |e|
   status 503

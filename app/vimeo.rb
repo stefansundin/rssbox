@@ -1,13 +1,13 @@
 # https://developer.vimeo.com/api/start
 
-class VimeoParty < HTTP
+class Vimeo < HTTP
   BASE_URL = "https://api.vimeo.com"
   HEADERS = {
     "Authorization": "bearer #{ENV["VIMEO_ACCESS_TOKEN"]}",
   }
 end
 
-class VimeoError < PartyError; end
+class VimeoError < HTTPError; end
 
 error VimeoError do |e|
   status 503

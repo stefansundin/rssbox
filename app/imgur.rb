@@ -1,13 +1,13 @@
 # https://api.imgur.com/endpoints
 
-class ImgurParty < HTTP
+class Imgur < HTTP
   BASE_URL = "https://api.imgur.com/3"
   HEADERS = {
     "Authorization": "Client-ID #{ENV["IMGUR_CLIENT_ID"]}",
   }
 end
 
-class ImgurError < PartyError; end
+class ImgurError < HTTPError; end
 
 error ImgurError do |e|
   status 503

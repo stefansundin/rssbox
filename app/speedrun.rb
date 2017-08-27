@@ -1,6 +1,6 @@
 # https://github.com/speedruncom/api/tree/master/version1
 
-class SpeedrunParty < HTTP
+class Speedrun < HTTP
   BASE_URL = "https://www.speedrun.com/api/v1"
 
   @@cache = {}
@@ -19,13 +19,13 @@ class SpeedrunParty < HTTP
     end
 
     if type == "game"
-      response = SpeedrunParty.get("/games/#{id}")
+      response = Speedrun.get("/games/#{id}")
       raise SpeedrunError.new(response) if !response.success?
-      redis_value = value = response.parsed_response["data"]["names"]["international"]
+      redis_value = value = response.json["data"]["names"]["international"]
     elsif type == "level-subcategories"
-      response = SpeedrunParty.get("/levels/#{id}/variables")
+      response = Speedrun.get("/levels/#{id}/variables")
       raise SpeedrunError.new(response) if !response.success?
-      value = response.parsed_response["data"].select { |var| var["is-subcategory"] }.map do |var|
+      value = response.json["data"].select { |var| var["is-subcategory"] }.map do |var|
         [
           var["id"],
           var["values"]["values"].map do |id, val|
@@ -42,7 +42,7 @@ class SpeedrunParty < HTTP
   end
 end
 
-class SpeedrunError < PartyError; end
+class SpeedrunError < HTTPError; end
 
 error SpeedrunError do |e|
   status 503

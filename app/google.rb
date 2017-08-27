@@ -1,12 +1,12 @@
 # https://developers.google.com/youtube/v3/docs/
 # https://developers.google.com/+/web/api/rest/
 
-class GoogleParty < HTTP
+class Google < HTTP
   BASE_URL = "https://www.googleapis.com"
   PARAMS = "key=#{ENV["GOOGLE_API_KEY"]}"
 end
 
-class GoogleError < PartyError; end
+class GoogleError < HTTPError; end
 
 error GoogleError do |e|
   status 503

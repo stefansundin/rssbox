@@ -1,6 +1,6 @@
 # https://github.com/justintv/Twitch-API/
 
-class TwitchParty < HTTP
+class Twitch < HTTP
   BASE_URL = "https://api.twitch.tv"
   HEADERS = {
     "Accept": "application/vnd.twitchtv.v3+json",
@@ -8,7 +8,7 @@ class TwitchParty < HTTP
   }
 end
 
-class TwitchError < PartyError; end
+class TwitchError < HTTPError; end
 
 error TwitchError do |e|
   status 503

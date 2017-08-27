@@ -1,10 +1,10 @@
 # https://developer.dailymotion.com/api
 
-class DailymotionParty < HTTP
+class Dailymotion < HTTP
   BASE_URL = "https://api.dailymotion.com"
 end
 
-class DailymotionError < PartyError; end
+class DailymotionError < HTTPError; end
 
 error DailymotionError do |e|
   status 503

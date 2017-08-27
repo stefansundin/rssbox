@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>speedrun:runs:<%= @id %></id>
-  <title><%= SpeedrunParty.resolve_id("game", @id) %> on Speedrun.com</title>
+  <title><%= Speedrun.resolve_id("game", @id) %> on Speedrun.com</title>
   <icon>https://www.speedrun.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.speedrun.com/<%= @abbr %>" rel="alternate" />
@@ -27,7 +27,7 @@
   end
 
   if !run["level"]["data"].empty?
-    level_subcategories = SpeedrunParty.resolve_id("level-subcategories", run["level"]["data"]["id"])
+    level_subcategories = Speedrun.resolve_id("level-subcategories", run["level"]["data"]["id"])
     category += level_subcategories.select { |id, values| run["values"][id] }.map { |id, values| " - " + values[run["values"][id]] }.join
   end
 -%>

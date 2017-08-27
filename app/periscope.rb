@@ -1,6 +1,6 @@
 # No public API documentation
 
-class PeriscopeParty < HTTP
+class Periscope < HTTP
   BASE_URL = "https://api.periscope.tv/api/v2"
 
   def self.get_broadcasts(user_id)
@@ -13,7 +13,7 @@ class PeriscopeParty < HTTP
   end
 end
 
-class PeriscopeError < PartyError; end
+class PeriscopeError < HTTPError; end
 
 error PeriscopeError do |e|
   status 503
