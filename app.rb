@@ -595,7 +595,7 @@ get "/soundcloud" do
     uri = Addressable::URI.parse(response.json["location"])
     return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
     id = uri.path[/\d+/]
-  elsif response.code == 404 && username.numeric?
+  elsif response.code == 404 and username.numeric?
     response = Soundcloud.get("/users/#{username}")
     return "Can't find a user with that id. Sorry." if response.code == 404
     raise SoundcloudError.new(response) if !response.success?
