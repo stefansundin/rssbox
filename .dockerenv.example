@@ -2,9 +2,6 @@ RACK_ENV=deployment
 
 REDIS_URL=redis://redis:6379
 
-#AIRBRAKE_HOST=
-#AIRBRAKE_KEY=
-
 #GOOGLE_API_KEY=
 
 #VIMEO_ACCESS_TOKEN=
@@ -18,6 +15,20 @@ REDIS_URL=redis://redis:6379
 
 #IMGUR_CLIENT_ID=
 
+# Get your own at https://report-uri.io/
+#CSP_REPORT_URI=
+
 # Google Webmaster Tools and Google Analytics
 #GOOGLE_VERIFICATION_TOKEN=googleXXXXXXXXXXXXXXXX.html
 #GOOGLE_ANALYTICS_ID=UA-1234567-1
+
+# Airbrake
+#AIRBRAKE_HOST=
+#AIRBRAKE_API_KEY=
+#AIRBRAKE_PROJECT_ID=
+
+# New Relic
+#NEW_RELIC_LICENSE_KEY=
+#NEW_RELIC_APP_NAME=RSSBox
+#NEW_RELIC_LOG=stdout
+#NEW_RELIC_LOG_LEVEL=warning
