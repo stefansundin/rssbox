@@ -417,7 +417,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
   @type = @edge = %w[videos photos live].pick(params[:type]) || "posts"
   @edge = "videos" if @type == "live"
   fields = {
-    "posts"  => "updated_time,from,parent_id,type,story,name,message,description,link,source,picture,full_picture,properties",
+    "posts"  => "updated_time,from,parent_id,type,story,name,message,description,link,source,picture,full_picture,properties,with_tags",
     "videos" => "updated_time,from,title,description,embed_html,length,live_status",
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@edge]
@@ -427,7 +427,16 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @data = response.json["data"]
   if @edge == "posts"
-    # copy down video length from properties array
+    # Filter posts if with=uid is supplied (property only exists on posts)
+    if params[:with]
+      ids = params[:with].split(",")
+      @data.select! { |post| post["with_tags"] and post["with_tags"]["data"].any? { |tag| ids.include?(tag["id"]) } }
+    elsif params.has_key?(:with)
+      # If with is specified but is nil, then we just want to get posts that include someone else
+      @data.select! { |post| post["with_tags"] }
+    end
+
+    # Copy down video length from properties array
     @data.each do |post|
       if post["properties"]
         post["properties"].each do |prop|
