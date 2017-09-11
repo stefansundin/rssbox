@@ -365,10 +365,21 @@ get "/facebook/download" do
         redirect url
       end
     elsif type == "photo"
-      response = Facebook.get("/", query: { id: id, fields: "images" })
+      response = Facebook.get("/", query: { id: id, fields: "images,created_time,name,from" })
       data = response.json
       image = data["images"][0]
-      redirect image["source"]
+      url = image["source"]
+      fn = "#{data["created_time"].to_date} - #{data["name"] || data["from"]["name"]}.jpg".to_filename
+
+      if env["HTTP_ACCEPT"] == "application/json"
+        content_type :json
+        return {
+          url: url,
+          filename: fn,
+        }.to_json
+      end
+
+      redirect url
     else
       return "Unknown type (#{type})."
     end
