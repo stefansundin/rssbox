@@ -35,18 +35,23 @@ class HTTP
       headers.merge!(self::HEADERS) if defined?(self::HEADERS)
       headers.merge!(opts[:headers]) if opts[:headers]
       response = http.request_get(uri.request_uri, headers)
-      return HTTPResponse.new(response)
+      return HTTPResponse.new(response, uri.to_s)
     end
   end
 end
 
 class HTTPResponse
-  def initialize(response)
+  def initialize(response, url)
     @response = response
+    @url = url
   end
 
   def raw
     @response
+  end
+
+  def url
+    @url
   end
 
   def body
@@ -75,6 +80,19 @@ class HTTPResponse
 
   def redirect?
     @response.is_a?(Net::HTTPRedirection)
+  end
+
+  def redirect_url
+    raise "not a redirect" if !redirect?
+    url = @response.header["location"]
+    if url[0] == "/"
+      # relative redirect
+      uri = Addressable::URI.parse(@url)
+      url = uri.scheme + "://" + uri.host + url
+    elsif /^https?:\/\/./ !~ url
+      raise "bad redirect: #{url}"
+    end
+    Addressable::URI.parse(url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
   end
 end
 

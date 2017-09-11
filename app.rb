@@ -378,6 +378,7 @@ get "/facebook/download" do
       # Video example: https://www.facebook.com/ofer.dikovsky/videos/10154633221533413/
       # Photo example: 1401133169914577
       response = HTTP.get("https://www.facebook.com/#{id}")
+      response = HTTP.get(response.redirect_url) if response.redirect?
       if response.success?
         if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
           title = title.gsub!(" | Facebook", "")
