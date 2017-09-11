@@ -380,15 +380,15 @@ get "/facebook/download" do
       response = HTTP.get("https://www.facebook.com/#{id}")
       response = HTTP.get(response.redirect_url) if response.redirect?
       if response.success?
-        if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
-          title = title.gsub!(" | Facebook", "")
-          created_time = Time.at(utime.to_i)
-          fn = "#{created_time.to_date} - #{title}.mp4".to_filename.force_encoding("UTF-8")
-        end
         if /hd_src_no_ratelimit:"(?<url>[^"]+)"/ =~ response.body
         elsif /https:\/\/[^"]+_#{id}_[^"]+\.jpg[^"]+/o =~ response.body
           # This is not the best quality of the picture, but it will have to do
           url = CGI.unescapeHTML($&)
+        end
+        if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
+          title = title.force_encoding("UTF-8").gsub(" | Facebook", "")
+          created_time = Time.at(utime.to_i)
+          fn = "#{created_time.to_date} - #{title}.#{url.url_ext}".to_filename
         end
         if url
           if env["HTTP_ACCEPT"] == "application/json"
