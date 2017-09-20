@@ -1,10 +1,12 @@
 class HTTP
   def self.get(url, options={headers: nil, query: nil})
-    if defined?(self::BASE_URL) and url[0] == "/"
+    relative_url = (url[0] == "/")
+
+    if defined?(self::BASE_URL) and relative_url
       url = self::BASE_URL+url
     end
 
-    if defined?(self::PARAMS) and url[0] == "/"
+    if defined?(self::PARAMS) and relative_url
       if url["?"]
         url += "&"+self::PARAMS
       else
@@ -29,7 +31,7 @@ class HTTP
     }
     Net::HTTP.start(uri.host, uri.port, opts) do |http|
       headers = {}
-      headers.merge!(self::HEADERS) if defined?(self::HEADERS) and url[0] == "/"
+      headers.merge!(self::HEADERS) if defined?(self::HEADERS) and relative_url
       headers.merge!(opts[:headers]) if opts[:headers]
       response = http.request_get(uri.request_uri, headers)
       return HTTPResponse.new(response, uri.to_s)
