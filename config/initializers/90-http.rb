@@ -1,13 +1,10 @@
-require "addressable/uri"
-
 class HTTP
   def self.get(url, options={headers: nil, query: nil})
-    if defined?(self::BASE_URL)
-      raise "url must start with /" if url[0] != "/"
+    if defined?(self::BASE_URL) and url[0] == "/"
       url = self::BASE_URL+url
     end
 
-    if defined?(self::PARAMS)
+    if defined?(self::PARAMS) and url[0] == "/"
       if url["?"]
         url += "&"+self::PARAMS
       else
@@ -32,11 +29,14 @@ class HTTP
     }
     Net::HTTP.start(uri.host, uri.port, opts) do |http|
       headers = {}
-      headers.merge!(self::HEADERS) if defined?(self::HEADERS)
+      headers.merge!(self::HEADERS) if defined?(self::HEADERS) and url[0] == "/"
       headers.merge!(opts[:headers]) if opts[:headers]
       response = http.request_get(uri.request_uri, headers)
       return HTTPResponse.new(response, uri.to_s)
     end
+  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError => e
+    self::ERROR_CLASS ||= HTTPError
+    raise self::ERROR_CLASS.new(e)
   end
 end
 
@@ -94,6 +94,13 @@ class HTTPResponse
     end
     Addressable::URI.parse(url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
   end
+
+  def redirect_same_origin?
+    return false if !redirect?
+    uri = Addressable::URI.parse(@url).normalize
+    new_uri = Addressable::URI.parse(redirect_url).normalize
+    uri.origin == new_uri.origin
+  end
 end
 
 class HTTPError < StandardError
@@ -110,6 +117,10 @@ class HTTPError < StandardError
   end
 
   def message
-    "#{@request.code}: #{@request.body}"
+    if @request.is_a?(HTTPResponse)
+      "#{@request.code}: #{@request.body}"
+    else
+      "#{self}: #{@request.message}"
+    end
   end
 end

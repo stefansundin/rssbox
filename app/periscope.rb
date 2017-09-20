@@ -1,10 +1,14 @@
 # No public API documentation
 
+class PeriscopeError < HTTPError; end
+
 class Periscope < HTTP
   BASE_URL = "https://api.periscope.tv/api/v2"
+  ERROR_CLASS = PeriscopeError
 
   def self.get_broadcasts(user_id)
-    response = HTTP.get("https://www.periscope.tv/cnn")
+    response = get("https://www.periscope.tv/cnn")
+    raise ERROR_CLASS.new(response) if !response.success?
     doc = Nokogiri::HTML(response.body)
     data = doc.at("div#page-container")["data-store"]
     json = JSON.parse(data)
@@ -13,9 +17,7 @@ class Periscope < HTTP
   end
 end
 
-class PeriscopeError < HTTPError; end
-
 error PeriscopeError do |e|
   status 503
-  "There was a problem talking to Periscope."
+  "There was a problem talking to Periscope. Please try again in a moment."
 end

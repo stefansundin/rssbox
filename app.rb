@@ -388,8 +388,8 @@ get "/facebook/download" do
       # The video/photo is probably uploaded by a regular Facebook user (i.e. not uploaded to a page), which we can't get info from via the API.
       # Video example: https://www.facebook.com/ofer.dikovsky/videos/10154633221533413/
       # Photo example: 1401133169914577
-      response = HTTP.get("https://www.facebook.com/#{id}")
-      response = HTTP.get(response.redirect_url) if response.redirect?
+      response = Facebook.get("https://www.facebook.com/#{id}")
+      response = Facebook.get(response.redirect_url) if response.redirect_same_origin?
       if response.success?
         if /hd_src_no_ratelimit:"(?<url>[^"]+)"/ =~ response.body
         elsif /https:\/\/[^"]+_#{id}_[^"]+\.jpg[^"]+/o =~ response.body
@@ -580,7 +580,7 @@ get "/periscope" do
   else
     "https://www.periscope.tv/#{CGI.escape(username)}"
   end
-  response = HTTP.get(url)
+  response = Periscope.get(url)
   return "That username does not exist." if response.code == 404
   return "That broadcast has expired." if response.code == 410
   raise PeriscopeError.new(response) if !response.success?
@@ -750,7 +750,7 @@ get "/twitch/download" do
   end
 
   if clip_slug
-    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
+    response = Twitch.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
     return "Clip does not seem to exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     url = response.body[/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/]
@@ -798,7 +798,7 @@ get "/twitch/watch" do
   end
 
   if clip_slug
-    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
+    response = Twitch.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
     return "Clip does not seem to exist." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
@@ -813,7 +813,7 @@ get "/twitch/watch" do
     data = response.json
     playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
 
-    response = HTTP.get(playlist_url)
+    response = Twitch.get(playlist_url)
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
     response = Twitch.get("/api/channels/#{channel_name}/access_token")
@@ -824,7 +824,7 @@ get "/twitch/watch" do
     token_data = JSON.parse(data["token"])
     playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
-    response = HTTP.get(playlist_url)
+    response = Twitch.get(playlist_url)
     return "Channel does not seem to be online." if response.code == 404
     raise TwitchError.new(response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]

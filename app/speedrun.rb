@@ -1,7 +1,10 @@
 # https://github.com/speedruncom/api/tree/master/version1
 
+class SpeedrunError < HTTPError; end
+
 class Speedrun < HTTP
   BASE_URL = "https://www.speedrun.com/api/v1"
+  ERROR_CLASS = SpeedrunError
 
   @@cache = {}
 
@@ -42,9 +45,7 @@ class Speedrun < HTTP
   end
 end
 
-class SpeedrunError < HTTPError; end
-
 error SpeedrunError do |e|
   status 503
-  "There was a problem talking to speedrun.com."
+  "There was a problem talking to speedrun.com. Please try again in a moment."
 end

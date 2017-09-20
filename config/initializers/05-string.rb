@@ -1,4 +1,3 @@
-require "addressable/uri"
 require "net/http"
 require "resolv-replace.rb"
 
