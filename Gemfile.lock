@@ -98,6 +98,7 @@ GEM
     tzinfo (1.2.3)
       thread_safe (~> 0.1)
     useragent (0.16.8)
+    yajl-ruby (1.3.0)
 
 PLATFORMS
   ruby
@@ -128,6 +129,7 @@ DEPENDENCIES
   secure_headers
   sinatra
   sinatra-reloader
+  yajl-ruby
 
 RUBY VERSION
    ruby 2.4.2p198
