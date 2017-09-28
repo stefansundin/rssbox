@@ -23,11 +23,11 @@ class Speedrun < HTTP
 
     if type == "game"
       response = Speedrun.get("/games/#{id}")
-      raise SpeedrunError.new(response) if !response.success?
+      raise(SpeedrunError, response) if !response.success?
       redis_value = value = response.json["data"]["names"]["international"]
     elsif type == "level-subcategories"
       response = Speedrun.get("/levels/#{id}/variables")
-      raise SpeedrunError.new(response) if !response.success?
+      raise(SpeedrunError, response) if !response.success?
       value = response.json["data"].select { |var| var["is-subcategory"] }.map do |var|
         [
           var["id"],

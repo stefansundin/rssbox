@@ -8,7 +8,7 @@ class Periscope < HTTP
 
   def self.get_broadcasts(user_id)
     response = get("https://www.periscope.tv/cnn")
-    raise ERROR_CLASS.new(response) if !response.success?
+    raise(ERROR_CLASS, response) if !response.success?
     doc = Nokogiri::HTML(response.body)
     data = doc.at("div#page-container")["data-store"]
     json = JSON.parse(data)

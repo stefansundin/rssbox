@@ -36,9 +36,9 @@ class HTTP
       response = http.request_get(uri.request_uri, headers)
       return HTTPResponse.new(response, uri.to_s)
     end
-  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError => e
+  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError
     self::ERROR_CLASS ||= HTTPError
-    raise self::ERROR_CLASS.new(e)
+    raise(self::ERROR_CLASS, $!)
   end
 end
 
@@ -85,14 +85,14 @@ class HTTPResponse
   end
 
   def redirect_url
-    raise "not a redirect" if !redirect?
+    raise("not a redirect") if !redirect?
     url = @response.header["location"]
     if url[0] == "/"
       # relative redirect
       uri = Addressable::URI.parse(@url)
       url = uri.scheme + "://" + uri.host + url
     elsif /^https?:\/\/./ !~ url
-      raise "bad redirect: #{url}"
+      raise("bad redirect: #{url}")
     end
     Addressable::URI.parse(url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
   end
@@ -106,23 +106,23 @@ class HTTPResponse
 end
 
 class HTTPError < StandardError
-  def initialize(request)
-    @request = request
+  def initialize(obj)
+    @obj = obj
   end
 
   def request
-    @request
+    @obj
   end
 
   def data
-    @request.json
+    @obj.json
   end
 
   def message
-    if @request.is_a?(HTTPResponse)
-      "#{@request.code}: #{@request.body}"
+    if @obj.is_a?(HTTPResponse)
+      "#{@obj.code}: #{@obj.body}"
     else
-      "#{self}: #{@request.message}"
+      @obj.inspect
     end
   end
 end
