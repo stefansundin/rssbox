@@ -488,7 +488,8 @@ get "/instagram" do
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/4KaPsKSjni/
     response = Instagram.get("/p/#{post_id}/")
-    return InstagramError.new(response) if !response.success?
+    return "This post does not exist or is a private post." if response.code == 404
+    raise(InstagramError, response) if !response.success?
     user = response.json["graphql"]["shortcode_media"]["owner"]
   elsif params[:q]["instagram.com/explore/"]
     return "This app does not support hashtags. Sorry."
