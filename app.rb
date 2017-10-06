@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+# export RUBYOPT=--enable-frozen-string-literal
+
 require "sinatra"
 require "./config/application"
 require "active_support/core_ext/string"

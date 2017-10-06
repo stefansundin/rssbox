@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # http://ustream.github.io/api-docs/broadcasting-api/channel.html
 
 class UstreamError < HTTPError; end

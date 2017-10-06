@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://github.com/justintv/Twitch-API/
 
 class TwitchError < HTTPError; end

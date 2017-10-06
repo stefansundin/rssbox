@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://developers.facebook.com/docs/graph-api/reference/
 
 class FacebookError < HTTPError; end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Helper function for nginx proxy that uses a subdir.
 # Example use:
 # location /rssbox/ {

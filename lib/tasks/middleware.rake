@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 desc "Print list of middleware"
 task :middleware do
   require "./app"

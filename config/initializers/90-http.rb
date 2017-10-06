@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HTTP
   def self.get(url, options={headers: nil, query: nil})
     relative_url = (url[0] == "/")

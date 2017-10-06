@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if ENV["AIRBRAKE_API_KEY"]
   Airbrake.configure do |config|
     config.host = ENV["AIRBRAKE_HOST"]

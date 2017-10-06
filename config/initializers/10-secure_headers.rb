@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # By default, block everything
 SecureHeaders::Configuration.default do |config|
   config.cookies = {

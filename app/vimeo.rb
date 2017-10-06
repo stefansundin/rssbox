@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://developer.vimeo.com/api/start
 
 class VimeoError < HTTPError; end

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://dev.twitter.com/rest/reference/get/statuses/user_timeline
 
 class TwitterError < HTTPError; end

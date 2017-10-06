@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://www.instagram.com/developer/endpoints/
 
 class InstagramError < HTTPError; end

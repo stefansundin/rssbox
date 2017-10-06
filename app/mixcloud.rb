@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://www.mixcloud.com/developers/
 
 class MixcloudError < HTTPError; end

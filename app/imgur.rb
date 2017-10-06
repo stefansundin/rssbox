@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://api.imgur.com/endpoints
 
 class ImgurError < HTTPError; end

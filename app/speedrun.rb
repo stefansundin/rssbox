@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://github.com/speedruncom/api/tree/master/version1
 
 class SpeedrunError < HTTPError; end

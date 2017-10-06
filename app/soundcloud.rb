@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://developers.soundcloud.com/docs/api/reference
 
 class SoundcloudError < HTTPError; end

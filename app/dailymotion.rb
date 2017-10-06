@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # https://developer.dailymotion.com/api
 
 class DailymotionError < HTTPError; end

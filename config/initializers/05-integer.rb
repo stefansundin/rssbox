@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Integer
   def to_duration
     seconds = self % 60

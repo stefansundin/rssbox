@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # disable Sinatra's logger
 disable :logging
 
