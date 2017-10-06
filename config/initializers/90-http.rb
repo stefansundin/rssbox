@@ -34,7 +34,7 @@ class HTTP
     Net::HTTP.start(uri.host, uri.port, opts) do |http|
       headers = {}
       headers.merge!(self::HEADERS) if defined?(self::HEADERS) and relative_url
-      headers.merge!(opts[:headers]) if opts[:headers]
+      headers.merge!(options[:headers]) if options[:headers]
       response = http.request_get(uri.request_uri, headers)
       return HTTPResponse.new(response, uri.to_s)
     end
