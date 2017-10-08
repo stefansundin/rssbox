@@ -21,7 +21,13 @@ if @data["is_private"] and @data["media"]["nodes"].empty?
     <content type="html"><%= reason %></content>
   </entry>
 <%- else -%>
-<%- @data["media"]["nodes"].each do |post| -%>
+<%-
+@data["media"]["nodes"].each do |post|
+  if !post["nodes"]
+    post["display_url"] = post["display_src"] if post["display_src"]
+    post["nodes"] = [post]
+  end
+-%>
 
   <entry>
     <id>instagram:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
@@ -34,19 +40,20 @@ if @data["is_private"] and @data["media"]["nodes"].empty?
 if post["is_video"]
   <<-EOF.undent.esc
     <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["code"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-    #{post["caption"].linkify.to_paragraphs}
-    <p><a href="#{request.root_url}/instagram/download?url=#{post["code"]}">Download video</a></p>
-  EOF
-else
-  <<-EOF.undent.esc
-    <img src="#{post["display_src"]}" referrerpolicy="no-referrer">
-    #{post["caption"].linkify.to_paragraphs}
   EOF
 end
--%>
+%>
+<%=
+post["nodes"].select { |node| !node["is_video"] }.map do |node|
+  <<-EOF.undent.esc
+    <img src="#{node["display_url"]}" referrerpolicy="no-referrer">
+  EOF
+end.join("\n")
+%>
+<%= post["caption"].linkify.to_paragraphs.esc %>
 <%=
 <<-EOF.undent.esc
-  <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{post["code"]}")}">Download with nice filename</a></p>
+  <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{post["code"]}/")}">Download with nice filename</a></p>
 EOF
 -%>
     </content>

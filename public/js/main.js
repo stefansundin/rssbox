@@ -88,132 +88,138 @@ $(document).ready(function() {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.addEventListener("load", function() {
-      var data = this.response;
+      var response = this.response;
 
-      if (this.status != 200 || !data) {
+      if (this.status != 200 || !response) {
         alert("Something went wrong.");
         return;
       }
 
-      if (data.live) {
-        $(`<div><p><tt>ffmpeg -i "${data.url}" "${data.filename}"</tt></p></div>`).insertAfter(form);
-        return;
+      if (response.constructor != Array) {
+        response = [response];
       }
 
-      var progress = document.createElement("progress");
-      $(progress).insertAfter(form);
-      progress.title = data.filename;
-
-      // this is a big hack for cross-origin <a download="filename">
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", data.url, true);
-      xhr.responseType = "blob";
-      var chunk_size = 10000000;
-      $(progress).click(function() {
-        if (confirm(`Abort download of "${data.filename}"?`)) {
-          xhr.abort();
-          progress.value = progress.max;
-          window.dirty--;
+      response.forEach(function(data) {
+        if (data.live) {
+          $(`<div><p><tt>ffmpeg -i "${data.url}" "${data.filename}"</tt></p></div>`).insertAfter(form);
+          return;
         }
-      });
-      if (form.attr("action") == "facebook") {
-        xhr.addEventListener("progress", function bigfile(e) {
-          if (e.total == 0) return;
-          xhr.removeEventListener("progress", bigfile);
-          if (e.total > 5*chunk_size && confirm(`This file is big (${fmt_filesize(e.total,0)}). Download with ${Math.ceil(e.total/chunk_size)} smaller and resumable requests instead?`)) {
-            xhr.abort();
-            $(progress).detach();
-            var requests = [];
-            for (var i=0, j=1; i < e.total; i += chunk_size, j++) {
-              (function(i, j) {
-                var progress = document.createElement("progress");
-                $(progress).insertAfter(form);
-                progress.title = data.filename;
-                progress.value = 0;
-                progress.max = 1;
 
-                var xhr = new XMLHttpRequest();
-                xhr.open("GET", data.url, true);
-                xhr.responseType = "blob";
-                xhr.setRequestHeader("Range", `bytes=${i}-${i+chunk_size-1}`);
-                xhr.addEventListener("progress", function(e) {
-                  if (e.total == 0) return;
-                  progress.value = e.loaded;
-                  progress.max = e.total;
-                  progress.title = `Part ${j}: ${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
-                });
-                xhr.addEventListener("error", function() {
-                  console.log(`Network error downloading part ${j}.`);
-                  // TODO: Only retry if we got at least one byte. If we didn't get any bytes, it's reasonable to assume the OPTIONS request failed or something we can't fix with a retry.
-                  // reuse xhr object and try again
-                  var timer = setInterval(function() {
-                    xhr.open("GET", data.url, true);
-                    xhr.responseType = "blob";
-                    xhr.setRequestHeader("Range", `bytes=${i}-${i+chunk_size-1}`);
-                    try {
-                      xhr.send();
-                      clearInterval(timer);
-                    }
-                    catch (err) {
-                      console.log(err);
-                    }
-                  }, 1000);
-                });
-                xhr.addEventListener("load", function() {
-                  if (requests.every(function(request) {
-                    return request.readyState == 4;
-                  })) {
-                    var parts = requests.map(function(request) {
-                      return request.response;
-                    });
-                    var blob = new Blob(parts);
-                    var url = window.URL.createObjectURL(blob);
-                    var a = document.createElement("a");
-                    a.style.display = "none";
-                    a.href = url;
-                    a.download = data.filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(function(){
-                      document.body.removeChild(a);
-                      window.URL.revokeObjectURL(url);
-                      window.dirty--;
-                    }, 100);
-                  }
-                });
-                xhr.send();
-                requests.push(xhr);
-              })(i, j);
-            }
+        var progress = document.createElement("progress");
+        $(progress).insertAfter(form);
+        progress.title = data.filename;
+
+        // this is a big hack for cross-origin <a download="filename">
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", data.url, true);
+        xhr.responseType = "blob";
+        var chunk_size = 10000000;
+        $(progress).click(function() {
+          if (confirm(`Abort download of "${data.filename}"?`)) {
+            xhr.abort();
+            progress.value = progress.max;
+            window.dirty--;
           }
         });
-      }
-      xhr.addEventListener("progress", function(e) {
-        progress.value = e.loaded;
-        progress.max = e.total;
-        progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
-      });
-      xhr.addEventListener("error", function() {
-        alert(`Network error downloading file:\n${data.filename}\n\nConsider opening the video and using the browser to download instead.`);
-        window.dirty--;
-      });
-      xhr.addEventListener("load", function() {
-        var blob = new Blob([xhr.response]);
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = data.filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function(){
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+        if (form.attr("action") == "facebook") {
+          xhr.addEventListener("progress", function bigfile(e) {
+            if (e.total == 0) return;
+            xhr.removeEventListener("progress", bigfile);
+            if (e.total > 5*chunk_size && confirm(`This file is big (${fmt_filesize(e.total,0)}). Download with ${Math.ceil(e.total/chunk_size)} smaller and resumable requests instead?`)) {
+              xhr.abort();
+              $(progress).detach();
+              var requests = [];
+              for (var i=0, j=1; i < e.total; i += chunk_size, j++) {
+                (function(i, j) {
+                  var progress = document.createElement("progress");
+                  $(progress).insertAfter(form);
+                  progress.title = data.filename;
+                  progress.value = 0;
+                  progress.max = 1;
+
+                  var xhr = new XMLHttpRequest();
+                  xhr.open("GET", data.url, true);
+                  xhr.responseType = "blob";
+                  xhr.setRequestHeader("Range", `bytes=${i}-${i+chunk_size-1}`);
+                  xhr.addEventListener("progress", function(e) {
+                    if (e.total == 0) return;
+                    progress.value = e.loaded;
+                    progress.max = e.total;
+                    progress.title = `Part ${j}: ${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
+                  });
+                  xhr.addEventListener("error", function() {
+                    console.log(`Network error downloading part ${j}.`);
+                    // TODO: Only retry if we got at least one byte. If we didn't get any bytes, it's reasonable to assume the OPTIONS request failed or something we can't fix with a retry.
+                    // reuse xhr object and try again
+                    var timer = setInterval(function() {
+                      xhr.open("GET", data.url, true);
+                      xhr.responseType = "blob";
+                      xhr.setRequestHeader("Range", `bytes=${i}-${i+chunk_size-1}`);
+                      try {
+                        xhr.send();
+                        clearInterval(timer);
+                      }
+                      catch (err) {
+                        console.log(err);
+                      }
+                    }, 1000);
+                  });
+                  xhr.addEventListener("load", function() {
+                    if (requests.every(function(request) {
+                      return request.readyState == 4;
+                    })) {
+                      var parts = requests.map(function(request) {
+                        return request.response;
+                      });
+                      var blob = new Blob(parts);
+                      var url = window.URL.createObjectURL(blob);
+                      var a = document.createElement("a");
+                      a.style.display = "none";
+                      a.href = url;
+                      a.download = data.filename;
+                      document.body.appendChild(a);
+                      a.click();
+                      setTimeout(function(){
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        window.dirty--;
+                      }, 100);
+                    }
+                  });
+                  xhr.send();
+                  requests.push(xhr);
+                })(i, j);
+              }
+            }
+          });
+        }
+        xhr.addEventListener("progress", function(e) {
+          progress.value = e.loaded;
+          progress.max = e.total;
+          progress.title = `${fmt_filesize(e.loaded)} / ${fmt_filesize(e.total)} (${(e.loaded/e.total*100).toFixed(1)}%) of ${data.filename}`;
+        });
+        xhr.addEventListener("error", function() {
+          alert(`Network error downloading file:\n${data.filename}\n\nConsider opening the video and using the browser to download instead.`);
           window.dirty--;
-        }, 100);
+        });
+        xhr.addEventListener("load", function() {
+          var blob = new Blob([xhr.response]);
+          var url = window.URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = data.filename;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function(){
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            window.dirty--;
+          }, 100);
+        });
+        xhr.send();
+        window.dirty++;
       });
-      xhr.send();
-      window.dirty++;
     });
     xhr.open("GET", `${form.attr("action")}/download?url=${q}`);
     xhr.setRequestHeader("Accept", "application/json");

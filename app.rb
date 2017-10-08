@@ -528,17 +528,35 @@ get "/instagram/download" do
   response = Instagram.get("/p/#{post_id}/")
   return "Please use a URL directly to a post." if !response.success?
   data = response.json["graphql"]["shortcode_media"]
-  url = data["video_url"] || data["display_url"]
 
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
     status response.code
     created_at = Time.at(data["taken_at_timestamp"])
     caption = data["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
-    return {
-      url: url,
-      filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename
-    }.to_json
+
+    if data["edge_sidecar_to_children"]
+      return data["edge_sidecar_to_children"]["edges"].map { |edge| edge["node"] }.map.with_index do |node, i|
+        url = node["video_url"] || node["display_url"]
+        {
+          url: url,
+          filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption} - #{i+1}#{url.url_ext}".to_filename
+        }
+      end.to_json
+    else
+      url = data["video_url"] || data["display_url"]
+      return [{
+        url: url,
+        filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename
+      }].to_json
+    end
+  end
+
+  if data["edge_sidecar_to_children"]
+    node = data["edge_sidecar_to_children"]["edges"][0]["node"]
+    url = node["video_url"] || node["display_url"]
+  else
+    url = data["video_url"] || data["display_url"]
   end
 
   redirect url
@@ -568,6 +586,13 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user = @data["username"] rescue CGI.unescape(username)
 
   type = %w[videos photos].pick(params[:type]) || "posts"
+  @data["media"]["nodes"].map! do |post|
+    if post["__typename"] == "GraphSidecar"
+      post["nodes"] = Instagram.get_post(post["code"])
+      post["is_video"] = post["nodes"].any? { |node| node["is_video"] }
+    end
+    post
+  end
   if type == "videos"
     @data["media"]["nodes"].select! { |post| post["is_video"] }
   elsif type == "photos"
