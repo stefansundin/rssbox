@@ -56,6 +56,11 @@ get "/go" do
     redirect "/imgur?#{params.to_querystring}"
   elsif /^https?:\/\/(?<user>[a-zA-Z0-9\-]+)\.deviantart\.com/ =~ params[:q]
     redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
+  elsif /^https?:\/\/itunes\.apple\.com\/.+\/id(?<id>\d+)/ =~ params[:q]
+    # https://itunes.apple.com/us/podcast/the-bernie-sanders-show/id1223800705
+    response = HTTP.get("https://itunes.apple.com/lookup?id=#{id}")
+    raise(HTTPError, response) if !response.success?
+    redirect response.json["results"][0]["feedUrl"]
   elsif /^https?:\/\/(?:www\.)?svtplay\.se/ =~ params[:q]
     redirect "/svtplay?#{params.to_querystring}"
   else
