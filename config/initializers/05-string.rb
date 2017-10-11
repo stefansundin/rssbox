@@ -257,7 +257,8 @@ class String
     elsif %r{^https?://video\.twimg\.com/.+/(?<width>\d+)x(?<height>\d+)/.+\.mp4}i =~ self
       "<iframe width='#{width}' height='#{height}' src='#{self}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
-      query = CGI.parse(URI.parse(self).query || "")
+      uri = URI.parse(self)
+      query = CGI.parse(uri.query || "").merge(CGI.parse(uri.fragment || "")) { |key,oldval,newval| oldval + newval }
       width = query["w"][0] || "640"
       height = query["h"][0] || "538"
       "<iframe width='#{width}' height='#{height}' src='#{self}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"

@@ -34,7 +34,7 @@
         text += " #{video["url"]}"
       else
         # no dimension information in the URL, so add some (i.e. /tweet_video/)
-        text += " #{video["url"]}?w=#{entity["sizes"]["large"]["w"]}&h=#{entity["sizes"]["large"]["h"]}"
+        text += " #{video["url"]}#w=#{entity["sizes"]["large"]["w"]}&h=#{entity["sizes"]["large"]["h"]}"
       end
     end
   end
