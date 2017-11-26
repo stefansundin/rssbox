@@ -26,7 +26,7 @@ configure :development do
   BetterErrors.application_root = File.expand_path(".")
 
   # puma autoload warnings
-  require 'tilt/erubis'
+  require "tilt/erubis"
 end
 
 # require things

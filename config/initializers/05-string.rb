@@ -18,7 +18,7 @@ class String
   end
 
   def to_filename
-    self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ").gsub(/\.+(\.[a-z]+)$/, '\1')
+    self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ").gsub(/\.+(\.[a-z0-9]+)$/, '\1')
   end
 
   def titelize
