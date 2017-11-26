@@ -1225,7 +1225,7 @@ end
 
 if ENV["BING_VERIFICATION_TOKEN"]
   get "/BingSiteAuth.xml" do
-    <<-EOF.undent
+    <<~EOF
       <?xml version="1.0"?>
       <users>
         <user>#{ENV["BING_VERIFICATION_TOKEN"]}</user>

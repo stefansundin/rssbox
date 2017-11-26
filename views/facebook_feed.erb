@@ -73,7 +73,7 @@ end
 if type == "photo" and post["source"]
   "<p><img src='#{post["source"]}' referrerpolicy='no-referrer'></p>".esc
 elsif type == "photo"
-  <<-EOF.undent.esc
+  <<~EOF.esc
     <p><a href="#{post["full_picture"]}" rel="noreferrer"><img src="#{post["picture"]}" referrerpolicy="no-referrer"></a></p>
     <p><a href="#{request.root_url}/facebook/download?url=#{object_id}">Full size</a></p>
   EOF

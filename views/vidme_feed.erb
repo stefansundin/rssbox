@@ -16,7 +16,7 @@
     <updated><%= Time.parse(video["date_completed"]) %></updated>
     <author><name><%= @username.esc %></name></author>
     <content type="html">
-<%= <<-EOF.undent.esc
+<%= <<~EOF.esc
   <iframe width="852" height="480" scrolling="no" frameborder="no" src="https://vid.me/e/#{video["url"]}" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
   #{video["description"].to_paragraphs}

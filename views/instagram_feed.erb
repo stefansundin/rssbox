@@ -38,21 +38,21 @@ if @data["is_private"] and @data["media"]["nodes"].empty?
     <content type="html">
 <%=
 if post["is_video"]
-  <<-EOF.undent.esc
+  <<~EOF.esc
     <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["code"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
   EOF
 end
 %>
 <%=
 post["nodes"].select { |node| !node["is_video"] }.map do |node|
-  <<-EOF.undent.esc
+  <<~EOF.esc
     <img src="#{node["display_url"]}" referrerpolicy="no-referrer">
   EOF
 end.join("\n")
 %>
 <%= post["caption"].linkify.to_paragraphs.esc %>
 <%=
-<<-EOF.undent.esc
+<<~EOF.esc
   <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{post["code"]}/")}">Download with nice filename</a></p>
 EOF
 -%>

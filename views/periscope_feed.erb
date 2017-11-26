@@ -17,7 +17,7 @@
     <author><name><%= post["user_display_name"].esc %></name></author>
     <content type="html">
 <%= "<p><em>Live in #{post["city"]}.</em></p>".esc if !post["city"].empty? %>
-<%= <<-EOF.undent.esc
+<%= <<~EOF.esc
   <a href="https://www.periscope.tv/#{post["username"]}/#{post["id"]}" rel="noreferrer"><img src="#{post["image_url"]}" referrerpolicy="no-referrer"></a>
 EOF
 -%>

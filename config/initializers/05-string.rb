@@ -45,11 +45,6 @@ class String
     self.gsub(%r{</?[^>]+?>}, '')
   end
 
-  def undent
-    # from https://github.com/Homebrew/brew/blob/c9c7f462d37500549127efba96c7a25e5c70de4a/Library/Homebrew/extend/string.rb#L2-L4
-    gsub(/^[ \t]{#{(slice(/^[ \t]+/) || '').length}}/, "")
-  end
-
   def numeric?
     /^\d+$/ === self
   end
@@ -210,7 +205,7 @@ class String
   def embed_html(request=nil)
     root_url = request ? request.root_url : ""
     if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self or %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
-      <<-EOF.undent
+      <<~EOF
         <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
         <a href="https://www.facebook.com/video/embed?video_id=#{id}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a> | <a href="#{root_url}/?download=#{CGI.escape("https://www.facebook.com/video/embed?video_id=#{id}")}">Download video with nice filename</a>
       EOF
@@ -237,7 +232,7 @@ class String
       url = "https://player.twitch.tv/?"
       url += vod_id ? "video=v#{vod_id}" : "channel=#{channel_name}"
       url += "&time=#{t}" if t
-      <<-EOF.undent
+      <<~EOF
         <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy='no-referrer'></iframe>
         <a href="#{url}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a>
       EOF

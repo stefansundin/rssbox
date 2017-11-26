@@ -39,7 +39,7 @@
     <updated><%= run["submitted"] || Time.parse(run["date"]) %></updated>
     <author><name><%= players.join(", ").esc %></name></author>
     <content type="html">
-<%= <<-EOF.undent.esc
+<%= <<~EOF.esc
   #{videos.linkify_and_embed(request).to_paragraphs}
 
   #{run["comment"].linkify.to_paragraphs}

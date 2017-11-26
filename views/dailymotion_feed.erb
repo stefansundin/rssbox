@@ -16,7 +16,7 @@
     <updated><%= Time.at(video["created_time"]) %></updated>
     <author><name><%= @username.esc %></name></author>
     <content type="html">
-<%= <<-EOF.undent.esc
+<%= <<~EOF.esc
   <iframe width="480" height="270" scrolling="no" frameborder="no" src="https://www.dailymotion.com/embed/video/#{video["id"]}" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
   #{video["description"].to_paragraphs}
