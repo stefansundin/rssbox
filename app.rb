@@ -40,7 +40,7 @@ get "/go" do
     redirect "/soundcloud?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?mixcloud\.com/ =~ params[:q]
     redirect "/mixcloud?#{params.to_querystring}"
-  elsif /^https?:\/\/(?:www\.)?twitch\.tv/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.|go\.)?twitch\.tv/ =~ params[:q]
     redirect "/twitch?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?speedrun\.com/ =~ params[:q]
     redirect "/speedrun?#{params.to_querystring}"
@@ -56,6 +56,8 @@ get "/go" do
     redirect "/imgur?#{params.to_querystring}"
   elsif /^https?:\/\/(?<user>[a-zA-Z0-9\-]+)\.deviantart\.com/ =~ params[:q]
     redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
+  elsif /^(?<baseurl>https?:\/\/[a-zA-Z0-9\-]+\.tumblr\.com)/ =~ params[:q]
+    redirect "#{baseurl}/rss"
   elsif /^https?:\/\/itunes\.apple\.com\/.+\/id(?<id>\d+)/ =~ params[:q]
     # https://itunes.apple.com/us/podcast/the-bernie-sanders-show/id1223800705
     response = HTTP.get("https://itunes.apple.com/lookup?id=#{id}")
