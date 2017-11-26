@@ -243,6 +243,10 @@ class String
       "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:open|play)\.spotify\.com/(?<path>[^?#]+)} =~ self
       "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
+    elsif %r{^https?://sverigesradio\.se/sida/artikel.aspx} =~ self
+      # http://sverigesradio.se/sida/artikel.aspx?programid=83&artikel=6819392
+      # http://sverigesradio.se/sida/embed?url=http://sverigesradio.se/sida/artikel.aspx%3Fprogramid=83%26artikel=6819392
+      "<iframe width='853' height='155' src='https://sverigesradio.se/sida/embed?url=#{CGI.escape(self)}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?giphy\.com/gifs/(?:.*-)?(?<id>[0-9a-zA-Z]+)(/|\?|&|#|$)} =~ self
       "<img src='https://i.giphy.com/#{id}.gif' referrerpolicy='no-referrer'>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.gifv}i =~ self
