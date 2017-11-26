@@ -135,8 +135,7 @@ get "/youtube" do
     # https://www.youtube.com/show/redvsblue
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that channel_title != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
-    doc = Nokogiri::HTML(open("https://www.youtube.com/#{channel_type}/#{channel_title}"))
-    channel_id = doc.at("meta[itemprop='channelId']")["content"]
+    user = "#{channel_type}/#{channel_title}"
   elsif /youtube\.com\/.*[?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
@@ -151,11 +150,8 @@ get "/youtube" do
   end
 
   if user
-    response = Google.get("/youtube/v3/channels", query: { part: "id", forUsername: user })
-    raise(GoogleError, response) if !response.success?
-    if response.json["items"].length > 0
-      channel_id = response.json["items"][0]["id"]
-    end
+    doc = Nokogiri::HTML(open("https://www.youtube.com/#{CGI.escape(user)}"))
+    channel_id = doc.at("meta[itemprop='channelId']")["content"]
   end
 
   if video_id
