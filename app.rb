@@ -113,7 +113,11 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   @data = response.json
   @username = @data[0]["user"]["screen_name"] rescue CGI.unescape(username)
 
-  if params[:with_media]
+  if params[:with_media] == "video"
+    @data.select! { |t| t["extended_entities"] && t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
+  elsif params[:with_media] == "picture"
+    @data.select! { |t| t["extended_entities"] && !t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
+  elsif params[:with_media]
     @data.select! { |t| t["extended_entities"] }
   end
 
