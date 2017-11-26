@@ -1,4 +1,4 @@
-env = (ENV["IRB_PROMPT"] || ENV["RACK_ENV"] || "unknown").upcase
+env = (ENV["IRB_PROMPT"] || ENV["APP_ENV"] || ENV["RACK_ENV"] || "unknown").upcase
 if env == "PRODUCTION" or env == "DEPLOYMENT"
   color = "31"
 else

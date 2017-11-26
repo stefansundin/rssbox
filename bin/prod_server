@@ -1,2 +1,2 @@
 #!/bin/bash
-RACK_ENV=deployment bundle exec puma -C config/puma.rb "$@"
+APP_ENV=production bundle exec puma -C config/puma.rb "$@"

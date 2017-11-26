@@ -12,7 +12,7 @@
 $env = <<SCRIPT
 PATH=/home/ubuntu/.rbenv/versions/global/bin:/home/ubuntu/.rbenv/versions/global/lib/ruby/gems/version/bin:$PATH
 
-RACK_ENV=deployment
+APP_ENV=production
 LOG_ENABLED=1
 
 REDIS_URL=redis://localhost:6379/3

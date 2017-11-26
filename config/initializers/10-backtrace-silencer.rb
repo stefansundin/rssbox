@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-configure :deployment do
+configure :production do
   Exception.class_eval do
     alias :backtrace_prior_to_monkey_patch :backtrace
     alias :full_backtrace :backtrace_prior_to_monkey_patch

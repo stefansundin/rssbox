@@ -15,7 +15,7 @@
   ],
   "keywords": ["rss"],
   "env": {
-    "RACK_ENV": "deployment",
+    "APP_ENV": "production",
     "TWITTER_ACCESS_TOKEN": {
       "description": "Your Twitter access token. Read the README.md to learn how to generate this from the consumer key and consumer secret.",
       "required": false

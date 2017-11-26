@@ -6,7 +6,7 @@ require "bundler/setup"
 Bundler.require(:default, ENV["RACK_ENV"])
 
 # uncomment to get production error pages in development
-# set :environment, :deployment
+# set :environment, :production
 
 configure do
   use Rack::SslEnforcer, only_hosts: /\.herokuapp\.com$/
@@ -17,7 +17,7 @@ configure do
   settings.add_charset << "application/atom+xml"
 end
 
-configure :deployment do
+configure :production do
   set :static_cache_control, [:public, :max_age => 86400]
 end
 
