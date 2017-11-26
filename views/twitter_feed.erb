@@ -10,10 +10,10 @@
 <%-
 @data.each do |tweet|
   if tweet["retweeted_status"]
-    text = "RT #{tweet["retweeted_status"]["user"]["screen_name"]}: #{tweet["retweeted_status"]["full_text"]}"
+    text = "RT #{tweet["retweeted_status"]["user"]["screen_name"]}: #{CGI.unescapeHTML(tweet["retweeted_status"]["full_text"])}"
     t = tweet["retweeted_status"]
   else
-    text = tweet["full_text"]
+    text = CGI.unescapeHTML(tweet["full_text"])
     t = tweet
   end
   for entity in t["entities"]["urls"]
