@@ -668,6 +668,8 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   response = Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
   raise(PeriscopeError, response) if !response.success?
   request = HTTP.get(response.json["broadcast"]["image_url"])
+  status response.code
+  cache_control :public, :max_age => 31556926 # cache a long time
   content_type request.headers["content-type"].join(", ")
   request.body
 end
