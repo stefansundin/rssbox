@@ -32,6 +32,11 @@ class String
     self.truncate(i, separator: " ", omission: " …") # &hellip;
   end
 
+  def or(alt)
+    return alt if self.ustrip == ""
+    self
+  end
+
   def esc
     self.gsub("&","&amp;").gsub("<","&lt;")
   end
