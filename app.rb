@@ -445,6 +445,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
   }[@edge]
 
   response = Facebook.get("/#{id}/#{@edge}", query: { fields: fields, since: Time.now.to_i-365*24*60*60 }) # date -v -1w +%s
+  return "#{Facebook::BASE_URL}/#{id}/#{@edge} returned code #{response.code}." if response.code == 400
   raise(FacebookError, response) if !response.success?
 
   @data = response.json["data"]
@@ -748,6 +749,7 @@ end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
   response = Mixcloud.get("/#{username}/cloudcasts/")
+  return "That username no longer exist." if response.code == 404
   raise(MixcloudError, response) if !response.success?
 
   @data = response.json["data"]
