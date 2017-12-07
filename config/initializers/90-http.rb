@@ -71,7 +71,7 @@ class HTTPResponse
   end
 
   def headers
-    @response.header
+    @response.to_hash
   end
 
   def code

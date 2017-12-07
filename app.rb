@@ -663,10 +663,13 @@ end
 get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   # The image url expires after 24 hours, so to avoid it being cached by the RSS client and then expire, we just proxy it on demand
   # Interestingly enough, if a request is made before the token expires, it will be cached by their CDN and continue to work even after the token expires
+  # Can't just redirect either since it looks at the referer header, and most web based RSS clients will send that
   # For whatever reason, the accessVideoPublic endpoint doesn't require a session_id
   response = Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
   raise(PeriscopeError, response) if !response.success?
-  redirect response.json["broadcast"]["image_url"]
+  request = HTTP.get(response.json["broadcast"]["image_url"])
+  content_type request.headers["content-type"].join(", ")
+  request.body
 end
 
 get "/soundcloud" do
@@ -933,7 +936,7 @@ get "/speedrun" do
 
   response = Speedrun.get("/games/#{game}")
   if response.redirect?
-    game = response.headers["location"].split("/")[-1]
+    game = response.headers["location"][0].split("/")[-1]
     response = Speedrun.get("/games/#{game}")
   end
   return "Can't find a game with that name. Sorry." if response.code == 404
