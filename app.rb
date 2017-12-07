@@ -34,7 +34,7 @@ get "/go" do
     redirect "/facebook?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?instagram\.com/ =~ params[:q]
     redirect "/instagram?#{params.to_querystring}"
-  elsif /^https?:\/\/(?:www\.)?periscope\.tv/ =~ params[:q]
+  elsif /^https?:\/\/(?:www\.)?(?:periscope|pscp)\.tv/ =~ params[:q]
     redirect "/periscope?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?soundcloud\.com/ =~ params[:q]
     redirect "/soundcloud?#{params.to_querystring}"
@@ -617,10 +617,12 @@ end
 get "/periscope" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /periscope\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
+  if /(?:periscope|pscp)\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
     # https://www.periscope.tv/w/1gqxvBmMZdexB
-  elsif /periscope\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
+    # https://www.pscp.tv/w/1gqxvBmMZdexB
+  elsif /(?:periscope|pscp)\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.periscope.tv/jimmy_dore
+    # https://www.pscp.tv/jimmy_dore
   else
     username = params[:q]
   end
