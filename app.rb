@@ -596,7 +596,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   type = %w[videos photos].pick(params[:type]) || "posts"
   @data["media"]["nodes"].map! do |post|
     if post["__typename"] == "GraphSidecar"
-      post["nodes"] = Instagram.get_post(post["code"])
+      post["nodes"] = Instagram.get_post(post["code"], headers: headers)
       post["is_video"] = post["nodes"].any? { |node| node["is_video"] }
     end
     post

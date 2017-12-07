@@ -10,7 +10,7 @@ class Instagram < HTTP
 
   @@cache = {}
 
-  def self.get_post(id)
+  def self.get_post(id, opts={})
     return @@cache[id] if @@cache[id]
     value = $redis.hget("instagram", id)
     if value
@@ -18,7 +18,7 @@ class Instagram < HTTP
       return @@cache[id]
     end
 
-    response = Instagram.get("/p/#{id}/")
+    response = Instagram.get("/p/#{id}/", opts)
     raise(InstagramError, response) if !response.success?
     post = response.json["graphql"]["shortcode_media"]
 
