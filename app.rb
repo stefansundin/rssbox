@@ -154,7 +154,10 @@ get "/youtube" do
   end
 
   if user
-    doc = Nokogiri::HTML(open("https://www.youtube.com/#{CGI.escape(user)}"))
+    response = HTTP.get("https://www.youtube.com/#{CGI.escape(user)}")
+    return "Could not find the user. Please try with a video url instead." if response.code == 404
+    raise(GoogleError, response) if !response.success?
+    doc = Nokogiri::HTML(response.body)
     channel_id = doc.at("meta[itemprop='channelId']")["content"]
   end
 
