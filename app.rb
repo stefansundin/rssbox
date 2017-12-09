@@ -666,10 +666,11 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   # Can't just redirect either since it looks at the referer header, and most web based RSS clients will send that
   # For whatever reason, the accessVideoPublic endpoint doesn't require a session_id
   response = Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
-  raise(PeriscopeError, response) if !response.success?
-  response = HTTP.get(response.json["broadcast"]["image_url"])
   status response.code
   cache_control :public, :max_age => 31556926 # cache a long time
+  return "Image not found." if response.code == 404
+  raise(PeriscopeError, response) if !response.success?
+  response = HTTP.get(response.json["broadcast"]["image_url"])
   content_type response.headers["content-type"].join(", ")
   response.body
 end
