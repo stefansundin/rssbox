@@ -184,7 +184,7 @@ class String
     end
     result.gsub(URL_REGEXP) do |url|
       dest = url.resolve_url
-      "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>"
+      "<a href='#{dest}' title='#{url.esc}' rel='noreferrer'>#{dest}</a>"
     end
   end
 
@@ -197,7 +197,7 @@ class String
       dest = url.resolve_url
       html = dest.embed_html(request)
       embeds.push(html) if html and !embeds.include?(html)
-      "<a href='#{dest}' title='#{url}' rel='noreferrer'>#{dest}</a>"
+      "<a href='#{dest}' title='#{url.esc}' rel='noreferrer'>#{dest}</a>"
     end
     embed_only.scan(URL_REGEXP) do |url|
       dest = url.resolve_url
