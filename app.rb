@@ -132,14 +132,13 @@ get "/youtube" do
     # https://www.youtube.com/channel/SWu5RTwuNMv6U
   elsif /\b(?<channel_id>(?:UC[^\/?#]{22,}|S[^\/?#]{12,}))/ =~ params[:q]
     # it's a channel id
-  elsif /youtube\.com\/user\/(?<user>[^\/?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/(?<type>user|c|show)\/(?<slug>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
-  elsif /youtube\.com\/(?<channel_type>c|show)\/(?<channel_title>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/c/khanacademy
     # https://www.youtube.com/show/redvsblue
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
-    # note that channel_title != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
-    user = "#{channel_type}/#{channel_title}"
+    # note that slug != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
+    user = "#{type}/#{slug}"
   elsif /youtube\.com\/.*[?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
@@ -155,6 +154,10 @@ get "/youtube" do
 
   if user
     response = HTTP.get("https://www.youtube.com/#{CGI.escape(user)}")
+    if response.redirect?
+      # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
+      response = HTTP.get(response.redirect_url)
+    end
     return "Could not find the user. Please try with a video url instead." if response.code == 404
     raise(GoogleError, response) if !response.success?
     doc = Nokogiri::HTML(response.body)
