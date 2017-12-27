@@ -18,6 +18,7 @@ SecureHeaders::Configuration.default do |config|
   config.referrer_policy = "origin-when-cross-origin"
   config.csp = {
     default_src: %w('none'),
+    script_src: SecureHeaders::OPT_OUT,
     block_all_mixed_content: true,
   }
   config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
