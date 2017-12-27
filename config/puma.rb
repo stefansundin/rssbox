@@ -22,12 +22,3 @@ bind("unix://#{app_path}/tmp/puma.sock")
 if ENV["LOG_ENABLED"]
   stdout_redirect("#{app_path}/log/puma-stdout.log", "#{app_path}/log/puma-stderr.log", true)
 end
-
-
-on_worker_boot do
-  begin
-    $redis.client.reconnect
-  rescue
-    puts "Failed to reconnect to redis!"
-  end
-end
