@@ -23,7 +23,7 @@ SecureHeaders::Configuration.default do |config|
   config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
 
   # Allow unsafe-inline for better_errors in development mode
-  if ENV["RACK_ENV"] == "development"
+  if ENV["APP_ENV"] == "development"
     config.csp.merge!({
       script_src: %w('unsafe-inline'),
       style_src: %w('unsafe-inline'),
@@ -49,7 +49,7 @@ SecureHeaders::Configuration.override(:index) do |config|
   })
 
   # Allow unsafe-inline for better_errors in development mode
-  if ENV["RACK_ENV"] == "development"
+  if ENV["APP_ENV"] == "development"
     config.csp[:script_src] << "'unsafe-inline'"
     config.csp[:style_src] << "'unsafe-inline'"
   end

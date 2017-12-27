@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-ENV["RACK_ENV"] ||= "development"
+ENV["APP_ENV"] ||= "development"
 
 require "bundler/setup"
-Bundler.require(:default, ENV["RACK_ENV"])
+Bundler.require(:default, ENV["APP_ENV"])
 
 # uncomment to get production error pages in development
 # set :environment, :production
