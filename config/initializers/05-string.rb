@@ -95,50 +95,48 @@ class String
     dest = url
     catch :done do
       5.times do
-        begin
-          uri = Addressable::URI.parse(dest)
-          throw :done if uri.host.nil?
-          opts = {
-            use_ssl: uri.scheme == "https",
-            open_timeout: 3,
-            read_timeout: 3,
-          }
-          Net::HTTP.start(uri.host, uri.port, opts) do |http|
-            response = http.head(uri.request_uri)
-            case response
-            when Net::HTTPRedirection then
-              if response["location"][0] == "/"
-                # relative redirect
-                uri = Addressable::URI.parse(dest)
-                next_url = uri.scheme + "://" + uri.host + response["location"]
-              elsif /^https?:\/\/./ =~ response["location"]
-                # absolute redirect
-                next_url = response["location"]
-              else
-                # bad redirect
-                throw :done
-              end
-              next_url = Addressable::URI.parse(next_url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
-              if %w[
-                ://www.youtube.com/das_captcha
-                ://www.nytimes.com/glogin
-                ://www.facebook.com/unsupportedbrowser
-                ://play.spotify.com/error/browser-not-supported.php
-                ://www.linkedin.com/uas/login
-                ://www.theaustralian.com.au/remote/check_cookie.html
-                ://signin.aws.amazon.com/
-                ://accounts.google.com/ServiceLogin
-              ].any? { |s| next_url.include?(s) }
-                throw :done
-              end
-              dest = next_url
+        uri = Addressable::URI.parse(dest)
+        throw :done if uri.host.nil?
+        opts = {
+          use_ssl: uri.scheme == "https",
+          open_timeout: 3,
+          read_timeout: 3,
+        }
+        Net::HTTP.start(uri.host, uri.port, opts) do |http|
+          response = http.head(uri.request_uri)
+          case response
+          when Net::HTTPRedirection then
+            if response["location"][0] == "/"
+              # relative redirect
+              uri = Addressable::URI.parse(dest)
+              next_url = uri.scheme + "://" + uri.host + response["location"]
+            elsif /^https?:\/\/./ =~ response["location"]
+              # absolute redirect
+              next_url = response["location"]
             else
+              # bad redirect
               throw :done
             end
+            next_url = Addressable::URI.parse(next_url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
+            if %w[
+              ://www.youtube.com/das_captcha
+              ://www.nytimes.com/glogin
+              ://www.facebook.com/unsupportedbrowser
+              ://play.spotify.com/error/browser-not-supported.php
+              ://www.linkedin.com/uas/login
+              ://www.theaustralian.com.au/remote/check_cookie.html
+              ://signin.aws.amazon.com/
+              ://accounts.google.com/ServiceLogin
+            ].any? { |s| next_url.include?(s) }
+              throw :done
+            end
+            dest = next_url
+          else
+            throw :done
           end
-        rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError
-          throw :done
         end
+      rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError
+        throw :done
       end
     end
 

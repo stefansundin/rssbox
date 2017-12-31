@@ -10,7 +10,7 @@
 # https://github.com/puma/puma/blob/master/docs/systemd.md
 
 $env = <<SCRIPT
-PATH=/home/ubuntu/.rbenv/versions/global/bin:/home/ubuntu/.rbenv/versions/global/lib/ruby/gems/version/bin:$PATH
+PATH=/home/ubuntu/.rbenv/bin:/home/ubuntu/.rbenv/versions/global/bin:/home/ubuntu/.rbenv/versions/global/lib/ruby/gems/version/bin:$PATH
 
 APP_ENV=production
 LOG_ENABLED=1
@@ -83,8 +83,8 @@ SCRIPT
 
 $user_provision = <<SCRIPT
 # install rbenv to /home/ubuntu/.rbenv
-export RBENV_ROOT=/home/ubuntu/.rbenv
-export PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
+RBENV_ROOT=/home/ubuntu/.rbenv
+PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
 
 if [ -d "$RBENV_ROOT" ]; then
   rbenv update
@@ -95,13 +95,12 @@ else
   echo 'gem: --no-document' >> ~/.gemrc
 fi
 
-export RUBY_VERSION=$(cat /vagrant/.ruby-version)
-export RUBY_MAJOR=${RUBY_VERSION%.*}.0
+RUBY_VERSION=$(cat /vagrant/.ruby-version)
+RUBY_MAJOR=${RUBY_VERSION%.*}.0
 
 rbenv install $RUBY_VERSION
 rbenv global $RUBY_VERSION
-
-gem install bundler
+gem update --system
 
 ln -sf /vagrant/.irbrc /home/ubuntu/.irbrc
 ln -sf $RUBY_VERSION /home/ubuntu/.rbenv/versions/global
@@ -116,6 +115,9 @@ cat >> ~/.bashrc << EOF
 # Added by Vagrantfile
 source ~/rssbox.env
 EOF
+
+source ~/rssbox.env
+hash -r
 
 cd /vagrant
 bundle install
