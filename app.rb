@@ -582,19 +582,20 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
 
   headers = {}
   if params[:sessionid]
-    # To subscribe to private feeds, you can follow these steps in bash:
-    # csrftoken=$(curl -sI https://www.instagram.com/accounts/login/ | grep 'Set-Cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
+    # To subscribe to private feeds, either grab the sessionid cookie from the Chrome devtools (Application -> Cookies -> https://www.instagram.com -> sessionid), or follow these steps in bash:
     # u=your_username
     # p=your_password
-    # curl -sv https://www.instagram.com/accounts/login/ajax/ -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep 'Set-Cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2
+    # csrftoken=$(curl -sI https://www.instagram.com/accounts/login/ | grep -i 'set-cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
+    # curl -sv https://www.instagram.com/accounts/login/ajax/ -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2
     # Then use this value in a query param to this endpoint, e.g:
-    # https://rssbox.herokuapp.com/instagram/1234567890/your_friends_username?sessionid=IGSC...
+    # https://rssbox.herokuapp.com/instagram/1234567890/your_friends_username?sessionid=1234...
     # But please host the app yourself if you decide to do this, otherwise you will leak the token to me and the privacy of your friends posts.
     headers["Cookie"] = "sessionid=#{CGI.escape(params[:sessionid])}"
   end
 
   response = Instagram.get("/#{username}/", headers: headers)
   return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1" if response.code == 404
+  return "The sessionid expired!" if params[:sessionid] && response.code == 302
   raise(InstagramError, response) if !response.success?
 
   @data = response.json["user"]
