@@ -194,7 +194,7 @@ get "/youtube/:channel_id/:username" do
   @username = params[:username]
   @tz = params[:tz]
 
-  query = { part: "id", type: "video", order: "date", channelId: params[:channel_id], maxResults: 50 }
+  query = { part: "id", type: "video", order: "date", channelId: @channel_id, maxResults: 50 }
   if params[:q]
     query[:q] = params[:q]
     @title = "\"#{params[:q]}\" from #{@username}"
@@ -218,6 +218,9 @@ get "/youtube/:channel_id/:username" do
   response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails", id: ids.join(",") })
   raise(GoogleError, response) if !response.success?
   @data = response.json["items"]
+
+  # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
+  @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
 
   if params[:q]
     q = params[:q].downcase
