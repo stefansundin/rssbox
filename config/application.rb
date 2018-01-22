@@ -22,8 +22,10 @@ configure :production do
 end
 
 configure :development do
-  use BetterErrors::Middleware
-  BetterErrors.application_root = File.expand_path(".")
+  if defined?(BetterErrors)
+    use BetterErrors::Middleware
+    BetterErrors.application_root = File.expand_path("..")
+  end
 end
 
 # require things
