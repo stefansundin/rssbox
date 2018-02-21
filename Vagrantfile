@@ -10,7 +10,7 @@
 # https://github.com/puma/puma/blob/master/docs/systemd.md
 
 $env = <<SCRIPT
-PATH=/home/ubuntu/.rbenv/bin:/home/ubuntu/.rbenv/versions/global/bin:/home/ubuntu/.rbenv/versions/global/lib/ruby/gems/version/bin:$PATH
+PATH=/home/vagrant/.rbenv/bin:/home/vagrant/.rbenv/versions/global/bin:/home/vagrant/.rbenv/versions/global/lib/ruby/gems/version/bin:$PATH
 
 APP_ENV=production
 LOG_ENABLED=1
@@ -39,8 +39,8 @@ Requires=puma.socket
 Type=simple
 User=ubuntu
 WorkingDirectory=/vagrant/
-EnvironmentFile=/home/ubuntu/rssbox.env
-ExecStart=/home/ubuntu/.rbenv/versions/global/bin/puma -C config/puma.rb -p 8080
+EnvironmentFile=/home/vagrant/rssbox.env
+ExecStart=/home/vagrant/.rbenv/versions/global/bin/puma -C config/puma.rb -p 8080
 Restart=always
 
 [Install]
@@ -82,8 +82,8 @@ systemctl daemon-reload
 SCRIPT
 
 $user_provision = <<SCRIPT
-# install rbenv to /home/ubuntu/.rbenv
-RBENV_ROOT=/home/ubuntu/.rbenv
+# install rbenv to /home/vagrant/.rbenv
+RBENV_ROOT=/home/vagrant/.rbenv
 PATH=$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH
 
 if [ -d "$RBENV_ROOT" ]; then
@@ -102,9 +102,9 @@ rbenv install $RUBY_VERSION
 rbenv global $RUBY_VERSION
 gem update --system
 
-ln -sf /vagrant/.irbrc /home/ubuntu/.irbrc
-ln -sf $RUBY_VERSION /home/ubuntu/.rbenv/versions/global
-ln -sf $RUBY_MAJOR /home/ubuntu/.rbenv/versions/global/lib/ruby/gems/version
+ln -sf /vagrant/.irbrc /home/vagrant/.irbrc
+ln -sf $RUBY_VERSION /home/vagrant/.rbenv/versions/global
+ln -sf $RUBY_MAJOR /home/vagrant/.rbenv/versions/global/lib/ruby/gems/version
 
 cat > ~/rssbox.env << 'EOF'
 #{$env}
