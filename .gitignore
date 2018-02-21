@@ -1,5 +1,6 @@
 /log/*.log
 /tmp/*.pid
+/tmp/*.sock
 /tmp/restart.txt
 /.env
 /.dockerenv
