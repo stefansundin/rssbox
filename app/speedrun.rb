@@ -5,6 +5,9 @@ class SpeedrunError < HTTPError; end
 
 class Speedrun < HTTP
   BASE_URL = "https://www.speedrun.com/api/v1"
+  HEADERS = {
+    "User-Agent" => "rssbox",
+  }
   ERROR_CLASS = SpeedrunError
 
   @@cache = {}

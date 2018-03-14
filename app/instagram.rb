@@ -6,6 +6,9 @@ class InstagramError < HTTPError; end
 class Instagram < HTTP
   BASE_URL = "https://www.instagram.com"
   PARAMS = "__a=1"
+  HEADERS = {
+    "User-Agent" => "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:59.0) Gecko/20100101 Firefox/59.0",
+  }
   ERROR_CLASS = InstagramError
 
   @@cache = {}
