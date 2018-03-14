@@ -52,7 +52,7 @@ Go to the [Instagram developer website](https://www.instagram.com/developer/) an
 
 #### SoundCloud
 
-Go to the [SoundCloud developer website](http://soundcloud.com/you/apps) and create an app. Copy your client id and secret.
+Go to the [SoundCloud developer website](https://soundcloud.com/you/apps) and create an app. Copy your client id and secret.
 
 #### Twitch
 

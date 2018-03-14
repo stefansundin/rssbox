@@ -750,6 +750,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
   response = Soundcloud.get("/users/#{id}/tracks")
+  return "That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
   raise(SoundcloudError, response) if !response.success?
 
   @data = response.json
