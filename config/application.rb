@@ -32,3 +32,4 @@ end
 app_path = File.expand_path("../..", __FILE__)
 Dir["#{app_path}/config/initializers/*.rb"].each { |f| require f }
 Dir["#{app_path}/app/**/*.rb"].each { |f| require f }
+Dir["#{app_path}/lib/*.rb"].each { |f| require f }
