@@ -6,7 +6,7 @@ class ImgurError < HTTPError; end
 class Imgur < HTTP
   BASE_URL = "https://api.imgur.com/3"
   HEADERS = {
-    "Authorization": "Client-ID #{ENV["IMGUR_CLIENT_ID"]}",
+    "Authorization" => "Client-ID #{ENV["IMGUR_CLIENT_ID"]}",
   }
   ERROR_CLASS = ImgurError
 end

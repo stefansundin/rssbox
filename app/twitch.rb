@@ -6,8 +6,8 @@ class TwitchError < HTTPError; end
 class Twitch < HTTP
   BASE_URL = "https://api.twitch.tv"
   HEADERS = {
-    "Accept": "application/vnd.twitchtv.v3+json",
-    "Client-ID": ENV["TWITCH_CLIENT_ID"],
+    "Accept" => "application/vnd.twitchtv.v3+json",
+    "Client-ID" => ENV["TWITCH_CLIENT_ID"],
   }
   ERROR_CLASS = TwitchError
 end
