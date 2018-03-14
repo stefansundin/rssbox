@@ -279,12 +279,17 @@ get "/vimeo" do
 
   if /vimeo\.com\/user(?<user_id>\d+)/ =~ params[:q]
     # https://vimeo.com/user7103699
+  elsif /vimeo\.com\/ondemand\/(?<user>[^\/?&#]+)/ =~ params[:q]
+    # https://vimeo.com/ondemand/thealphaquadrant/
+    response = Vimeo.get("/ondemand/pages/#{user}")
+    raise(VimeoError, response) if !response.success?
+    user_id = response.json["user"]["uri"][/\d+/]
   elsif /vimeo\.com\/(?<video_id>\d+)/ =~ params[:q]
     # https://vimeo.com/155672086
     response = Vimeo.get("/videos/#{video_id}")
     raise(VimeoError, response) if !response.success?
-    user_id = response.json["user"]["uri"].gsub("/users/","").to_i
-  elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/]+)/ =~ params[:q] or user = params[:q]
+    user_id = response.json["user"]["uri"][/\d+/]
+  elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/?&#]+)/ =~ params[:q] or user = params[:q]
     # it's probably a channel name
     response = Vimeo.get("/users", query: { query: user })
     raise(VimeoError, response) if !response.success?
