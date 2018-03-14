@@ -517,7 +517,7 @@ get "/instagram" do
   if name
     response = Instagram.get("/#{CGI.escape(name)}/")
     if response.success?
-      user = response.json["user"]
+      user = response.json["graphql"]["user"]
     else
       # https://www.instagram.com/web/search/topsearch/?query=infected
       response = Instagram.get("/web/search/topsearch/", query: { query: name })
@@ -598,21 +598,20 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   return "The sessionid expired!" if params[:sessionid] && response.code == 302
   raise(InstagramError, response) if !response.success?
 
-  @data = response.json["user"]
+  @data = response.json["graphql"]["user"]
   @user = @data["username"] rescue CGI.unescape(username)
 
   type = %w[videos photos].pick(params[:type]) || "posts"
-  @data["media"]["nodes"].map! do |post|
-    if post["__typename"] == "GraphSidecar"
-      post["nodes"] = Instagram.get_post(post["code"], headers: headers)
-      post["is_video"] = post["nodes"].any? { |node| node["is_video"] }
+  @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
+    if post["node"]["__typename"] == "GraphSidecar"
+      post["nodes"] = Instagram.get_post(post["node"]["shortcode"], headers: headers)
     end
     post
   end
   if type == "videos"
-    @data["media"]["nodes"].select! { |post| post["is_video"] }
+    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| post["node"]["is_video"] }
   elsif type == "photos"
-    @data["media"]["nodes"].select! { |post| !post["is_video"] }
+    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| !post["node"]["is_video"] }
   end
 
   @title = @user

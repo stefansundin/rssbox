@@ -9,6 +9,10 @@ class NilClass
     nil
   end
 
+  def to_line
+    nil
+  end
+
   def to_paragraphs(split="\n")
     nil
   end
