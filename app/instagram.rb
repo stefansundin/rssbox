@@ -24,11 +24,11 @@ class Instagram < HTTP
 
     @@cache[id] = if post["__typename"] == "GraphSidecar"
       post["edge_sidecar_to_children"]["edges"].map do |edge|
-        edge["node"].pluck(:is_video, :display_url, :video_url)
+        edge["node"].slice("is_video", "display_url", "video_url")
       end
     else
       # This isn't really used
-      post.pluck(:is_video, :display_url, :video_url)
+      post.slice("is_video", "display_url", "video_url")
     end
 
     $redis.hset("instagram", id, @@cache[id].to_json)

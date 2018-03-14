@@ -68,7 +68,7 @@ end
     <author><name><%= post["from"]["name"].esc %></name></author>
     <content type="html">
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
-<%= post.val(:message, :description, :link).linkify_and_embed(request).to_paragraphs.esc %>
+<%= post.slice("message", "description", "link").values.linkify_and_embed(request).to_paragraphs.esc %>
 <%=
 if type == "photo" and post["source"]
   "<p><img src='#{post["source"]}' referrerpolicy='no-referrer'></p>".esc
