@@ -29,7 +29,7 @@ before_exec do |server|
       next unless line =~ /^export /
       k, v = line.strip.sub(/^export /, "").split("=", 2)
       next if k == "PATH" # Don't update PATH
-      v = v[1..-2] if (v[0] == '"' and v[-1] == '"') or (v[0] == "'" and v[-1] == "'")
+      v = v[1..-2] if (v[0] == '"' && v[-1] == '"') || (v[0] == "'" && v[-1] == "'")
       if v == ""
         $stderr.puts "Unsetting ENV[#{k}]"
         ENV.delete k

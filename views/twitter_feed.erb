@@ -23,7 +23,7 @@
     for entity in t["extended_entities"]["media"]
       next if !entity["video_info"]
       video = entity["video_info"]["variants"].sort do |a,b|
-        if a["content_type"].start_with?("video/") and b["content_type"].start_with?("video/")
+        if a["content_type"].start_with?("video/") && b["content_type"].start_with?("video/")
           b["bitrate"] - a["bitrate"]
         else
           b["content_type"].start_with?("video/") <=> a["content_type"].start_with?("video/")

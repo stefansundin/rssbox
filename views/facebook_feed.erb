@@ -22,21 +22,21 @@
   end
 
   post["link"] = post["link"].resolve_url if post["link"]
-  post["link"] = "https://www.facebook.com/video/embed?video_id=#{object_id}" if @edge == "videos" or (post["type"] == "video" and post["link"].start_with?("https://www.facebook.com/"))
+  post["link"] = "https://www.facebook.com/video/embed?video_id=#{object_id}" if @edge == "videos" || (post["type"] == "video" && post["link"].start_with?("https://www.facebook.com/"))
   link = post["link"] || "https://www.facebook.com/#{post["id"]}"
 -%>
 
   <entry>
     <id>facebook:post:<%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%=
-if (post["live_status"] and post["live_status"] != "VOD") or post["story"][" is live now"]
+if (post["live_status"] && post["live_status"] != "VOD") || post["story"][" is live now"]
   "[LIVE] "
 elsif post["length"]
   "[#{post["length"].round.to_duration}] "
 end
 %><%=
-if @type == "posts" or @type == "videos"
-  prefix = if post["live_status"] or post["story"][" live"]
+if @type == "posts" || @type == "videos"
+  prefix = if post["live_status"] || post["story"][" live"]
     "Live"
   elsif %w[link video photo event].include?(post["type"])
     "#{post["type"].camelize}"
@@ -55,9 +55,9 @@ elsif post["description"]
   post["description"].to_line.truncate(120).esc
 end
 
-if prefix and suffix
+if prefix && suffix
   "#{prefix}: #{suffix}"
-elsif suffix or prefix
+elsif suffix || prefix
   suffix || prefix
 else
   type.camelize
@@ -70,7 +70,7 @@ end
 <%= "<p><em>#{post["story"]}</em></p>".esc if post["story"] %>
 <%= post.slice("message", "description", "link").values.linkify_and_embed(request).to_paragraphs.esc %>
 <%=
-if type == "photo" and post["source"]
+if type == "photo" && post["source"]
   "<p><img src='#{post["source"]}' referrerpolicy='no-referrer'></p>".esc
 elsif type == "photo"
   <<~EOF.esc

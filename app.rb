@@ -73,11 +73,11 @@ end
 get "/twitter" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if params[:q]["twitter.com/i/"] or params[:q]["twitter.com/who_to_follow/"]
+  if params[:q]["twitter.com/i/"] || params[:q]["twitter.com/who_to_follow/"]
     return "Unsupported url. Sorry."
   elsif params[:q]["twitter.com/hashtag/"]
     return "This app does not support hashtags. Sorry."
-  elsif /twitter\.com\/(?:#!\/|@)?(?<user>[^\/?#]+)/ =~ params[:q] or /@(?<user>[^\/?#]+)/ =~ params[:q]
+  elsif /twitter\.com\/(?:#!\/|@)?(?<user>[^\/?#]+)/ =~ params[:q] || /@(?<user>[^\/?#]+)/ =~ params[:q]
     # https://twitter.com/#!/infected
     # https://twitter.com/infected
     # @username
@@ -243,7 +243,7 @@ get "/googleplus" do
   else
     # it's probably a username
     user = params[:q]
-    user = "+#{user}" if user[0] != "+" and !user.numeric?
+    user = "+#{user}" if user[0] != "+" && !user.numeric?
   end
 
   response = Google.get("/plus/v1/people/#{CGI.escape(user)}")
@@ -291,7 +291,7 @@ get "/vimeo" do
     response = Vimeo.get("/videos/#{video_id}")
     raise(VimeoError, response) if !response.success?
     user_id = response.json["user"]["uri"][/\d+/]
-  elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/?&#]+)/ =~ params[:q] or user = params[:q]
+  elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/?&#]+)/ =~ params[:q] || user = params[:q]
     # it's probably a channel name
     response = Vimeo.get("/users", query: { query: user })
     raise(VimeoError, response) if !response.success?
@@ -420,7 +420,7 @@ get "/facebook/download" do
           # This is not the best quality of the picture, but it will have to do
           url = CGI.unescapeHTML($&)
         end
-        if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body and /data-utime="(?<utime>\d+)"/ =~ response.body
+        if /<title[^>]*>(?<title>[^<]+)<\/title>/ =~ response.body && /data-utime="(?<utime>\d+)"/ =~ response.body
           title = title.force_encoding("UTF-8").gsub(" | Facebook", "")
           created_time = Time.at(utime.to_i)
           fn = "#{created_time.to_date} - #{title}.#{url.url_ext}".to_filename
@@ -467,7 +467,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     # Filter posts if with=uid is supplied (property only exists on posts)
     if params[:with]
       ids = params[:with].split(",")
-      @data.select! { |post| post["with_tags"] and post["with_tags"]["data"].any? { |tag| ids.include?(tag["id"]) } }
+      @data.select! { |post| post["with_tags"] && post["with_tags"]["data"].any? { |tag| ids.include?(tag["id"]) } }
     elsif params.has_key?(:with)
       # If with is specified but is nil, then we just want to get posts that include someone else
       @data.select! { |post| post["with_tags"] }
@@ -477,7 +477,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     @data.each do |post|
       if post["properties"]
         post["properties"].each do |prop|
-          if prop["name"] == "Length" and /^(?<m>\d+):(?<s>\d+)$/ =~ prop["text"]
+          if prop["name"] == "Length" && /^(?<m>\d+):(?<s>\d+)$/ =~ prop["text"]
             post["length"] = 60*m.to_i + s.to_i
           end
         end
@@ -703,7 +703,7 @@ get "/soundcloud" do
     uri = Addressable::URI.parse(response.json["location"])
     return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
     id = uri.path[/\d+/]
-  elsif response.code == 404 and username.numeric?
+  elsif response.code == 404 && username.numeric?
     response = Soundcloud.get("/users/#{username}")
     return "Can't find a user with that id. Sorry." if response.code == 404
     raise(SoundcloudError, response) if !response.success?
@@ -822,7 +822,7 @@ get "/twitch/download" do
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
-  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] or /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] || /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] || /(^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
     # https://player.twitch.tv/?video=v103620362
@@ -870,7 +870,7 @@ get "/twitch/watch" do
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
-  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] or /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] or /(^|v)(?<vod_id>\d+)/ =~ params[:url]
+  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] || /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] || /(^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
     # https://player.twitch.tv/?video=v103620362
@@ -1029,7 +1029,7 @@ end
 get "/dailymotion" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /dailymotion\.com\/video\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q] or /dai\.ly\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q]
+  if /dailymotion\.com\/video\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q] || /dai\.ly\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
     # http://www.dailymotion.com/video/k1ZotianZxwzm6fmny2
     # http://dai.ly/x4bzwj4?start=60
@@ -1089,7 +1089,7 @@ get "/imgur" do
     # https://www.reddit.com/r/aww
     redirect "/imgur/r/#{subreddit}#{"?#{params[:type]}" if !params[:type].empty?}"
     return
-  elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] and username != "i"
+  elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] && username != "i"
     # https://thebookofgray.imgur.com/
   elsif /imgur\.com\/(gallery\/)?(?<image_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/NdyrgaE
@@ -1137,7 +1137,7 @@ get "/imgur/:user_id/:username" do
     # can't use user_id in this request unfortunately
     response = Imgur.get("/account/#{@username}/submissions")
   end
-  raise(ImgurError, response) if !response.success? or response.body.empty?
+  raise(ImgurError, response) if !response.success? || response.body.empty?
   @data = response.json["data"]
 
   if params[:animated]

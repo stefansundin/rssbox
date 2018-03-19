@@ -16,7 +16,7 @@ class Integer
     units = %w[B kB MB GB TB PB EB ZB YB]
     n = self
     i = 0
-    while n > 1000 and i < units.length do
+    while n > 1000 && i < units.length do
       n = n / 1000.0
       i += 1
     end

@@ -78,7 +78,7 @@
     </form>
 <% end %>
 
-<% if ENV["FACEBOOK_APP_ID"] and ENV["FACEBOOK_APP_SECRET"] %>
+<% if ENV["FACEBOOK_APP_ID"] && ENV["FACEBOOK_APP_SECRET"] %>
     <form class="input-group" method="get" action="facebook">
       <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
       <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>

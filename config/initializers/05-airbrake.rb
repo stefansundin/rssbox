@@ -12,6 +12,6 @@ if ENV["AIRBRAKE_API_KEY"]
 
   Airbrake.add_filter do |notice|
     # Bots gonna bot
-    notice.ignore! if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" } and (/\/wp-(?:admin|includes|content|login)/ =~ notice[:context][:url] or /\/facebook\/\d+\/?$/ =~ notice[:context][:url])
+    notice.ignore! if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" } && (/\/wp-(?:admin|includes|content|login)/ =~ notice[:context][:url] || /\/facebook\/\d+\/?$/ =~ notice[:context][:url])
   end
 end

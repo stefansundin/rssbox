@@ -194,25 +194,25 @@ class String
     result.gsub!(URL_REGEXP) do |url|
       dest = url.resolve_url
       html = dest.embed_html(request)
-      embeds.push(html) if html and !embeds.include?(html)
+      embeds.push(html) if html && !embeds.include?(html)
       "<a href='#{dest.esc}' title='#{url.esc}' rel='noreferrer'>#{dest.esc}</a>"
     end
     embed_only.scan(URL_REGEXP) do |url|
       dest = url.resolve_url
       html = dest.embed_html(request)
-      embeds.push(html) if html and !embeds.include?(html)
+      embeds.push(html) if html && !embeds.include?(html)
     end
     return result + embeds.map { |html| "\n" + html }.join
   end
 
   def embed_html(request=nil)
     root_url = request ? request.root_url : ""
-    if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self or %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
+    if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self || %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
       <<~EOF
         <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
         <a href="https://www.facebook.com/video/embed?video_id=#{id}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/facebook/download?url=#{id}">Download video</a> | <a href="#{root_url}/?download=#{CGI.escape("https://www.facebook.com/video/embed?video_id=#{id}")}">Download video with nice filename</a>
       EOF
-    elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))+} =~ self or %r{^https?://(?:youtu\.be|(?:www\.)?youtube\.com/embed)/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))*} =~ self
+    elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))+} =~ self || %r{^https?://(?:youtu\.be|(?:www\.)?youtube\.com/embed)/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
       url = "https://www.youtube.com/embed/#{id}?rel=0"
       url += "&list=#{list}" if list
