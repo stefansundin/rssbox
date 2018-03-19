@@ -4,7 +4,7 @@
 class FacebookError < HTTPError; end
 
 class Facebook < HTTP
-  BASE_URL = "https://graph.facebook.com/v2.8"
+  BASE_URL = "https://graph.facebook.com/v2.12"
   PARAMS = "access_token=#{ENV["FACEBOOK_APP_ID"]}|#{ENV["FACEBOOK_APP_SECRET"]}"
   ERROR_CLASS = FacebookError
 end
