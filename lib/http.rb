@@ -121,10 +121,16 @@ class HTTPError < StandardError
   end
 
   def message
-    if @obj.is_a?(HTTPResponse)
+    msg = if @obj.is_a?(HTTPResponse)
       "#{@obj.code}: #{@obj.body}"
     else
       @obj.inspect
+    end
+    # If this function is called from Sinatra, then we want to truncate the message in order to cut down on log filesize
+    if ENV["APP_ENV"] == "production" && caller_locations(1,1)[0].path.end_with?("/lib/sinatra/base.rb")
+      msg[0...100]
+    else
+      msg
     end
   end
 end
