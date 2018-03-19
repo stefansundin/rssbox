@@ -9,12 +9,13 @@
 FROM stefansundin/ruby:2.5.0
 MAINTAINER stefansundin https://github.com/stefansundin/rssbox
 
-ADD Gemfile /app/Gemfile
-ADD Gemfile.lock /app/Gemfile.lock
+# install gem dependencies
+RUN apt-get install -y libxml2-dev libxslt1-dev libcurl3
 
+WORKDIR /app
+COPY Gemfile Gemfile.lock ./
 RUN bundle install --without development:test --path=.bundle/gems
-
-COPY . /app
+COPY . .
 
 EXPOSE 8080
 ENV PORT=8080
