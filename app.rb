@@ -54,6 +54,8 @@ get "/go" do
     redirect "/imgur?#{params.to_querystring}"
   elsif /^https?:\/\/\medium\.com\/(?<user>@?[^\/?&#]+)/ =~ params[:q]
     redirect "https://medium.com/feed/#{user}"
+  elsif /^https?:\/\/groups\.google\.com\/forum\/#!(?:[a-z]+)\/(?<name>[^\/?&#]+)/ =~ params[:q]
+    redirect "https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50"
   elsif /^https?:\/\/(?<user>[a-zA-Z0-9\-]+)\.deviantart\.com/ =~ params[:q]
     redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
   elsif /^(?<baseurl>https?:\/\/[a-zA-Z0-9\-]+\.tumblr\.com)/ =~ params[:q]
