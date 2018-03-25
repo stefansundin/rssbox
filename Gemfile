@@ -3,17 +3,14 @@ source "https://rubygems.org"
 ruby "~> 2.5.0"
 
 gem "yajl-ruby", require: "yajl/json_gem"
+gem "rake", require: false
 gem "rack"
 gem "sinatra"
-gem "bundler"
-gem "rake", require: false
 gem "puma"
 gem "dotenv"
 gem "redis"
 gem "redis-namespace"
 gem "addressable"
-gem "airbrake"
-gem "newrelic_rpm", require: false
 gem "rack-ssl-enforcer"
 gem "secure_headers"
 gem "clogger"
@@ -24,6 +21,11 @@ gem "nokogiri"
 # dilbert feed
 gem "feedjira"
 gem "opengraph_parser"
+
+group :production do
+  gem "airbrake", require: false
+  gem "newrelic_rpm", require: false
+end
 
 group :development do
   gem "sinatra-reloader"
