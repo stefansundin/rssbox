@@ -10,8 +10,11 @@ FROM stefansundin/ruby:2.5.1
 MAINTAINER stefansundin https://github.com/stefansundin/rssbox
 
 # install gem dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends libxml2-dev libxslt1-dev libcurl3
-RUN rm -rf /var/lib/apt/lists/*
+RUN \
+  apt-get update && \
+  apt-get install -y --no-install-recommends libxml2-dev libxslt1-dev libcurl3 && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
