@@ -38,14 +38,20 @@ if @data["is_private"] && @data["edge_owner_to_timeline_media"]["edges"].empty?
     <content type="html">
 <%=
 if has_video
-  <<~EOF.esc
-    <p>#{nodes.select { |n| n["is_video"] }.length} videos.</p>
-    <iframe width="612" height="710" src="https://www.instagram.com/p/#{node["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-  EOF
+  if @data["is_private"]
+    <<~EOF.esc
+      <p>#{nodes.select { |n| n["is_video"] }.length} videos, but can't embed since the post is private.</p>
+    EOF
+  else
+    <<~EOF.esc
+      <p>#{nodes.select { |n| n["is_video"] }.length} videos.</p>
+      <iframe width="612" height="710" src="https://www.instagram.com/p/#{node["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+    EOF
+  end
 end
 %>
 <%=
-nodes.select { |n| !n["is_video"] }.map do |n|
+nodes.select { |n| !n["is_video"] || @data["is_private"] }.map do |n|
   <<~EOF.esc
     <img src="#{n["display_url"]}" referrerpolicy="no-referrer">
   EOF
