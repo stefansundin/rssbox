@@ -805,19 +805,21 @@ get "/twitch" do
   end
 
   if vod_id
-    response = Twitch.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/helix/videos", query: { id: vod_id })
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
-    data = response.json
-    username = data["channel"]["name"]
+    user_id = response.json["data"][0]["user_id"]
+    query = { id: user_id }
+  else
+    query = { login: username }
   end
 
-  response = Twitch.get("/kraken/channels/#{username}")
+  response = Twitch.get("/helix/users", query: query)
   return "Can't find a user with that name. Sorry." if response.code == 404
   raise(TwitchError, response) if !response.success?
-  data = response.json
+  data = response.json["data"][0]
 
-  redirect "/twitch/#{data["_id"]}/#{data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+  redirect "/twitch/#{data["id"]}/#{data["display_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
 get "/twitch/download" do
@@ -843,17 +845,22 @@ get "/twitch/download" do
     redirect url
     return
   elsif vod_id
-    response = Twitch.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/helix/videos", query: { id: vod_id })
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
-    data = response.json
+    data = response.json["data"][0]
+
+    response = Twitch.get("/helix/users", query: { id: data["user_id"] })
+    return "User does not exist." if response.code == 404
+    raise(TwitchError, response) if !response.success?
+    user_data = response.json["data"][0]
 
     response = Twitch.get("/api/vods/#{vod_id}/access_token")
     raise(TwitchError, response) if !response.success?
     vod_data = response.json
 
     url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
-    fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
+    fn = "#{data["created_at"].to_date} - #{user_data["display_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
     response = Twitch.get("/api/channels/#{channel_name}/access_token")
     return "Channel does not seem to exist." if response.code == 404
@@ -889,10 +896,6 @@ get "/twitch/watch" do
     streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
     return "Can't find clip." if streams.empty?
   elsif vod_id
-    response = Twitch.get("/kraken/videos/v#{vod_id}")
-    return "Video does not exist." if response.code == 404
-    raise(TwitchError, response) if !response.success?
-
     response = Twitch.get("/api/vods/#{vod_id}/access_token")
     raise(TwitchError, response) if !response.success?
     data = response.json
@@ -922,17 +925,15 @@ get "/twitch/watch" do
   end
 end
 
-get %r{/twitch/(?<id>\d+)/(?<username>.+)} do |id, username|
+get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
+  @user = user
 
-  type = %w[all highlight archive].pick(params[:type]) || "all"
-  response = Twitch.get("/kraken/channels/#{username}/videos", query: { broadcast_type: type })
+  type = %w[all upload archive highlight].pick(params[:type]) || "all"
+  response = Twitch.get("/helix/videos", query: { user_id: @id, type: type })
   raise(TwitchError, response) if !response.success?
 
-  @data = response.json["videos"].select { |video| video["status"] != "recording" }
-  @username = @data[0]["channel"]["name"] rescue CGI.unescape(username)
-  @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(username)
-
+  @data = response.json["data"]
   @title = @user
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
