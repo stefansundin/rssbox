@@ -805,14 +805,14 @@ get "/twitch" do
   end
 
   if vod_id
-    response = Twitch.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json
     username = data["channel"]["name"]
   end
 
-  response = Twitch.get("/kraken/channels/#{username}")
+  response = Twitch.get("/channels/#{username}")
   return "Can't find a user with that name. Sorry." if response.code == 404
   raise(TwitchError, response) if !response.success?
   data = response.json
@@ -835,7 +835,7 @@ get "/twitch/download" do
   end
 
   if clip_slug
-    response = Twitch.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
+    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
     return "Clip does not seem to exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
     url = response.body[/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/]
@@ -843,19 +843,19 @@ get "/twitch/download" do
     redirect url
     return
   elsif vod_id
-    response = Twitch.get("/kraken/videos/v#{vod_id}")
+    response = Twitch.get("/videos/v#{vod_id}")
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json
 
-    response = Twitch.get("/api/vods/#{vod_id}/access_token")
+    response = TwitchToken.get("/vods/#{vod_id}/access_token")
     raise(TwitchError, response) if !response.success?
     vod_data = response.json
 
     url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
     fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
-    response = Twitch.get("/api/channels/#{channel_name}/access_token")
+    response = TwitchToken.get("/channels/#{channel_name}/access_token")
     return "Channel does not seem to exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
 
@@ -863,7 +863,7 @@ get "/twitch/download" do
     token_data = JSON.parse(data["token"])
 
     url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
-    fn = "#{Time.now.to_date} - #{channel_name} live.mp4".to_filename
+    fn = "#{Time.now.to_date} - #{token_data["channel"]} live.mp4".to_filename
   end
   "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
 end
@@ -883,25 +883,22 @@ get "/twitch/watch" do
   end
 
   if clip_slug
-    response = Twitch.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
+    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
     return "Clip does not seem to exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
     streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
     return "Can't find clip." if streams.empty?
   elsif vod_id
-    response = Twitch.get("/kraken/videos/v#{vod_id}")
+    response = TwitchToken.get("/vods/#{vod_id}/access_token")
     return "Video does not exist." if response.code == 404
-    raise(TwitchError, response) if !response.success?
-
-    response = Twitch.get("/api/vods/#{vod_id}/access_token")
     raise(TwitchError, response) if !response.success?
     data = response.json
     playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
 
-    response = Twitch.get(playlist_url)
+    response = HTTP.get(playlist_url)
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
-    response = Twitch.get("/api/channels/#{channel_name}/access_token")
+    response = TwitchToken.get("/channels/#{channel_name}/access_token")
     return "Channel does not seem to exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
 
@@ -909,7 +906,7 @@ get "/twitch/watch" do
     token_data = JSON.parse(data["token"])
     playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
-    response = Twitch.get(playlist_url)
+    response = HTTP.get(playlist_url)
     return "Channel does not seem to be online." if response.code == 404
     raise(TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
@@ -926,7 +923,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
 
   type = %w[all highlight archive].pick(params[:type]) || "all"
-  response = Twitch.get("/kraken/channels/#{user}/videos", query: { broadcast_type: type })
+  response = Twitch.get("/channels/#{user}/videos", query: { broadcast_type: type })
   raise(TwitchError, response) if !response.success?
 
   @data = response.json["videos"].select { |video| video["status"] != "recording" }
