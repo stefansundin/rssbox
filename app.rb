@@ -817,7 +817,7 @@ get "/twitch" do
   raise(TwitchError, response) if !response.success?
   data = response.json
 
-  redirect "/twitch/#{data["_id"]}/#{data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+  redirect "/twitch/#{data["_id"]}/#{data["display_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
 get "/twitch/download" do
@@ -922,16 +922,15 @@ get "/twitch/watch" do
   end
 end
 
-get %r{/twitch/(?<id>\d+)/(?<username>.+)} do |id, username|
+get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
 
   type = %w[all highlight archive].pick(params[:type]) || "all"
-  response = Twitch.get("/kraken/channels/#{username}/videos", query: { broadcast_type: type })
+  response = Twitch.get("/kraken/channels/#{user}/videos", query: { broadcast_type: type })
   raise(TwitchError, response) if !response.success?
 
   @data = response.json["videos"].select { |video| video["status"] != "recording" }
-  @username = @data[0]["channel"]["name"] rescue CGI.unescape(username)
-  @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(username)
+  @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(user)
 
   @title = @user
   @title += "'s highlights" if type == "highlight"
