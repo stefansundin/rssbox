@@ -2,6 +2,7 @@
 # https://www.instagram.com/developer/endpoints/
 
 class InstagramError < HTTPError; end
+class InstagramTokenError < InstagramError; end
 
 class Instagram < HTTP
   BASE_URL = "https://www.instagram.com"
@@ -12,6 +13,29 @@ class Instagram < HTTP
   ERROR_CLASS = InstagramError
 
   @@cache = {}
+  @@csrftoken = nil
+  @@rhx_gis = nil
+
+  def self.get(url, options={headers: {}, query: nil})
+    if !@@csrftoken
+      response = HTTP.get("https://www.instagram.com/", headers: HEADERS)
+      raise(InstagramTokenError, response) if !response.success?
+      /csrftoken=(?<csrftoken>[A-Za-z0-9]+);/ =~ response.headers["set-cookie"].find { |c| c.start_with?("csrftoken=") }
+      /"rhx_gis":"(?<rhx_gis>[a-z0-9]{32})"/ =~ response.body
+      raise(InstagramTokenError, response) if !csrftoken || !rhx_gis
+      @@csrftoken = csrftoken
+      @@rhx_gis = rhx_gis
+    end
+    options[:headers]["Cookie"] = "csrftoken=#{@@csrftoken}"
+    options[:headers]["x-instagram-gis"] = Digest::MD5.hexdigest("#{@@rhx_gis}:#{@@csrftoken}:#{HEADERS["User-Agent"]}:#{url}")
+    response = super(url, options)
+    if response.code == 403
+      @@csrftoken = nil
+      @@rhx_gis = nil
+      raise(InstagramTokenError, response)
+    end
+    response
+  end
 
   def self.get_post(id, opts={})
     return @@cache[id] if @@cache[id]
