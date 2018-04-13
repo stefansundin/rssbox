@@ -26,8 +26,9 @@ class Instagram < HTTP
       @@csrftoken = csrftoken
       @@rhx_gis = rhx_gis
     end
+    options[:headers] ||= {}
     options[:headers]["Cookie"] = "csrftoken=#{@@csrftoken}"
-    options[:headers]["x-instagram-gis"] = Digest::MD5.hexdigest("#{@@rhx_gis}:#{@@csrftoken}:#{HEADERS["User-Agent"]}:#{url}")
+    options[:headers]["x-instagram-gis"] = Digest::MD5.hexdigest("#{@@rhx_gis}:#{@@csrftoken}:#{url}")
     response = super(url, options)
     if response.code == 403
       @@csrftoken = nil
