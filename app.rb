@@ -50,10 +50,12 @@ get "/go" do
     redirect "/dailymotion?#{params.to_querystring}"
   elsif /^https?:\/\/(?:www\.)?vimeo\.com/ =~ params[:q]
     redirect "/vimeo?#{params.to_querystring}"
-  elsif /^https?:\/\/(?:[a-zA-Z0-9]+\.)?imgur\.com/ =~ params[:q]
+  elsif /^https?:\/\/(?:[a-z0-9]+\.)?imgur\.com/ =~ params[:q]
     redirect "/imgur?#{params.to_querystring}"
   elsif /^https?:\/\/\medium\.com\/(?<user>@?[^\/?&#]+)/ =~ params[:q]
     redirect "https://medium.com/feed/#{user}"
+  elsif /^https?:\/\/(?<name>[a-z0-9\-]+)\.blogspot\./ =~ params[:q]
+    redirect "https://#{name}.blogspot.com/feeds/posts/default"
   elsif /^https?:\/\/groups\.google\.com\/forum\/#!(?:[a-z]+)\/(?<name>[^\/?&#]+)/ =~ params[:q]
     redirect "https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50"
   elsif /^https?:\/\/(?<user>[a-zA-Z0-9\-]+)\.deviantart\.com/ =~ params[:q]
