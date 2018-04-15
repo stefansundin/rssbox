@@ -1,0 +1,34 @@
+# https://caddyserver.com/docs
+
+# I use this to forward port 80 to 8080 and 443 to 8443:
+# https://gist.github.com/stefansundin/f0ad99195333480157ce67e97c8d28c7
+
+http://rssbox.test:8080 {
+  on startup rackup
+  proxy / http://localhost:9292 {
+    transparent
+  }
+}
+
+
+# For https:
+# openssl req -new -x509 -sha256 -days 3650 -nodes -newkey rsa:4096 -keyout rssbox.key -out rssbox.crt -subj /CN=rssbox.test
+
+# http://rssbox.test:8080 {
+#   redir / https://{host}{uri}
+# }
+# https://rssbox.test:8443 {
+#   tls rssbox.crt rssbox.key
+#   on startup rackup &
+#   proxy / http://localhost:9292 {
+#     transparent
+#   }
+# }
+
+# For pow:
+# https://rssbox.test:8443 {
+#   tls rssbox.crt rssbox.key
+#   proxy / http://localhost:20559 {
+#     transparent
+#   }
+# }

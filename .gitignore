@@ -12,3 +12,5 @@ Thumbs.db
 *~
 ubuntu-*-cloudimg-console.log
 .powder
+*.crt
+*.key

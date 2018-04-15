@@ -25,6 +25,7 @@ SecureHeaders::Configuration.default do |config|
 
   # Allow unsafe-inline for better_errors in development mode
   if ENV["APP_ENV"] == "development"
+    config.hsts = SecureHeaders::OPT_OUT
     config.csp.merge!({
       script_src: %w('unsafe-inline'),
       style_src: %w('unsafe-inline'),
