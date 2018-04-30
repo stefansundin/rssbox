@@ -18,8 +18,6 @@ GEM
       rack (>= 0.9.0)
     binding_of_caller (0.8.0)
       debug_inspector (>= 0.0.1)
-    clogger (2.2.0)
-      rack (>= 1.0, < 3.0)
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
     crass (1.0.4)
@@ -109,7 +107,6 @@ DEPENDENCIES
   airbrake
   better_errors
   binding_of_caller
-  clogger
   dotenv
   feedjira
   github-release-party
