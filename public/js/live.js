@@ -207,7 +207,7 @@ function poll() {
   if (facebook.accounts.length > 0) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("POST", "https://graph.facebook.com/v2.8");
+    xhr.open("POST", "https://graph.facebook.com/v2.12");
     xhr.addEventListener("load", function() {
       this.response.forEach(function(r, i) {
         var a = facebook.accounts[i];
@@ -432,7 +432,7 @@ $(document).ready(function() {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://graph.facebook.com/v2.8/${q}?fields=username&access_token=${facebook.token}`);
+    xhr.open("GET", `https://graph.facebook.com/v2.12/${q}?fields=username&access_token=${facebook.token}`);
     xhr.addEventListener("load", function() {
       var data = this.response;
       if (this.response.error) {
@@ -462,7 +462,10 @@ $(document).ready(function() {
     var youtube = JSON.parse(localStorage.youtube);
 
     var url, re;
-    if (re=/(?:UC|S)[0-9a-zA-Z]{22}/.exec(q)) {
+    if ((re=/youtube\.com\/.*[?&]v=([^&#]+)/.exec(q)) || (re=/youtu\.be\/([^?#]+)/.exec(q))) {
+      url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${re[1]}&key=${youtube.key}`;
+    }
+    else if (re=/(?:UC|S)[0-9a-zA-Z\-]{22}/.exec(q)) {
       url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${re[0]}&key=${youtube.key}`;
     }
     else {
@@ -473,6 +476,10 @@ $(document).ready(function() {
     xhr.responseType = "json";
     xhr.open("GET", url);
     xhr.addEventListener("load", function() {
+      if (this.status != 200) {
+        alert(`${this.status}: ${this.response.error.message}`);
+        return;
+      }
       if (this.response.items.length == 0) {
         form.addClass("has-error");
         alert("Could not find a channel with that name.");
@@ -480,8 +487,8 @@ $(document).ready(function() {
       }
       var data = this.response.items[0];
       var acc = {
-        id: data.id,
-        username: data.snippet.title,
+        id: data.snippet.channelId || data.id,
+        username: data.snippet.channelTitle || data.snippet.title,
       };
 
       if (youtube.accounts.find(function(a){ return a.id == acc.id })) {
@@ -532,19 +539,20 @@ $(document).ready(function() {
       }
       twitch.accounts.push(acc);
       localStorage.twitch = JSON.stringify(twitch);
-      form.addClass("has-success");
+      form.addClass("is-valid");
       update_accounts();
     });
     xhr.send();
   });
   $("#twitch-import-modal").on("show.bs.modal", function(event) {
     var modal = $(this);
+    var input = modal.find("input[type='search']");
     var q = $("#twitch_q").val();
     if (q) {
-      var input = modal.find("input[type='search']");
       input.val(q);
       modal.find("form").submit();
     }
+    setTimeout(function() { input.focus(); }, 10);
   });
   $("#twitch-import-select-all").click(function() {
     var list = $("#twitch-import-list");
@@ -632,7 +640,7 @@ $(document).ready(function() {
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
-    xhr.open("GET", `https://graph.facebook.com/v2.8/debug_token?input_token=${token}&access_token=${token}`);
+    xhr.open("GET", `https://graph.facebook.com/v2.12/debug_token?input_token=${token}&access_token=${token}`);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
         form.addClass("has-error");
@@ -726,7 +734,7 @@ $(document).ready(function() {
       if (["better_errors_previous_commands"].indexOf(key) != -1) return;
       obj[key] = JSON.parse(window.localStorage[key]);
     });
-    $("#settings").val(JSON.stringify(obj));
+    $("#settings").val(JSON.stringify(obj, null, 2)).css("height", "300px");
   });
   $("#import_settings").parents("form").submit(function(e) {
     e.preventDefault();
