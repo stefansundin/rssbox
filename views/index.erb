@@ -1,5 +1,5 @@
 <%- content_type :html -%>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <title>RSS Box</title>
@@ -7,18 +7,18 @@
   <meta charset="utf-8">
   <meta name="author" content="Stefan Sundin">
   <meta name="description" content="Get RSS feeds for services">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <link rel="icon" href="/img/icon32.png">
+  <link rel="license" href="https://www.gnu.org/licenses/agpl-3.0.html" title="GNU AGPL 3.0 or later">
   <link rel="alternate" type="application/atom+xml" href="https://github.com/stefansundin/rssbox/releases.atom" title="Release feed">
   <link rel="search" type="application/opensearchdescription+xml" href="opensearch.xml" title="RSS Box">
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/main.css">
-  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
   <script src="/js/main.js"></script>
 </head>
 <body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
@@ -30,194 +30,224 @@
   <div class="container">
 <% if ENV["TWITTER_ACCESS_TOKEN"] %>
     <form class="input-group" method="get" action="twitter">
-      <div class="input-group-addon"><label for="twitter_q">Twitter</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="twitter_q">Twitter</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="twitter_q" placeholder="Enter a Twitter handle or a url." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-submit-type="">All posts (default)</a></li>
-          <li><a data-submit-type="include_rts=0&amp;exclude_replies=1">Exclude retweets and replies</a></li>
-          <li><a data-submit-type="include_rts=0">Exclude retweets</a></li>
-          <li><a data-submit-type="exclude_replies=1">Exclude replies</a></li>
-          <li><a data-submit-type="with_media=1">With media</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-submit-type="">All posts (default)</a>
+          <a class="dropdown-item" data-submit-type="include_rts=0&amp;exclude_replies=1">Exclude retweets and replies</a>
+          <a class="dropdown-item" data-submit-type="include_rts=0">Exclude retweets</a>
+          <a class="dropdown-item" data-submit-type="exclude_replies=1">Exclude replies</a>
+          <a class="dropdown-item" data-submit-type="with_media=1">With media</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
 <% if ENV["GOOGLE_API_KEY"] %>
     <form class="input-group" method="get" action="youtube">
-      <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="youtube_q">YouTube</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-submit-type="live">Live</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-submit-type="live">Live</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
     <form class="input-group" method="get" action="googleplus">
-      <div class="input-group-addon"><label for="googleplus_q">Google+</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="googleplus_q">Google+</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="googleplus_q" placeholder="Enter a Google+ name or a url." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
 <% if ENV["VIMEO_ACCESS_TOKEN"] %>
     <form class="input-group" method="get" action="vimeo">
-      <div class="input-group-addon"><label for="vimeo_q">Vimeo</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="vimeo_q">Vimeo</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="vimeo_q" placeholder="Enter a Vimeo channel name, video id, or a url to a channel or video." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
 <% if ENV["FACEBOOK_APP_ID"] && ENV["FACEBOOK_APP_SECRET"] %>
     <form class="input-group" method="get" action="facebook">
-      <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="facebook_q">Facebook</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-submit-type="posts">All posts (default)</a></li>
-          <li><a data-submit-type="live">Live videos</a></li>
-          <li><a data-submit-type="videos">Videos</a></li>
-          <li><a data-submit-type="photos">Photos</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a data-download>Open video/photo</a></li>
-          <li><a data-download download>Download video/photo</a></li>
-          <li><a data-download-filename>Download video/photo with nice filename</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-submit-type="posts">All posts (default)</a>
+          <a class="dropdown-item" data-submit-type="live">Live videos</a>
+          <a class="dropdown-item" data-submit-type="videos">Videos</a>
+          <a class="dropdown-item" data-submit-type="photos">Photos</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" data-download>Open video/photo</a>
+          <a class="dropdown-item" data-download download>Download video/photo</a>
+          <a class="dropdown-item" data-download-filename>Download video/photo with nice filename</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
     <form class="input-group" method="get" action="instagram">
-      <div class="input-group-addon"><label for="instagram_q">Instagram</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="instagram_q">Instagram</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-submit-type="posts">All posts (default)</a></li>
-          <li><a data-submit-type="videos">Videos</a></li>
-          <li><a data-submit-type="photos">Photos</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a data-download>Open post</a></li>
-          <li><a data-download download>Download post</a></li>
-          <li><a data-download-filename>Download post with nice filename</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-submit-type="posts">All posts (default)</a>
+          <a class="dropdown-item" data-submit-type="videos">Videos</a>
+          <a class="dropdown-item" data-submit-type="photos">Photos</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" data-download>Open post</a>
+          <a class="dropdown-item" data-download download>Download post</a>
+          <a class="dropdown-item" data-download-filename>Download post with nice filename</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
     <form class="input-group" method="get" action="periscope">
-      <div class="input-group-addon"><label for="periscope_q">Periscope</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="periscope_q">Periscope</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="periscope_q" placeholder="Enter a Periscope username or a url." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
 <% if ENV["SOUNDCLOUD_CLIENT_ID"] %>
     <form class="input-group" method="get" action="soundcloud">
-      <div class="input-group-addon"><label for="soundcloud_q">SoundCloud</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="soundcloud_q">SoundCloud</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-download>Open track</a></li>
-          <li><a data-download download>Download track</a></li>
-          <li><a data-download-filename>Download track with nice filename</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-download>Open track</a>
+          <a class="dropdown-item" data-download download>Download track</a>
+          <a class="dropdown-item" data-download-filename>Download track with nice filename</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
     <form class="input-group" method="get" action="mixcloud">
-      <div class="input-group-addon"><label for="mixcloud_q">Mixcloud</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="mixcloud_q">Mixcloud</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="mixcloud_q" placeholder="Enter a Mixcloud username or a url to a user or track." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
 <% if ENV["TWITCH_CLIENT_ID"] %>
     <form class="input-group" method="get" action="twitch">
-      <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="twitch_q">Twitch</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-submit-type="highlight">Highlights only</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a data-vlc="watch">Open in VLC</a></li>
-          <li><a data-action="watch">Watch in external program</a></li>
-          <li><a data-download>Get download command</a></li>
-          <li><a data-irc="irc.chat.twitch.tv:6667">Open chat in IRC</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-submit-type="highlight">Highlights only</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" data-vlc="watch">Open in VLC</a>
+          <a class="dropdown-item" data-action="watch">Watch in external program</a>
+          <a class="dropdown-item" data-download>Get download command</a>
+          <a class="dropdown-item" data-irc="irc.chat.twitch.tv:6667">Open chat in IRC</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
     <form class="input-group" method="get" action="speedrun">
-      <div class="input-group-addon"><label for="speedrun_q">Speedrun</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="speedrun_q">Speedrun</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="speedrun_q" placeholder="Enter a game name or a speedrun.com url." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
     <form class="input-group" method="get" action="ustream">
-      <div class="input-group-addon"><label for="ustream_q">Ustream</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="ustream_q">Ustream</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="ustream_q" placeholder="Enter a Ustream channel name or a url." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-download>Download video</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-download>Download video</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
     <form class="input-group" method="get" action="dailymotion">
-      <div class="input-group-addon"><label for="dailymotion_q">Dailymotion</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="dailymotion_q">Dailymotion</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="dailymotion_q" placeholder="Enter a Dailymotion channel name or a url." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
 <% if ENV["IMGUR_CLIENT_ID"] %>
     <form class="input-group" method="get" action="imgur">
-      <div class="input-group-addon"><label for="imgur_q">Imgur</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="imgur_q">Imgur</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur username or a url. Or subreddit url." required>
-      <span class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a data-submit-type="animated=true">Animated only</a></li>
-          <li><a data-submit-type="animated=false">Pictures only</a></li>
-          <li><a data-submit-type="is_album=true">Albums only</a></li>
-        </ul>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a class="dropdown-item" data-submit-type="animated=true">Animated only</a>
+          <a class="dropdown-item" data-submit-type="animated=false">Pictures only</a>
+          <a class="dropdown-item" data-submit-type="is_album=true">Albums only</a>
+        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 <% end %>
 
     <form class="input-group" method="get" action="svtplay">
-      <div class="input-group-addon"><label for="svtplay_q">SVT Play</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="svtplay_q">SVT Play</label></span>
+      </div>
       <input class="form-control" type="search" name="q" id="svtplay_q" placeholder="Enter a SVT Play program name or a url." required>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </span>
+      </div>
     </form>
 
     <h2>About</h2>
@@ -243,7 +273,9 @@
       <input type="hidden" name="cbt" value="Learn why you just became awesome">
       <div class="form-group">
         <div class="input-group">
-          <div class="input-group-addon">$</div>
+          <div class="input-group-prepend">
+            <span class="input-group-text">$</span>
+          </div>
           <input type="hidden" name="currency_code" value="USD">
           <input class="form-control" type="text" name="amount" value="5.00" pattern="\d+\.?\d*" placeholder="Amount">
         </div>
@@ -251,7 +283,7 @@
       <input class="btn btn-success" type="submit" value="Donate with PayPal">
     </form>
 
-    <p><small><a class="expander" expand="donation-options">Show other donation options: Bitcoin, Square Cash.</a></small></p>
+    <p><small><a class="expander blue" expand="donation-options">Show other donation options: Bitcoin, Square Cash.</a></small></p>
     <div id="donation-options">
       <p>Other donation options:</p>
       <ul>
@@ -264,9 +296,7 @@
 
     <h2>Credits</h2>
 
-    <p>Made by Stefan Sundin.</p>
-
-    <p>You can <a href="https://stefansundin.github.io/">browse my other projects</a>, or <a href="https://stefansundin.com/">visit my personal website</a>.</p>
+    <p>Made by <a href="https://stefansundin.github.io/">Stefan Sundin</a>.</p>
   </div>
 
   <%- if request.host == "rssbox.herokuapp.com" -%>

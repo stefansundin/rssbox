@@ -1,19 +1,30 @@
 .timeago {
   border-bottom: 1px dotted #6f6f6f;
 }
-.pull-right {
+.float-right {
   margin-right: 6px;
 }
-.panel-body {
-  padding: 0;
+button.float-right {
+  margin-right: 0;
+}
+.card {
+  margin-bottom: 20px;
 }
 .table {
   margin: 0;
 }
-.table td.fit,
-.table th.fit {
-  white-space: nowrap;
-  width: 1%;
+.modal h4 {
+  margin-top: 10px;
+}
+#submit_section {
+  margin-bottom: 10px;
+}
+
+.btn-xs {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
 }
 
 time {

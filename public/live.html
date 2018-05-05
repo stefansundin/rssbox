@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <title>Live notifications</title>
@@ -7,15 +7,17 @@
   <meta charset="utf-8">
   <meta name="author" content="Stefan Sundin">
   <meta name="description" content="Get RSS feeds for services">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <link rel="icon" href="/img/icon32.png">
+  <link rel="license" href="https://www.gnu.org/licenses/agpl-3.0.html" title="GNU AGPL 3.0 or later">
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/live.css">
-  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
   <script src="https://cdn.rawgit.com/rmm5t/jquery-timeago/v1.5.3/jquery.timeago.js" integrity="sha384-dQvpXViVb0WZSjp9d7efnqmvZsiU7hNfuna9ebReA/0XRrD4Q+iGmp9EF7PZ7/JW" crossorigin="anonymous"></script>
   <script src="/js/live.js"></script>
 </head>
@@ -27,58 +29,65 @@
   </header>
 
   <div class="container">
-    <div class="checkbox text-center">
-      <label><input type="checkbox" id="mute_notifications"> Mute notifications</label>
+    <div class="form-group form-check text-center">
+      <input type="checkbox" class="form-check-input" id="mute_notifications">
+      <label class="form-check-label" for="mute_notifications">Mute notifications</label>
     </div>
 
     <div id="submit_section">
       <form class="input-group" id="facebook_form">
-        <div class="input-group-addon"><label for="facebook_q">Facebook</label></div>
+        <div class="input-group-prepend">
+          <span class="input-group-text"><label for="facebook_q">Facebook</label></span>
+        </div>
         <input class="form-control" type="search" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
-        <span class="input-group-btn">
+        <div class="input-group-append">
           <button class="btn btn-primary" type="submit">Add</button>
-        </span>
+        </div>
       </form>
 
       <form class="input-group" id="youtube_form">
-        <div class="input-group-addon"><label for="youtube_q">YouTube</label></div>
+        <div class="input-group-prepend">
+          <span class="input-group-text"><label for="youtube_q">YouTube</label></span>
+        </div>
         <input class="form-control" type="search" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a video." required>
-        <span class="input-group-btn">
+        <div class="input-group-append">
           <button class="btn btn-primary" type="submit">Add</button>
-        </span>
+        </div>
       </form>
 
       <form class="input-group" id="twitch_form">
-        <div class="input-group-addon"><label for="twitch_q">Twitch</label></div>
+        <div class="input-group-prepend">
+          <span class="input-group-text"><label for="twitch_q">Twitch</label></span>
+        </div>
         <input class="form-control" type="search" id="twitch_q" placeholder="Enter a Twitch username or a url to a user or video." required>
-        <span class="input-group-btn">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <li><a data-toggle="modal" data-target="#twitch-import-modal">Import following</a></li>
-          </ul>
+        <div class="input-group-append">
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+          <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" data-toggle="modal" data-target="#twitch-import-modal">Import following</a>
+          </div>
           <button class="btn btn-primary" type="submit">Add</button>
-        </span>
+        </div>
       </form>
 
       <div class="modal" id="twitch-import-modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
+              <h5 class="modal-title">Import Twitch following</h5>
               <button type="button" class="close" data-dismiss="modal">&times;</button>
-              <h4 class="modal-title">Import Twitch following</h4>
             </div>
             <div class="modal-body">
               <form class="input-group">
                 <input class="form-control" type="search" placeholder="Enter a Twitch username." required>
-                <span class="input-group-btn">
-                  <button class="btn btn-default" type="submit">Get following</button>
-                </span>
+                <div class="input-group-append">
+                  <button class="btn btn-secondary" type="submit">Get following</button>
+                </div>
               </form>
-              <h3>Channels <small>&mdash; <a id="twitch-import-select-all">select all</a></small></h3>
+              <h4 class="d-none">Channels <small>&mdash; <a class="blue" id="twitch-import-select-all">select all</a></small></h4>
               <div id="twitch-import-list"></div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
               <button type="button" class="btn btn-primary" disabled>Add</button>
             </div>
           </div>
@@ -103,27 +112,33 @@
     <p>Create API keys at <a href="https://developers.facebook.com/" rel="noreferrer">Facebook</a>, <a href="https://console.developers.google.com/" rel="noreferrer">Google</a>, and <a href="https://www.twitch.tv/settings/connections" rel="noreferrer">Twitch</a>. Keep the keys private.</p>
 
     <form class="input-group">
-      <div class="input-group-addon"><label for="facebook_token">Facebook</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="facebook_token">Facebook</label></span>
+      </div>
       <input class="form-control" type="search" id="facebook_token" placeholder="Enter a Facebook token (client_id|client_secret)." required monospace>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <button class="btn btn-primary" type="submit">Test</button>
-      </span>
+      </div>
     </form>
 
     <form class="input-group">
-      <div class="input-group-addon"><label for="youtube_key">YouTube</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="youtube_key">YouTube</label></span>
+      </div>
       <input class="form-control" type="search" id="youtube_key" placeholder="Enter a Google token (AIza...) with YouTube API enabled." required monospace>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <button class="btn btn-primary" type="submit">Test</button>
-      </span>
+      </div>
     </form>
 
     <form class="input-group">
-      <div class="input-group-addon"><label for="twitch_client_id">Twitch</label></div>
+      <div class="input-group-prepend">
+        <span class="input-group-text"><label for="twitch_client_id">Twitch</label></span>
+      </div>
       <input class="form-control" type="search" id="twitch_client_id" placeholder="Enter a Twitch Client ID." required monospace>
-      <span class="input-group-btn">
+      <div class="input-group-append">
         <button class="btn btn-primary" type="submit">Test</button>
-      </span>
+      </div>
     </form>
 
     <h2>Settings</h2>
@@ -134,9 +149,9 @@
       <div class="form-group">
         <textarea class="form-control" rows="3" id="settings" required monospace></textarea>
       </div>
-      <button class="btn btn-default" type="button" id="export_settings">Export</button>
-      <button class="btn btn-default" type="submit" id="import_settings">Import</button>
-      <button class="btn btn-danger pull-right" type="button" id="clear_settings">Clear</button>
+      <button class="btn btn-secondary" type="button" id="export_settings">Export</button>
+      <button class="btn btn-secondary" type="submit" id="import_settings">Import</button>
+      <button class="btn btn-danger float-right" type="button" id="clear_settings">Clear</button>
     </form>
   </div>
 

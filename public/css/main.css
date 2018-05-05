@@ -34,12 +34,13 @@ progress {
 }
 
 .input-group {
-  margin: 10px 0 5px;
+  margin-top: 10px;
 }
 .form-inline .input-group {
-  margin: 0 5px 0;
+  margin-top: 0;
+  margin-right: 10px;
 }
-.input-group-addon label {
+.input-group-prepend label {
   min-width: 100px;
   margin: 0;
 }
@@ -54,6 +55,9 @@ progress {
 .expander {
   display: none;
   margin-top: 15px;
+}
+a.blue {
+  color: #007bff !important;
 }
 
 .glyphicon.spin {

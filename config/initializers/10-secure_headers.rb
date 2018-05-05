@@ -43,7 +43,7 @@ SecureHeaders::Configuration.override(:index) do |config|
     # directive values: these values will directly translate into source directives
     default_src: %w('none'),
     style_src: %w('self' *.bootstrapcdn.com),
-    script_src: %w('self' *.bootstrapcdn.com code.jquery.com stefansundin.github.io www.google-analytics.com),
+    script_src: %w('self' *.bootstrapcdn.com code.jquery.com cdnjs.cloudflare.com stefansundin.github.io www.google-analytics.com),
     font_src: %w(*.bootstrapcdn.com),
     img_src: %w('self' www.google-analytics.com),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com www.svtplay.se stefansundin.com www.paypal.com),
@@ -66,7 +66,7 @@ SecureHeaders::Configuration.override(:live) do |config|
     # directive values: these values will directly translate into source directives
     default_src: %w('none'),
     style_src: %w('self' *.bootstrapcdn.com),
-    script_src: %w('self' *.bootstrapcdn.com code.jquery.com cdn.rawgit.com),
+    script_src: %w('self' *.bootstrapcdn.com code.jquery.com cdnjs.cloudflare.com cdn.rawgit.com),
     font_src: %w(*.bootstrapcdn.com),
     img_src: %w('self' graph.facebook.com scontent.xx.fbcdn.net i.ytimg.com static-cdn.jtvnw.net),
     connect_src: %w(graph.facebook.com www.googleapis.com api.twitch.tv),

@@ -83,114 +83,114 @@ function update_accounts() {
 
   $("#facebook_accounts").empty();
   facebook.accounts.forEach(function(a) {
-    var panel = $(`
-<div class="panel panel-default" data-facebook-id="${a.id}">
-  <div class="panel-heading">
+    var card = $(`
+<div class="card" data-facebook-id="${a.id}">
+  <div class="card-header">
     ${a.username} (${a.id})
-    <span class="label label-success hidden" data-live-label>live now</span>
-    <button type="button" class="btn btn-xs btn-danger pull-right" data-facebook-id="${a.id}">Remove</button>
-    <a class="btn btn-xs btn-default pull-right" href="https://www.facebook.com/${a.username}/videos">Open</a>
+    <span class="badge badge-success d-none" data-live-label>live now</span>
+    <button type="button" class="btn btn-xs btn-danger float-right" data-facebook-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-secondary float-right" href="https://www.facebook.com/pg/${a.username}/videos/">Open</a>
   </div>
-  <div class="panel-body">
-    <table class="table table-striped table-hover">
+  <div class="table-responsive">
+    <table class="table table-sm table-striped table-hover">
       <thead>
         <tr>
-          <th class="fit">length</th>
-          <th class="fit">status</th>
+          <th>length</th>
+          <th>status</th>
           <th>title</th>
-          <th class="fit">date</th>
-          <th class="fit"></th>
+          <th>date</th>
+          <th></th>
         </tr>
       </thead>
       <tbody data-facebook-id="${a.id}"></tbody>
     </table>
   </div>
 </div>`);
-    panel.find(".btn-danger").click(function() {
+    card.find(".btn-danger").click(function() {
       var id = $(this).data("facebook-id");
       var facebook = JSON.parse(localStorage.facebook);
       facebook.accounts = facebook.accounts.filter(function(a) {
         return a.id != id;
       });
       localStorage.facebook = JSON.stringify(facebook);
-      panel.detach();
+      card.detach();
     });
-    $("#facebook_accounts").append(panel);
+    $("#facebook_accounts").append(card);
   });
 
   $("#youtube_accounts").empty();
   youtube.accounts.forEach(function(a) {
-    var panel = $(`
-<div class="panel panel-default" data-youtube-id="${a.id}">
-  <div class="panel-heading">
+    var card = $(`
+<div class="card" data-youtube-id="${a.id}">
+  <div class="card-header">
     ${a.username} (${a.id})
-    <span class="label label-success hidden" data-live-label>live now</span>
-    <button type="button" class="btn btn-xs btn-danger pull-right" data-youtube-id="${a.id}">Remove</button>
-    <a class="btn btn-xs btn-default pull-right" href="https://www.youtube.com/channel/${a.id}/live">Open</a>
+    <span class="badge badge-success d-none" data-live-label>live now</span>
+    <button type="button" class="btn btn-xs btn-danger float-right" data-youtube-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-secondary float-right" href="https://www.youtube.com/channel/${a.id}/live">Open</a>
   </div>
-  <div class="panel-body">
-    <table class="table table-striped table-hover">
+  <div class="table-responsive">
+    <table class="table table-sm table-striped table-hover">
       <thead>
         <tr>
-          <th class="fit">status</th>
+          <th>status</th>
           <th>title</th>
-          <th class="fit">date</th>
-          <th class="fit">viewers</th>
+          <th>date</th>
+          <th>viewers</th>
         </tr>
       </thead>
       <tbody data-youtube-id="${a.id}"></tbody>
     </table>
   </div>
 </div>`);
-    panel.find(".btn-danger").click(function() {
+    card.find(".btn-danger").click(function() {
       var id = $(this).data("youtube-id");
       var youtube = JSON.parse(localStorage.youtube);
       youtube.accounts = youtube.accounts.filter(function(a) {
         return a.id != id;
       });
       localStorage.youtube = JSON.stringify(youtube);
-      panel.detach();
+      card.detach();
     });
-    $("#youtube_accounts").append(panel);
+    $("#youtube_accounts").append(card);
   });
 
   $("#twitch_accounts").empty();
   twitch.accounts.forEach(function(a) {
-    var panel = $(`
-<div class="panel panel-default" data-twitch-id="${a.id}">
-  <div class="panel-heading">
+    var card = $(`
+<div class="card" data-twitch-id="${a.id}">
+  <div class="card-header">
     ${a.display_name}
-    <span class="label label-success hidden" data-live-label>live now</span>
-    <button type="button" class="btn btn-xs btn-danger pull-right" data-twitch-id="${a.id}">Remove</button>
-    <a class="btn btn-xs btn-default pull-right" href="irc://irc.chat.twitch.tv:6667/${a.username}" target="_self">IRC</a>
-    <a class="btn btn-xs btn-default pull-right" href="https://www.twitch.tv/${a.username}">Open</a>
+    <span class="badge badge-success d-none" data-live-label>live now</span>
+    <button type="button" class="btn btn-xs btn-danger float-right" data-twitch-id="${a.id}">Remove</button>
+    <a class="btn btn-xs btn-secondary float-right" href="irc://irc.chat.twitch.tv:6667/${a.username}" target="_self">IRC</a>
+    <a class="btn btn-xs btn-secondary float-right" href="https://www.twitch.tv/${a.username}">Open</a>
   </div>
-  <div class="panel-body">
-    <table class="table table-striped table-hover">
+  <div class="table-responsive">
+    <table class="table table-sm table-striped table-hover">
       <thead>
         <tr>
-          <th class="fit">length</th>
-          <th class="fit">status</th>
+          <th>length</th>
+          <th>status</th>
           <th>title</th>
-          <th class="fit">game</th>
-          <th class="fit">date</th>
-          <th class="fit"></th>
+          <th>game</th>
+          <th>date</th>
+          <th></th>
         </tr>
       </thead>
       <tbody data-twitch-id="${a.id}"></tbody>
     </table>
   </div>
 </div>`);
-    panel.find(".btn-danger").click(function() {
+    card.find(".btn-danger").click(function() {
       var id = $(this).data("twitch-id");
       var twitch = JSON.parse(localStorage.twitch);
       twitch.accounts = twitch.accounts.filter(function(a) {
         return a.id != id;
       });
       localStorage.twitch = JSON.stringify(twitch);
-      panel.detach();
+      card.detach();
     });
-    $("#twitch_accounts").append(panel);
+    $("#twitch_accounts").append(card);
   });
 }
 
@@ -226,11 +226,11 @@ function poll() {
           }
           var tr = $(`
 <tr id="${tr_id}">
-  <td class="fit">${to_duration(v.length)}</td>
-  <td class="fit">${v.live_status}</td>
+  <td>${to_duration(v.length)}</td>
+  <td>${v.live_status}</td>
   <td><a href="https://www.facebook.com/video/embed?video_id=${v.id}">${v.title || v.description || "Untitled"}</a></td>
-  <td class="fit"><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+"," +")}</time></td>
-  <td class="fit"><a class="btn btn-xs btn-default" href="vlc://https://www.facebook.com/video/playback/playlist.m3u8?v=${videos[0].id}" target="_self">VLC</a></td>
+  <td><time class="timeago" datetime="${v.created_time}">${v.created_time.replace("T"," ").replace("+0000"," UTC")}</time></td>
+  <td><a class="btn btn-xs btn-secondary" href="vlc://https://www.facebook.com/video/playback/playlist.m3u8?v=${videos[0].id}" target="_self">VLC</a></td>
 </tr>`);
           tbody.prepend(tr);
           if ($("#mute_notifications").prop("checked")) {
@@ -245,15 +245,15 @@ function poll() {
               notification.close();
               window.focus();
               tr.addClass("success");
-              tbody.parents("div.panel")[0].scrollIntoView();
+              tbody.parents("div.card")[0].scrollIntoView();
             });
           }
         });
         if (videos.some(function(v) { return v.live_status == "LIVE" })) {
-          $(`div[data-facebook-id="${a.id}"] [data-live-label]`).removeClass("hidden");
+          $(`div[data-facebook-id="${a.id}"] [data-live-label]`).removeClass("d-none");
         }
         else {
-          $(`div[data-facebook-id="${a.id}"] [data-live-label]`).addClass("hidden");
+          $(`div[data-facebook-id="${a.id}"] [data-live-label]`).addClass("d-none");
         }
       });
       $("time.timeago").timeago();
@@ -307,10 +307,10 @@ function poll() {
           }
           var tr = $(`
 <tr id="${tr_id}">
-  <td class="fit">${live_status}</td>
+  <td>${live_status}</td>
   <td><a href="https://www.youtube.com/watch?v=${v.id}">${v.snippet.title}</a></td>
-  <td class="fit">${live_text}</td>
-  <td class="fit" data-concurrent-viewers>${concurrent_viewers}</td>
+  <td>${live_text}</td>
+  <td data-concurrent-viewers>${concurrent_viewers}</td>
 </tr>`);
           tbody.prepend(tr);
           if ($("#mute_notifications").prop("checked")) {
@@ -325,15 +325,15 @@ function poll() {
               notification.close();
               window.focus();
               tr.addClass("success");
-              tbody.parents("div.panel")[0].scrollIntoView();
+              tbody.parents("div.card")[0].scrollIntoView();
             });
           }
         });
         if (this.response.items.some(function(v) { return v.liveStreamingDetails && v.liveStreamingDetails.actualStartTime && !v.liveStreamingDetails.actualEndTime })) {
-          $(`div[data-youtube-id="${a.id}"] [data-live-label]`).removeClass("hidden");
+          $(`div[data-youtube-id="${a.id}"] [data-live-label]`).removeClass("d-none");
         }
         else {
-          $(`div[data-youtube-id="${a.id}"] [data-live-label]`).addClass("hidden");
+          $(`div[data-youtube-id="${a.id}"] [data-live-label]`).addClass("d-none");
         }
         $("time.timeago").timeago();
       });
@@ -368,9 +368,9 @@ function poll() {
   <td>${to_duration(v.length)}</td>
   <td>${v.status}</td>
   <td><a href="${url}">${v.title}</a> ${urls.map((url,i) => `[<a href="${url}">${i+1}</a>]`).join(" ")}</td>
-  <td class="fit">${v.game || "N/A"}</td>
-  <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ")}</time></td>
-  <td><a class="btn btn-xs btn-default" href="vlc://${root_url}/twitch/watch?url=${v.status == "recording" ? a.username : v._id}" target="_self">VLC</a></td>
+  <td>${v.game || "N/A"}</td>
+  <td><time class="timeago" datetime="${v.created_at}">${v.created_at.replace("T"," ").replace("Z"," UTC")}</time></td>
+  <td><a class="btn btn-xs btn-secondary" href="vlc://${root_url}/twitch/watch?url=${v.status == "recording" ? a.username : v._id}" target="_self">VLC</a></td>
 </tr>`);
         tbody.prepend(tr);
         if ($("#mute_notifications").prop("checked")) {
@@ -385,15 +385,15 @@ function poll() {
             notification.close();
             window.focus();
             tr.addClass("success");
-            tbody.parents("div.panel")[0].scrollIntoView();
+            tbody.parents("div.card")[0].scrollIntoView();
           });
         }
       });
       if (videos.some(function(v) { return v.status == "recording" })) {
-        $(`div[data-twitch-id="${a.id}"] [data-live-label]`).removeClass("hidden");
+        $(`div[data-twitch-id="${a.id}"] [data-live-label]`).removeClass("d-none");
       }
       else {
-        $(`div[data-twitch-id="${a.id}"] [data-live-label]`).addClass("hidden");
+        $(`div[data-twitch-id="${a.id}"] [data-live-label]`).addClass("d-none");
       }
       $("time.timeago").timeago();
     });
@@ -425,7 +425,7 @@ $(document).ready(function() {
     e.preventDefault();
     var form = $(this);
     setTimeout(function() {
-      form.removeClass("has-success has-error");
+      form.removeClass("is-valid is-invalid");
     }, 3000);
     var q = $("#facebook_q").val();
     var facebook = JSON.parse(localStorage.facebook);
@@ -436,7 +436,7 @@ $(document).ready(function() {
     xhr.addEventListener("load", function() {
       var data = this.response;
       if (this.response.error) {
-        form.addClass("has-error");
+        form.addClass("is-invalid");
         alert(this.response.error.message);
         return;
       }
@@ -446,7 +446,7 @@ $(document).ready(function() {
       }
       facebook.accounts.push(data);
       localStorage.facebook = JSON.stringify(facebook);
-      form.addClass("has-success");
+      form.addClass("is-valid");
       update_accounts();
     });
     xhr.send();
@@ -456,7 +456,7 @@ $(document).ready(function() {
     e.preventDefault();
     var form = $(this);
     setTimeout(function() {
-      form.removeClass("has-success has-error");
+      form.removeClass("is-valid is-invalid");
     }, 3000);
     var q = $("#youtube_q").val();
     var youtube = JSON.parse(localStorage.youtube);
@@ -481,7 +481,7 @@ $(document).ready(function() {
         return;
       }
       if (this.response.items.length == 0) {
-        form.addClass("has-error");
+        form.addClass("is-invalid");
         alert("Could not find a channel with that name.");
         return;
       }
@@ -497,7 +497,7 @@ $(document).ready(function() {
       }
       youtube.accounts.push(acc);
       localStorage.youtube = JSON.stringify(youtube);
-      form.addClass("has-success");
+      form.addClass("is-valid");
       update_accounts();
     });
     xhr.send();
@@ -507,7 +507,7 @@ $(document).ready(function() {
     e.preventDefault();
     var form = $(this);
     setTimeout(function() {
-      form.removeClass("has-success has-error");
+      form.removeClass("is-valid is-invalid");
     }, 3000);
     var q = $("#twitch_q").val();
     if (re=/twitch\.tv\/([^\/?#]+)/.exec(q)) {
@@ -522,7 +522,7 @@ $(document).ready(function() {
     xhr.setRequestHeader("Client-ID", twitch.client_id);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
-        form.addClass("has-error");
+        form.addClass("is-invalid");
         alert(this.response.message || this.response.error);
         return;
       }
@@ -589,26 +589,33 @@ $(document).ready(function() {
       if (this.response.follows.length == 0) {
         list.text("This user is not following anyone.");
       }
+      modal.find("h4").removeClass("d-none");
       var ul = $("<ul></ul>");
       list.empty();
       list.append(ul);
       this.response.follows.sort(function(a,b) {
         return a.channel.name.localeCompare(b.channel.name);
       }).forEach(function(follow) {
-        var li = $(`<li class="checkbox"><label><input type="checkbox"></label></li>`)
-        var checkbox = li.find("input");
+        var check = $(`<div class="form-check">
+          <input type="checkbox" class="form-check-input">
+          <label class="form-check-label"></label>
+        </div>`);
+        var checkbox = check.find("input");
+        var label = check.find("label");
         checkbox.val(JSON.stringify({
           id: follow.channel._id,
           username: follow.channel.name,
           display_name: follow.channel.display_name,
         }));
+        checkbox.prop("id", follow.channel._id);
+        label.prop("for", follow.channel._id);
         if (twitch.accounts.some(function(a) { return a.id == follow.channel._id })) {
           checkbox.prop("disabled", true).prop("checked", true);
         }
-        li.find("label").append(document.createTextNode(" "+follow.channel.display_name))
-        li.append(" ");
-        li.append($('<a target="_blank"><span class="glyphicon glyphicon glyphicon-new-window"></span></a>').prop("href", `https://www.twitch.tv/${follow.channel.name}`));
-        ul.append(li);
+        label.append(document.createTextNode(" "+follow.channel.display_name))
+        check.append(" ");
+        check.append($('<a target="_blank"><span class="glyphicon glyphicon glyphicon-new-window"></span></a>').prop("href", `https://www.twitch.tv/${follow.channel.name}`));
+        ul.append(check);
       });
       list.find("input").on("change", function() {
         add_button.prop("disabled", ul.find("input:enabled:checked").length == 0);
@@ -635,33 +642,33 @@ $(document).ready(function() {
 
   $("#facebook_token").parents("form").submit(function(e) {
     e.preventDefault();
-    var form = $(this);
-    var token = $("#facebook_token").val();
+    var input = $("#facebook_token");
+    var token = input.val();
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("GET", `https://graph.facebook.com/v2.12/debug_token?input_token=${token}&access_token=${token}`);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
-        form.addClass("has-error");
+        input.addClass("is-invalid");
         alert(this.response.error.message);
         return;
       }
       var data = this.response.data;
       if (!data.is_valid) {
-        form.addClass("has-error");
+        input.addClass("is-invalid");
         alert("This token is not valid.");
         return;
       }
       var facebook = JSON.parse(localStorage.facebook);
       facebook.token = token;
       localStorage.facebook = JSON.stringify(facebook);
-      form.addClass("has-success");
+      input.addClass("is-valid");
     });
     xhr.send();
   });
   $("#facebook_token").on("input", function(e) {
-    $(this.form).removeClass("has-success has-error");
+    $(this).removeClass("is-valid is-invalid");
   });
   var facebook = JSON.parse(localStorage.facebook);
   if (facebook.token) {
@@ -670,27 +677,27 @@ $(document).ready(function() {
 
   $("#youtube_key").parents("form").submit(function(e) {
     e.preventDefault();
-    var form = $(this);
-    var key = $("#youtube_key").val();
+    var input = $("#youtube_key");
+    var key = input.val();
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
     xhr.open("GET", `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=9bZkp7q19f0&key=${key}`);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
-        form.addClass("has-error");
+        input.addClass("is-invalid");
         alert(this.response.error.errors[0].reason);
         return;
       }
       var youtube = JSON.parse(localStorage.youtube);
       youtube.key = key;
       localStorage.youtube = JSON.stringify(youtube);
-      form.addClass("has-success");
+      input.addClass("is-valid");
     });
     xhr.send();
   });
   $("#youtube_key").on("input", function(e) {
-    $(this.form).removeClass("has-success has-error");
+    $(this).removeClass("is-valid is-invalid");
   });
   var youtube = JSON.parse(localStorage.youtube);
   if (youtube.key) {
@@ -699,8 +706,8 @@ $(document).ready(function() {
 
   $("#twitch_client_id").parents("form").submit(function(e) {
     e.preventDefault();
-    var form = $(this);
-    var client_id = $("#twitch_client_id").val();
+    var input = $("#twitch_client_id");
+    var client_id = input.val();
 
     var xhr = new XMLHttpRequest();
     xhr.responseType = "json";
@@ -709,19 +716,19 @@ $(document).ready(function() {
     xhr.setRequestHeader("Client-ID", client_id);
     xhr.addEventListener("load", function() {
       if (this.response.error) {
-        form.addClass("has-error");
+        input.addClass("is-invalid");
         alert(this.response.message);
         return;
       }
       var twitch = JSON.parse(localStorage.twitch);
       twitch.client_id = client_id;
       localStorage.twitch = JSON.stringify(twitch);
-      form.addClass("has-success");
+      input.addClass("is-valid");
     });
     xhr.send();
   });
   $("#twitch_client_id").on("input", function(e) {
-    $(this.form).removeClass("has-success has-error");
+    $(this).removeClass("is-valid is-invalid");
   });
   var twitch = JSON.parse(localStorage.twitch);
   if (twitch.client_id) {
