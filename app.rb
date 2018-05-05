@@ -81,6 +81,9 @@ get "/twitter" do
     return "Unsupported url. Sorry."
   elsif params[:q]["twitter.com/hashtag/"]
     return "This app does not support hashtags. Sorry."
+  elsif /twitter\.com\/intent\/.+[?&]user_id=(?<user_id>\d+)/ =~ params[:q]
+    # https://twitter.com/intent/user?user_id=34313404
+    # https://twitter.com/intent/user?user_id=71996998
   elsif /twitter\.com\/(?:#!\/|@)?(?<user>[^\/?#]+)/ =~ params[:q] || /@(?<user>[^\/?#]+)/ =~ params[:q]
     # https://twitter.com/#!/infected
     # https://twitter.com/infected
@@ -90,12 +93,18 @@ get "/twitter" do
     user = params[:q]
   end
 
-  response = Twitter.get("/users/lookup.json", query: { screen_name: user })
-  return "Can't find a user with that name. Sorry." if response.code == 404
+  if user
+    query = { screen_name: user }
+  elsif user_id
+    query = { user_id: user_id }
+  end
+
+  response = Twitter.get("/users/show.json", query: query)
+  return "Can't find that user. Sorry." if response.code == 404
   raise(TwitterError, response) if !response.success?
 
-  user_id = response.json[0]["id_str"]
-  screen_name = response.json[0]["screen_name"]
+  user_id = response.json["id_str"]
+  screen_name = response.json["screen_name"].or(response.json["name"])
   redirect "/twitter/#{user_id}/#{screen_name}#{"?#{params[:type]}" if !params[:type].empty?}"
 end
 
@@ -115,7 +124,11 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   raise(TwitterError, response) if !response.success?
 
   @data = response.json
-  @username = @data[0]["user"]["screen_name"] rescue CGI.unescape(username)
+  if @data[0] && !@data[0]["user"]["screen_name"].empty?
+    @username = @data[0]["user"]["screen_name"]
+  else
+    @username = CGI.unescape(username)
+  end
 
   if params[:with_media] == "video"
     @data.select! { |t| t["extended_entities"] && t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
