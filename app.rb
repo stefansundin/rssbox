@@ -716,6 +716,10 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   cache_control :public, :max_age => 31556926 # cache a long time
   return "Image not found." if response.code == 404
   raise(PeriscopeError, response) if !response.success?
+  if response.json["broadcast"]["image_url"].empty?
+    status 404
+    return "Image not found."
+  end
   response = HTTP.get(response.json["broadcast"]["image_url"])
   content_type response.headers["content-type"].join(", ")
   response.body
