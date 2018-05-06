@@ -328,6 +328,11 @@ get "/facebook" do
   return "Insufficient parameters" if params[:q].empty?
   params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q]["facebookcorewwwi.onion"]
 
+  if /https:\/\/www\.facebook\.com\/plugins\/.+[?&]href=(?<href>.+)$/ =~ params[:q]
+    # https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Finfectedmushroom%2Fvideos%2F10154638763917261%2F&show_text=0&width=400
+    params[:q] = CGI.unescape(href)
+  end
+
   if /facebook\.com\/pages\/[^\/]+\/(?<id>\d+)/ =~ params[:q]
     # https://www.facebook.com/pages/Lule%C3%A5-Sweden/106412259396611?fref=ts
   elsif /facebook\.com\/groups\/(?<id>\d+)/ =~ params[:q]
