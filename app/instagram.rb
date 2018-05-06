@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# https://www.instagram.com/developer/endpoints/
 
 class InstagramError < HTTPError; end
 class InstagramTokenError < InstagramError; end
@@ -16,8 +15,8 @@ class Instagram < HTTP
   @@csrftoken = nil
   @@rhx_gis = nil
 
-  def self.get(url, options={headers: {}, query: nil})
-    if !@@csrftoken
+  def self.get(url, options={headers: {}, query: nil}, tokens={csrftoken: nil, rhx_gis: nil})
+    if !tokens[:csrftoken] && !@@csrftoken
       response = HTTP.get("https://www.instagram.com/", headers: HEADERS)
       raise(InstagramTokenError, response) if !response.success?
       /csrftoken=(?<csrftoken>[A-Za-z0-9]+);/ =~ response.headers["set-cookie"].find { |c| c.start_with?("csrftoken=") }
@@ -28,18 +27,15 @@ class Instagram < HTTP
     end
     options ||= {}
     options[:headers] ||= {}
-    options[:headers]["Cookie"] = "csrftoken=#{@@csrftoken}"
-    options[:headers]["x-instagram-gis"] = Digest::MD5.hexdigest("#{@@rhx_gis}:#{url}")
+    options[:headers]["x-instagram-gis"] = Digest::MD5.hexdigest("#{tokens[:rhx_gis] || @@rhx_gis}:#{url}")
     response = super(url, options)
     if response.code == 403
-      @@csrftoken = nil
-      @@rhx_gis = nil
       raise(InstagramTokenError, response)
     end
     response
   end
 
-  def self.get_post(id, opts={})
+  def self.get_post(id, opts={}, tokens={})
     return @@cache[id] if @@cache[id]
     value = $redis.hget("instagram", id)
     if value
@@ -47,7 +43,7 @@ class Instagram < HTTP
       return @@cache[id]
     end
 
-    response = Instagram.get("/p/#{id}/", opts)
+    response = Instagram.get("/p/#{id}/", opts, tokens)
     raise(InstagramError, response) if !response.success?
     post = response.json["graphql"]["shortcode_media"]
 

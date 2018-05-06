@@ -604,20 +604,30 @@ end
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
 
-  headers = {}
-  if params[:sessionid]
-    # To subscribe to private feeds, either grab the sessionid cookie from the Chrome devtools (Application -> Cookies -> https://www.instagram.com -> sessionid), or follow these steps in bash:
+  options = nil
+  tokens = nil
+  if params[:csrftoken] && params[:rhx_gis] && params[:sessionid]
+    # To subscribe to private feeds, follow these steps in bash:
     # u=your_username
     # p=your_password
-    # csrftoken=$(curl -sI https://www.instagram.com/accounts/login/ | grep -i 'set-cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
-    # curl -sv https://www.instagram.com/accounts/login/ajax/ -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2
-    # Then use this value in a query param to this endpoint, e.g:
-    # https://rssbox.herokuapp.com/instagram/1234567890/your_friends_username?sessionid=1234...
-    # But please host the app yourself if you decide to do this, otherwise you will leak the token to me and the privacy of your friends posts.
-    headers["Cookie"] = "sessionid=#{CGI.escape(params[:sessionid])}"
+    # your_friends_username=your_friends_username
+    # your_friends_userid=$(curl -s "https://www.instagram.com/$your_friends_username/" | grep -oE '"id":"([0-9]+)"' | cut -d'"' -f4)
+    # ua="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:59.0) Gecko/20100101 Firefox/59.0"
+    # csrftoken=$(curl -sI https://www.instagram.com/ -A "$ua" | grep -i 'set-cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
+    # rhx_gis=$(curl -s https://www.instagram.com/ -A "$ua" -b "csrftoken=$csrftoken" | grep -oE '"rhx_gis":"([A-Za-z0-9]+)"' | cut -d'"' -f4)
+    # sessionid=$(curl -sv https://www.instagram.com/accounts/login/ajax/ -A "$ua" -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2)
+    # echo "https://rssbox.herokuapp.com/instagram/$your_friends_userid/$your_friends_username?csrftoken=$csrftoken&rhx_gis=$rhx_gis&sessionid=$sessionid"
+    # Please host the app yourself if you decide to do this, otherwise you will leak the tokens to me and the privacy of your friends posts.
+    options = {
+      headers: {"Cookie" => "sessionid=#{CGI.escape(params[:sessionid])}"}
+    }
+    tokens = {
+      csrftoken: params[:csrftoken],
+      rhx_gis: params[:rhx_gis],
+    }
   end
 
-  response = Instagram.get("/#{username}/", headers: headers)
+  response = Instagram.get("/#{username}/", options, tokens)
   return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1" if response.code == 404
   return "The sessionid expired!" if params[:sessionid] && response.code == 302
   raise(InstagramError, response) if !response.success?
@@ -628,7 +638,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   type = %w[videos photos].pick(params[:type]) || "posts"
   @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
     if post["node"]["__typename"] == "GraphSidecar"
-      post["nodes"] = Instagram.get_post(post["node"]["shortcode"], headers: headers)
+      post["nodes"] = Instagram.get_post(post["node"]["shortcode"], options, tokens)
     end
     post
   end
