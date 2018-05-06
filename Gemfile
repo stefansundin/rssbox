@@ -30,8 +30,8 @@ end
 group :development do
   gem "sinatra-reloader"
   gem "powder"
-  gem "binding_of_caller"
-  gem "better_errors"
+  # gem "binding_of_caller"
+  # gem "better_errors"
   gem "pry-remote"
   gem "github-release-party"
 end
