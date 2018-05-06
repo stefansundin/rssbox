@@ -1269,6 +1269,8 @@ error do |e|
   "Sorry, a nasty error occurred: #{e}"
 end
 
-not_found do
+error Sinatra::NotFound do
+  content_type :text
+  status 404
   "Sorry, that route does not exist."
 end
