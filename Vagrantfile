@@ -37,7 +37,7 @@ Requires=puma.socket
 
 [Service]
 Type=simple
-User=ubuntu
+User=vagrant
 WorkingDirectory=/vagrant/
 EnvironmentFile=/home/vagrant/rssbox.env
 ExecStart=/home/vagrant/.rbenv/versions/global/bin/puma -C config/puma.rb -p 8080
@@ -101,6 +101,8 @@ RUBY_MAJOR=${RUBY_VERSION%.*}.0
 rbenv install $RUBY_VERSION
 rbenv global $RUBY_VERSION
 gem update --system
+# Ruby 2.5 is supposed to bundle bundler, but it doesn't seem to work without installing it.
+gem install bundler
 
 ln -sf /vagrant/.irbrc /home/vagrant/.irbrc
 ln -sf $RUBY_VERSION /home/vagrant/.rbenv/versions/global
@@ -125,7 +127,7 @@ SCRIPT
 
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/bionic64"
   config.vm.hostname = "rssbox"
   config.vm.network "forwarded_port", guest: 8080, host: 3000
   config.vm.provision "shell", inline: $root_provision
