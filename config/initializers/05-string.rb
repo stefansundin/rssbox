@@ -126,15 +126,15 @@ class String
               next_url = next_uri.query_values["url"]
             end
             if %w[
-              ://www.youtube.com/das_captcha
-              ://www.nytimes.com/glogin
-              ://www.facebook.com/unsupportedbrowser
-              ://play.spotify.com/error/browser-not-supported.php
-              ://www.linkedin.com/uas/login
-              ://www.theaustralian.com.au/remote/check_cookie.html
-              ://signin.aws.amazon.com/
-              ://accounts.google.com/ServiceLogin
-            ].any? { |s| next_url.include?(s) }
+              https://www.youtube.com/das_captcha
+              https://www.nytimes.com/glogin
+              https://www.facebook.com/unsupportedbrowser
+              https://play.spotify.com/error/browser-not-supported.php
+              https://www.linkedin.com/uas/login
+              https://www.theaustralian.com.au/remote/check_cookie.html
+              https://signin.aws.amazon.com/
+              https://accounts.google.com/ServiceLogin
+            ].any? { |s| next_url.start_with?(s) }
               throw :done
             end
             dest = next_url
