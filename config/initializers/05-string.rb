@@ -117,7 +117,14 @@ class String
               # bad redirect
               throw :done
             end
-            next_url = Addressable::URI.parse(next_url).normalize.to_s # Some redirects do not url encode properly, such as http://amzn.to/2aDg49F
+            # Some servers do not encode the url properly, such as http://amzn.to/2aDg49F
+            next_uri = Addressable::URI.parse(next_url)
+            next_url = next_uri.normalize.to_s
+            if next_url.start_with?("https://bitly.com/a/warning") && next_uri.query_values["url"]
+              # http://bit.ly/2om6hZ4
+              # https://bitly.com/a/warning?hash=2om6hZ4&url=http://soundbar.uvtix.com/event/uv1609432840dt180407rm0/infected-mushroom-dj-set-in-dolby-atmos/
+              next_url = next_uri.query_values["url"]
+            end
             if %w[
               ://www.youtube.com/das_captcha
               ://www.nytimes.com/glogin
