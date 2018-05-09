@@ -1,5 +1,7 @@
 # frozen_string_literal: true
-# https://developers.facebook.com/docs/graph-api/reference/
+# https://developers.facebook.com/docs/graph-api/reference
+# https://developers.facebook.com/docs/graph-api/changelog
+# https://developers.facebook.com/docs/graph-api/changelog/breaking-changes
 
 class FacebookError < HTTPError; end
 
