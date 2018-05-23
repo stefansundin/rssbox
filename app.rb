@@ -480,13 +480,13 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     "photos" => "updated_time,from,message,description,name,link,source",
   }[@edge]
 
-  query = { fields: fields, since: Time.now.to_i-365*24*60*60 }
+  query = { fields: fields, since: Time.now.to_i-365*24*60*60 } # date -v -1w +%s
 
   if params[:locale]
     query[:locale] = params[:locale]
   end
 
-  response = Facebook.get("/#{id}/#{@edge}", query: query) # date -v -1w +%s
+  response = Facebook.get("/#{id}/#{@edge}", query: query)
   return "#{Facebook::BASE_URL}/#{id}/#{@edge} returned code #{response.code}." if response.code == 400
   raise(FacebookError, response) if !response.success?
 
