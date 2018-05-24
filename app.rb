@@ -325,6 +325,7 @@ get "/vimeo" do
 end
 
 get "/facebook" do
+  return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
   return "Insufficient parameters" if params[:q].empty?
   params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q]["facebookcorewwwi.onion"]
 
@@ -372,6 +373,8 @@ get "/facebook" do
 end
 
 get "/facebook/download" do
+  return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
+
   if /\/(?<id>\d+)/ =~ params[:url]
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
@@ -470,8 +473,9 @@ get "/facebook/download" do
 end
 
 get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
-  @id = id
+  return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
 
+  @id = id
   @type = @edge = %w[videos photos live].pick(params[:type]) || "posts"
   @edge = "videos" if @type == "live"
   fields = {
