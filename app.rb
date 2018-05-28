@@ -144,13 +144,16 @@ end
 get "/youtube" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)/ =~ params[:q]
+  if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
     # https://www.youtube.com/channel/SWu5RTwuNMv6U
-  elsif /youtube\.com\/(?<type>user|c|show)\/(?<slug>[^\/?#]+)/ =~ params[:q]
+    # https://www.youtube.com/channel/UCd6MoB9NC6uYN2grvUNT-Zg/search?query=aurora
+  elsif /youtube\.com\/(?<type>user|c|show)\/(?<slug>[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
     # https://www.youtube.com/c/khanacademy
     # https://www.youtube.com/show/redvsblue
+    # https://www.youtube.com/user/AmazonWebServices/search?query=aurora
+    # https://www.youtube.com/c/khanacademy/search?query=Frequency+stability
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that slug != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
     user = "#{type}/#{slug}"
@@ -189,18 +192,22 @@ get "/youtube" do
     end
   end
 
-  if channel_id
-    if params[:type]
-      # it's no longer possible to get usernames using the API
-      og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
-      username = og.url.split("/")[-1]
-      username = og.title if username == channel_id
-      url = "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
-      url += "&tz=#{params[:tz]}" if params[:tz]
-      redirect url
-    else
-      redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
-    end
+  if query || params[:type]
+    # it's no longer possible to get usernames using the API
+    # note that the values include " - YouTube" at the end if the User-Agent is a browser
+    og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
+    username = og.url.split("/")[-1]
+    username = og.title if username == channel_id
+  end
+
+  if query
+    redirect "/youtube/#{channel_id}/#{username}?q=#{query}"
+  elsif params[:type]
+    url = "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
+    url += "&tz=#{params[:tz]}" if params[:tz]
+    redirect url
+  elsif channel_id
+    redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
   elsif playlist_id
     redirect "https://www.youtube.com/feeds/videos.xml?playlist_id=#{playlist_id}"
   else
