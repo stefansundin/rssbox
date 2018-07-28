@@ -19,7 +19,7 @@ class Instagram < HTTP
     if !tokens[:csrftoken] && !@@csrftoken
       response = HTTP.get("https://www.instagram.com/", headers: HEADERS)
       raise(InstagramTokenError, response) if !response.success?
-      /csrftoken=(?<csrftoken>[A-Za-z0-9]+);/ =~ response.headers["set-cookie"].find { |c| c.start_with?("csrftoken=") }
+      /csrftoken=(?<csrftoken>[A-Za-z0-9]+);/ =~ response.headers["set-cookie"].find { |c| /csrftoken=[A-Za-z0-9]+/.match?(c) }
       /"rhx_gis":"(?<rhx_gis>[a-z0-9]{32})"/ =~ response.body
       raise(InstagramTokenError, response) if !csrftoken || !rhx_gis
       @@csrftoken = csrftoken
