@@ -864,9 +864,11 @@ get "/twitch" do
 end
 
 get "/twitch/download" do
-  if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
-    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
-    # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
+  if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
+    # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
+    # https://clips.twitch.tv/DignifiedThirstyDogYee
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (legacy url, redirects to the one above)
+    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/gsl/video/25133028
     # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
@@ -914,9 +916,11 @@ get "/twitch/download" do
 end
 
 get "/twitch/watch" do
-  if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
-    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
-    # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
+  if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
+    # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
+    # https://clips.twitch.tv/DignifiedThirstyDogYee
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (legacy url, redirects to the one above)
+    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/gsl/video/25133028
     # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
