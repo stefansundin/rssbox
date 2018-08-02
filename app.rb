@@ -880,10 +880,10 @@ get "/twitch/download" do
   end
 
   if clip_slug
-    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
+    response = HTTP.get("https://clips.twitch.tv/api/v2/clips/#{clip_slug}/status")
     return "Clip does not seem to exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
-    url = response.body[/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/]
+    url = response.json["quality_options"][0]["source"]
     return "Can't find clip." if url.nil?
     redirect url
     return
@@ -930,10 +930,10 @@ get "/twitch/watch" do
   end
 
   if clip_slug
-    response = HTTP.get("https://clips.twitch.tv/embed?clip=#{clip_slug}")
+    response = HTTP.get("https://clips.twitch.tv/api/v2/clips/#{clip_slug}/status")
     return "Clip does not seem to exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
-    streams = response.body.scan(/https:\/\/clips-media-assets\.twitch\.tv\/.+?\.mp4/)
+    streams = response.json["quality_options"].map { |s| s["source"] }
     return "Can't find clip." if streams.empty?
   elsif vod_id
     response = TwitchToken.get("/vods/#{vod_id}/access_token")
