@@ -839,9 +839,10 @@ get "/twitch" do
   return "Insufficient parameters" if params[:q].empty?
 
   if /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
-    # https://www.twitch.tv/videos/25133028
+    # https://www.twitch.tv/videos/25133028 (legacy url)
   elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/majinphil
+    # https://www.twitch.tv/gsl/video/25133028
   else
     username = params[:q]
   end
@@ -866,9 +867,11 @@ get "/twitch/download" do
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
-  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] || /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] || /(^|v)(?<vod_id>\d+)/ =~ params[:url]
-    # https://www.twitch.tv/videos/25133028
-    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+  elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
+    # https://www.twitch.tv/gsl/video/25133028
+    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
+    # https://www.twitch.tv/videos/25133028 (legacy url)
+    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
@@ -914,9 +917,11 @@ get "/twitch/watch" do
   if /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack
     # https://clips.twitch.tv/embed?clip=majinphil/UnusualClamRaccAttack&autoplay=false
-  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:url] || /twitch\.tv\/(?:[^\/]+)\/v\/(?<vod_id>\d+)/ =~ params[:url] || /(^|v)(?<vod_id>\d+)/ =~ params[:url]
-    # https://www.twitch.tv/videos/25133028
-    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s
+  elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
+    # https://www.twitch.tv/gsl/video/25133028
+    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
+    # https://www.twitch.tv/videos/25133028 (legacy url)
+    # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
