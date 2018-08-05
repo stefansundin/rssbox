@@ -14,3 +14,8 @@ ubuntu-*-cloudimg-console.log
 .powder
 *.crt
 *.key
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

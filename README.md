@@ -10,6 +10,20 @@ You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.c
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/stefansundin/rssbox)
 
+### Elastic Beanstalk
+
+Create environment:
+```
+git tag -a -m "First deploy" eb-v1
+eb init rssbox --platform "Ruby 2.5 (Puma)" --keyname id_rsa
+eb create --single --instance_type t2.micro
+```
+
+Deploy with:
+```
+eb deploy --staged
+```
+
 ### Configuration
 
 You need to get API keys for the respective services and populate the environment variables, e.g. by using an [.env](.env.example) file.
