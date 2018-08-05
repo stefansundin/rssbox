@@ -1263,6 +1263,14 @@ get "/opensearch.xml" do
   erb :opensearch
 end
 
+get "/health" do
+  if $redis.ping != "PONG"
+    return [500, "Redis error"]
+  end
+rescue Redis::CannotConnectError => e
+  return [500, "Redis connection error"]
+end
+
 if ENV["GOOGLE_VERIFICATION_TOKEN"]
   /(?:google)?(?<google_token>[0-9a-f]+)(?:\.html)?/ =~ ENV["GOOGLE_VERIFICATION_TOKEN"]
   get "/google#{google_token}.html" do
