@@ -12,11 +12,18 @@ You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.c
 
 ### Elastic Beanstalk
 
+If you are using the free tier, then use a t2.micro instance. If not, you can use a t1.micro with spot to get the lowest price.
+
 Create environment:
 ```
 git tag -a -m "First deploy" eb-v1
 eb init rssbox --platform "Ruby 2.5 (Puma)" --keyname id_rsa
 eb create --single --instance_type t2.micro
+```
+
+For spot:
+```
+eb create --single --instance_type t1.micro --envvars EC2_SPOT_PRICE=0.01
 ```
 
 Deploy with:
