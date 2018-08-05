@@ -26,6 +26,11 @@ For spot:
 eb create --single --instance_type t1.micro --envvars EC2_SPOT_PRICE=0.01
 ```
 
+With a load balancer:
+```
+eb create --instance_type t2.micro --envvars ASG_HEALTH_CHECK_TYPE=ELB
+```
+
 Deploy with:
 ```
 eb deploy --staged
