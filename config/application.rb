@@ -9,7 +9,7 @@ Bundler.require(:default, ENV["APP_ENV"])
 # set :environment, :production
 
 configure do
-  use Rack::SslEnforcer, only_hosts: /\.herokuapp\.com$/
+  use Rack::SslEnforcer, only_hosts: (ENV["SSL_ENFORCER_HOST"] || /\.herokuapp\.com$/)
   use SecureHeaders::Middleware
   set :erb, trim: "-"
   # Look up Rack::Mime::MIME_TYPES to see rack defaults
