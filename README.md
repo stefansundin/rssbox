@@ -4,7 +4,7 @@ This app uses the API of other websites and gives you an RSS feed in return. Qui
 
 To open `vlc://` links, see [vlc-protocol](https://github.com/stefansundin/vlc-protocol).
 
-You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.com/).
+You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.com/). An experimental Elastic Beanstalk version [is available](https://rssbox.us-west-2.elasticbeanstalk.com/).
 
 ## Roll your own
 
@@ -28,7 +28,7 @@ eb create --single --instance_type t1.micro --envvars EC2_SPOT_PRICE=0.01
 
 With a load balancer:
 ```
-eb create --instance_type t2.micro --envvars ASG_HEALTH_CHECK_TYPE=ELB
+eb create --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
 Deploy with:
