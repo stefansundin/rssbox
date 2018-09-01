@@ -729,7 +729,7 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
     return "Image not found."
   end
   response = HTTP.get(response.json["broadcast"]["image_url"])
-  content_type response.headers["content-type"].join(", ")
+  content_type response.headers["content-type"][0]
   response.body
 end
 
