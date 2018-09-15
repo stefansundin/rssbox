@@ -74,10 +74,12 @@ class String
     else
       uri.host
     end
+  rescue
+    "invalid-url"
   end
 
   def resolve_url(force=false)
-    url = Addressable::URI.parse(self).normalize.to_s
+    url = Addressable::URI.parse(self).normalize.to_s rescue self
     if !force
       dest = @@url_cache[url]
       if dest
