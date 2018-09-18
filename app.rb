@@ -130,6 +130,15 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     @username = CGI.unescape(username)
   end
 
+  @data.map do |t|
+    t = t["retweeted_status"] if t.has_key?("retweeted_status")
+    text = t["full_text"]
+    for entity in t["entities"]["urls"]
+      text.gsub!(entity["url"], entity["expanded_url"])
+    end
+    text.grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
+
   if params[:with_media] == "video"
     @data.select! { |t| t["extended_entities"] && t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
   elsif params[:with_media] == "picture"
@@ -248,6 +257,10 @@ get "/youtube/:channel_id/:username" do
   # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
   @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
 
+  @data.map do |video|
+    video["snippet"]["description"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
+
   if params[:q]
     q = params[:q].downcase
     @data.select! { |v| v["snippet"]["title"].downcase[q] }
@@ -290,6 +303,11 @@ get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
   response = Google.get("/plus/v1/people/#{id}/activities/public")
   raise(GoogleError, response) if !response.success?
   @data = response.json
+
+  @data["items"].map do |post|
+    post["object"]["body"] = CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags
+    post["object"]["body"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   @user = if @data["items"][0]
     @data["items"][0]["actor"]["displayName"]
@@ -522,6 +540,10 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     @data.select! { |post| post["live_status"] != "LIVE" }
   end
 
+  @data.map do |post|
+    post.slice("message", "description", "link").values.map(&:grep_urls)
+  end.flatten.tap { |urls| URL.resolve(urls) }
+
   @user = @data[0]["from"]["name"] rescue CGI.unescape(username)
   @title = @user
   if @type == "live"
@@ -660,6 +682,12 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   elsif type == "photos"
     @data["edge_owner_to_timeline_media"]["edges"].select! { |post| !post["node"]["is_video"] }
   end
+
+  @data["edge_owner_to_timeline_media"]["edges"].select do |post|
+    post["node"]["edge_media_to_caption"]["edges"][0]
+  end.map do |post|
+    post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   @title = @user
   @title += "'s #{type}" if type != "posts"
@@ -802,6 +830,10 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @data = response.json
   @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
+
+  @data.map do |track|
+    track["description"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   erb :soundcloud_feed
 end
@@ -980,6 +1012,10 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @data = response.json["videos"].select { |video| video["status"] != "recording" }
   @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(user)
 
+  @data.map do |video|
+    video["description"]
+  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
+
   @title = @user
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
@@ -1021,6 +1057,14 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   raise(SpeedrunError, response) if !response.success?
   @data = response.json["data"].reject { |run| run["videos"].nil? }
 
+  @data.map do |run|
+    [
+      run["videos"]["links"].map { |link| link["uri"] },
+      run["videos"]["text"],
+      run["comment"],
+    ].flatten.compact.map(&:grep_urls)
+  end.flatten.tap { |urls| URL.resolve(urls) }
+
   erb :speedrun_feed
 end
 
@@ -1053,6 +1097,10 @@ get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
   response = Ustream.get("/channels/#{id}/videos.json")
   raise(UstreamError, response) if !response.success?
   @data = response.json["videos"]
+
+  @data.map do |video|
+    video["description"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   erb :ustream_feed
 end
@@ -1205,6 +1253,10 @@ get "/imgur/:user_id/:username" do
     value = params[:min_score].to_i
     @data.select! { |image| image["score"] >= value }
   end
+
+  @data.map do |image|
+    image["description"]
+  end.flatten.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
   erb :imgur_feed
 end

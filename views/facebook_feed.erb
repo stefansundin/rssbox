@@ -21,7 +21,7 @@
     @type
   end
 
-  post["link"] = post["link"].resolve_url if post["link"]
+  post["link"] = URL.lookup(post["link"]) if post["link"]
   post["link"] = "https://www.facebook.com/video/embed?video_id=#{object_id}" if @edge == "videos" || (post["type"] == "video" && post["link"].start_with?("https://www.facebook.com/"))
   link = post["link"] || "https://www.facebook.com/#{post["id"]}"
 -%>

@@ -17,6 +17,7 @@ gem "secure_headers"
 gem "heroku-env"
 gem "activesupport"
 gem "nokogiri"
+gem "typhoeus"
 
 # dilbert feed
 gem "feedjira"
