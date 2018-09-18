@@ -831,9 +831,9 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
 
-  @data.map do |track|
-    track["description"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
+  @data.select do |track|
+    track["description"]
+  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
   erb :soundcloud_feed
 end
@@ -1099,8 +1099,8 @@ get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
   @data = response.json["videos"]
 
   @data.map do |video|
-    video["description"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
+    video["description"]
+  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
   erb :ustream_feed
 end
