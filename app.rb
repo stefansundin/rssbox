@@ -831,7 +831,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
 
-  @data.select do |track|
+  @data.map do |track|
     track["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
