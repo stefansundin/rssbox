@@ -25,12 +25,13 @@ class URL
   end
 
   def self.resolve(urls, force=false)
-    hydra = Typhoeus::Hydra.hydra
+    hydra = Typhoeus::Hydra.new(max_concurrency: ENV["TYPHOEUS_MAX_CONCURRENCY"] || 5)
     urls.uniq.each do |url|
       url = Addressable::URI.parse(url).normalize.to_s rescue url
       next if url_in_cache?(url) && !force
-      request = Typhoeus::Request.new(url)
-      request.on_complete(&request_complete(url))
+      request = Typhoeus::Request.new(url, timeout: 3)
+      request.on_complete(&request_complete(hydra, url))
+      request.on_body {} # make Typhoeus discard the body and save some RAM
       hydra.queue(request)
     end
     hydra.run
@@ -71,8 +72,7 @@ class URL
 
   private
 
-  # This is a simple closure to preserve the original url and to keep track of the number of redirects
-  def self.request_complete(original_url, redirect_counter=0)
+  def self.request_complete(hydra, original_url, redirect_counter=0)
     return lambda do |response|
       url = response.request.url
       # puts "#{url}: #{response.code}"
@@ -113,9 +113,10 @@ class URL
           end
         end
         if follow_redirect
-          request = Typhoeus::Request.new(redirect_url)
-          request.on_complete(&request_complete(original_url, redirect_counter+1))
-          Typhoeus::Hydra.hydra.queue(request)
+          request = Typhoeus::Request.new(redirect_url, timeout: 3)
+          request.on_complete(&request_complete(hydra, original_url, redirect_counter+1))
+          request.on_body {}
+          hydra.queue(request)
           return
         end
       end
