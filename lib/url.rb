@@ -4,17 +4,26 @@ class URL
   @@cache = {}
 
   def self.url_in_cache?(url)
-    @@cache.has_key?(url) || $redis.hexists("urls", url)
+    return true if @@cache.has_key?(url)
+    dest = $redis.hget("urls", url)
+    if dest
+      @@cache[url] = dest
+      return true
+    end
+    return false
   end
 
   def self.lookup(url)
     url = Addressable::URI.parse(url).normalize.to_s rescue url
-    if !@@cache.has_key?(url) && $redis.hexists("urls", url)
-      dest = $redis.hget("urls", url)
-      @@cache[url] = dest
-    end
     if @@cache.has_key?(url)
       dest = @@cache[url]
+    else
+      dest = $redis.hget("urls", url)
+      if dest
+        @@cache[url] = dest
+      end
+    end
+    if dest
       if dest == ""
         return url
       end
