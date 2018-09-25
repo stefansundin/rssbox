@@ -250,7 +250,7 @@ get "/youtube/:channel_id/:username" do
     response.json["items"]
   end.map { |v| v["id"]["videoId"] }
 
-  response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails", id: ids.join(",") })
+  response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
   raise(GoogleError, response) if !response.success?
   @data = response.json["items"]
 

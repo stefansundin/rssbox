@@ -10,7 +10,10 @@
 <%-
 @data.each do |video|
   id_extra = content_extra = nil
-  title = video["snippet"]["title"].to_line
+  duration = video["contentDetails"]["duration"].parse_pt
+  title = ""
+  title += "[#{duration.to_duration}] " if duration > 0
+  title += video["snippet"]["title"].to_line
   updated = video["snippet"]["publishedAt"]
   if video["liveStreamingDetails"]
     if video["liveStreamingDetails"]["actualStartTime"]

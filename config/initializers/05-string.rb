@@ -56,6 +56,16 @@ class String
     /^[-+]?\d+(\.\d+)?$/ === self
   end
 
+  def parse_pt
+    if /^PT(?:(?<h>\d+)H)?(?:(?<m>\d+)M)?(?:(?<s>\d+)S)?$/ =~ self
+      result = 0
+      result += 3600 * h.to_i if h
+      result += 60 * m.to_i if m
+      result += s.to_i if s
+      result
+    end
+  end
+
   def url_ext
     uri = Addressable::URI.parse(self)
     File.extname(uri.path)
