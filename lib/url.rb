@@ -38,7 +38,7 @@ class URL
     urls.uniq.each do |url|
       url = Addressable::URI.parse(url).normalize.to_s rescue url
       next if url_in_cache?(url) && !force
-      request = Typhoeus::Request.new(url, timeout: 3)
+      request = Typhoeus::Request.new(url, method: :head, timeout: 3)
       request.on_complete(&request_complete(hydra, url))
       request.on_body {} # make Typhoeus discard the body and save some RAM
       hydra.queue(request)
@@ -122,7 +122,7 @@ class URL
           end
         end
         if follow_redirect
-          request = Typhoeus::Request.new(redirect_url, timeout: 3)
+          request = Typhoeus::Request.new(redirect_url, method: :head, timeout: 3)
           request.on_complete(&request_complete(hydra, original_url, redirect_counter+1))
           request.on_body {}
           hydra.queue(request)
