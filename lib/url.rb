@@ -3,16 +3,6 @@
 class URL
   @@cache = {}
 
-  def self.url_in_cache?(url)
-    return true if @@cache.has_key?(url)
-    dest = $redis.hget("urls", url)
-    if dest
-      @@cache[url] = dest
-      return true
-    end
-    return false
-  end
-
   def self.lookup(url)
     url = Addressable::URI.parse(url).normalize.to_s rescue url
     dest = @@cache[url]
@@ -28,9 +18,17 @@ class URL
 
   def self.resolve(urls, force=false)
     hydra = Typhoeus::Hydra.new(max_concurrency: ENV["TYPHOEUS_MAX_CONCURRENCY"] || 5)
-    urls.uniq.each do |url|
-      url = Addressable::URI.parse(url).normalize.to_s rescue url
-      next if url_in_cache?(url) && !force
+    urls.map do |url|
+      Addressable::URI.parse(url).normalize.to_s rescue url
+    end.uniq.each do |url|
+      if !force
+        return if @@cache.has_key?(url)
+        dest = $redis.hget("urls", url)
+        if dest
+          @@cache[url] = dest
+          return
+        end
+      end
       request = Typhoeus::Request.new(url, method: :head, timeout: 3)
       request.on_complete(&request_complete(hydra, url))
       request.on_body {} # make Typhoeus discard the body and save some RAM
