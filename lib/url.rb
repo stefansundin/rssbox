@@ -15,14 +15,7 @@ class URL
 
   def self.lookup(url)
     url = Addressable::URI.parse(url).normalize.to_s rescue url
-    if @@cache.has_key?(url)
-      dest = @@cache[url]
-    else
-      dest = $redis.hget("urls", url)
-      if dest
-        @@cache[url] = dest
-      end
-    end
+    dest = @@cache[url]
     if dest
       if dest == ""
         return url
