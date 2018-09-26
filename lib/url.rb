@@ -22,11 +22,11 @@ class URL
       Addressable::URI.parse(url).normalize.to_s rescue url
     end.uniq.each do |url|
       if !force
-        return if @@cache.has_key?(url)
+        next if @@cache.has_key?(url)
         dest = $redis.hget("urls", url)
         if dest
           @@cache[url] = dest
-          return
+          next
         end
       end
       request = Typhoeus::Request.new(url, method: :head, timeout: 3)
