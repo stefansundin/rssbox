@@ -132,11 +132,10 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @data.map do |t|
     t = t["retweeted_status"] if t.has_key?("retweeted_status")
-    text = t["full_text"]
     for entity in t["entities"]["urls"]
-      text.gsub!(entity["url"], entity["expanded_url"])
+      t["full_text"].gsub!(entity["url"], entity["expanded_url"])
     end
-    text.grep_urls
+    t["full_text"].grep_urls
   end.flatten.tap { |urls| URL.resolve(urls) }
 
   if params[:with_media] == "video"

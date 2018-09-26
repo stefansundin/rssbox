@@ -16,9 +16,6 @@
     text = CGI.unescapeHTML(tweet["full_text"])
     t = tweet
   end
-  for entity in t["entities"]["urls"]
-    text.gsub!(entity["url"], entity["expanded_url"])
-  end
   if t["extended_entities"]
     for entity in t["extended_entities"]["media"]
       next if !entity["video_info"]
