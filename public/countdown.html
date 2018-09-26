@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+}
+</style>
+</head>
+<body>
+
+<div id="js-error">Please enable JavaScript.</div>
+<div id="date"></div>
+<div id="countdown"></div>
+
+<script>
+document.getElementById("js-error").remove();
+
+var countdown = document.getElementById("countdown");
+var then;
+
+function pad(s) {
+  return `0${s}`.slice(-2);
+}
+
+function pluralize(n) {
+  if (n == 1) return "";
+  return "s";
+}
+
+function init() {
+  // Parse query string, e.g: countdown.html?date=2018-09-27T03:30:00Z
+  var params = {};
+  window.location.search.substr(1).split("&").forEach(function(param) {
+    param = param.split("=");
+    params[param[0]] = param[1] ? decodeURIComponent(param[1]) : null;
+  });
+
+  var date = document.getElementById("date");
+
+  if (!params["date"]) {
+    date.innerText = "Missing date parameter.";
+    return;
+  }
+
+  then = Date.parse(params["date"]);
+  if (isNaN(then)) {
+    date.innerText = "Error parsing date.";
+    return;
+  }
+
+  var d = new Date(then);
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  date.innerText = `Countdown to ${d.getHours()}:${pad(d.getMinutes())}:${pad(d.getSeconds())} on ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}.`
+  date.title = `${params["date"]} (displayed in your timezone)`;
+
+  setInterval(update, 1000);
+  update();
+}
+
+function update() {
+  var passed = false;
+  var now = Date.now();
+  var diff = Math.floor((then - now) / 1000);
+
+  if (diff < 0) {
+    passed = true;
+    diff *= -1;
+  }
+
+  var seconds = diff % 60;
+  var minutes = Math.floor((diff % 3600) / 60);
+  var hours = Math.floor((diff % 86400) / 3600);
+  var days = Math.floor((diff % 2073600) / 86400);
+
+  var text = "";
+  if (!passed && diff < 3600) {
+    text += "Starting soon:";
+  }
+  else if (passed && diff < 3600) {
+    text += "This event just started:";
+  }
+  else if (passed) {
+    text += "This event already passed:";
+  }
+  else {
+    text += "Time remaining:";
+  }
+
+  if (days > 0) text += ` ${days} day${pluralize(days)}`;
+  if (days > 0 || hours > 0) text += ` ${hours} hour${pluralize(hours)}`;
+  if (days > 0 || hours > 0 || minutes > 0) text += ` ${minutes} minute${pluralize(minutes)}`;
+  text += ` ${seconds} second${pluralize(seconds)}`;
+
+  if (passed) {
+    text += " ago";
+  }
+
+  countdown.innerText = text;
+}
+
+init();
+</script>
+</body>
+</html>

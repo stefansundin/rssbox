@@ -25,7 +25,10 @@
       updated = Time.parse(video["liveStreamingDetails"]["scheduledStartTime"])
       id_extra = ":scheduled:#{updated}"
       title += " (scheduled for #{updated.readable(@tz)})"
-      content_extra = "<p>Live broadcast scheduled to start at: #{updated.readable(@tz)}.</p>"
+      content_extra = <<~EOF
+        <p>Live broadcast scheduled to start at: #{updated.readable(@tz)}.</p>
+        <iframe width="640" height="50" src="#{request.root_url}/countdown.html?date=#{updated}" frameborder="0" scrolling="yes" referrerpolicy="no-referrer"></iframe>
+      EOF
     end
   end
 -%>
