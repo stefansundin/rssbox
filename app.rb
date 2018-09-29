@@ -18,7 +18,13 @@ end
 get "/live" do
   content_type :html
   SecureHeaders.use_secure_headers_override(request, :live)
-  send_file File.join(settings.public_folder, 'live.html')
+  send_file File.join(settings.public_folder, "live.html")
+end
+
+get "/countdown" do
+  content_type :html
+  SecureHeaders.use_secure_headers_override(request, :countdown)
+  send_file File.join(settings.public_folder, "countdown.html")
 end
 
 get "/go" do
