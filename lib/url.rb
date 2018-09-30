@@ -17,28 +17,91 @@ class URL
   end
 
   def self.resolve(urls, force=false)
-    hydra = Typhoeus::Hydra.new(max_concurrency: ENV["TYPHOEUS_MAX_CONCURRENCY"] || 5)
-    urls.map do |url|
+    pending = urls.map do |url|
       Addressable::URI.parse(url).normalize.to_s rescue url
-    end.uniq.each do |url|
+    end.uniq.select do |url|
       if !force
-        next if @@cache.has_key?(url)
+        next false if @@cache.has_key?(url)
         dest = $redis.hget("urls", url)
         if dest
           @@cache[url] = dest
-          next
+          next false
         end
       end
-      request = Typhoeus::Request.new(url, method: :head, timeout: 3)
-      request.on_complete(&request_complete(hydra, url))
-      request.on_body {} # make Typhoeus discard the body and save some RAM
-      hydra.queue(request)
+      true
     end
-    hydra.run
+
+    threads = []
+    max_concurrency = Integer(ENV["URL_MAX_CONCURRENCY"] || 5)
+    num_threads = [max_concurrency, pending.length].min
+    while threads.length < num_threads
+      thread = Thread.new do
+        while url = pending.pop
+          URL.resolve_url(url)
+        end
+      end
+      threads.push(thread)
+    end
+    threads.map(&:join)
     return nil
   end
 
-  def self.save_resolution(url, dest)
+  def self.resolve_url(url)
+    dest = url
+    catch :done do
+      5.times do
+        uri = Addressable::URI.parse(dest)
+        throw :done if uri.host.nil?
+        opts = {
+          use_ssl: uri.scheme == "https",
+          open_timeout: 3,
+          read_timeout: 3,
+        }
+        Net::HTTP.start(uri.host, uri.port, opts) do |http|
+          response = http.head(uri.request_uri)
+          case response
+          when Net::HTTPRedirection then
+            if response["location"][0] == "/"
+              # relative redirect
+              uri = Addressable::URI.parse(dest)
+              next_url = uri.scheme + "://" + uri.host + response["location"]
+            elsif /^https?:\/\/./ =~ response["location"]
+              # absolute redirect
+              next_url = response["location"]
+            else
+              # bad redirect
+              throw :done
+            end
+            # Some servers do not encode the url properly, such as http://amzn.to/2aDg49F
+            next_uri = Addressable::URI.parse(next_url)
+            next_url = next_uri.normalize.to_s
+            if next_url.start_with?("https://bitly.com/a/warning") && next_uri.query_values["url"]
+              # http://bit.ly/2om6hZ4
+              # https://bitly.com/a/warning?hash=2om6hZ4&url=http://soundbar.uvtix.com/event/uv1609432840dt180407rm0/infected-mushroom-dj-set-in-dolby-atmos/
+              next_url = next_uri.query_values["url"]
+            end
+            if %w[
+              https://www.youtube.com/das_captcha
+              https://www.nytimes.com/glogin
+              https://www.facebook.com/unsupportedbrowser
+              https://play.spotify.com/error/browser-not-supported.php
+              https://www.linkedin.com/uas/login
+              https://www.theaustralian.com.au/remote/check_cookie.html
+              https://signin.aws.amazon.com/
+              https://accounts.google.com/ServiceLogin
+            ].any? { |s| next_url.start_with?(s) }
+              throw :done
+            end
+            dest = next_url
+          else
+            throw :done
+          end
+        end
+      rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError
+        throw :done
+      end
+    end
+
     # Remove SoundCloud tracking code
     if %r{^https?://soundcloud\.com/.+(?<tracking>/s-[0-9a-zA-Z]+)} =~ dest
       dest = dest.gsub(tracking, "")
@@ -68,59 +131,5 @@ class URL
     dest = "" if url == dest
     @@cache[url] = dest
     $redis.hset("urls", url, dest)
-  end
-
-  private
-
-  def self.request_complete(hydra, original_url, redirect_counter=0)
-    return lambda do |response|
-      url = response.request.url
-      # puts "#{url}: #{response.code}"
-      follow_redirect = (response.code >= 300 && response.code < 400)
-      if follow_redirect && redirect_counter < 5
-        location = response.headers["location"]
-        if location[0] == "/"
-          # relative redirect
-          uri = Addressable::URI.parse(url)
-          redirect_url = uri.scheme + "://" + uri.host + location
-        elsif /^https?:\/\/./ =~ location
-          # absolute redirect
-          redirect_url = location
-        else
-          # bad redirect
-          follow_redirect = false
-        end
-        if follow_redirect
-          # Some servers do not encode the url properly, such as http://amzn.to/2aDg49F
-          uri = Addressable::URI.parse(redirect_url)
-          redirect_url = uri.normalize.to_s
-          if redirect_url.start_with?("https://bitly.com/a/warning") && uri.query_values["url"]
-            # http://bit.ly/2om6hZ4
-            # https://bitly.com/a/warning?hash=2om6hZ4&url=http://soundbar.uvtix.com/event/uv1609432840dt180407rm0/infected-mushroom-dj-set-in-dolby-atmos/
-            redirect_url = uri.query_values["url"]
-          end
-          if %w[
-            https://www.youtube.com/das_captcha
-            https://www.nytimes.com/glogin
-            https://www.facebook.com/unsupportedbrowser
-            https://play.spotify.com/error/browser-not-supported.php
-            https://www.linkedin.com/uas/login
-            https://www.theaustralian.com.au/remote/check_cookie.html
-            https://signin.aws.amazon.com/
-            https://accounts.google.com/ServiceLogin
-          ].any? { |s| redirect_url.start_with?(s) }
-            follow_redirect = false
-          end
-        end
-        if follow_redirect
-          request = Typhoeus::Request.new(redirect_url, method: :head, timeout: 3)
-          request.on_complete(&request_complete(hydra, original_url, redirect_counter+1))
-          request.on_body {}
-          hydra.queue(request)
-          return
-        end
-      end
-      save_resolution(original_url, url)
-    end
   end
 end
