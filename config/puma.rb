@@ -4,13 +4,15 @@ ENV["APP_ENV"] ||= ENV["RACK_ENV"] || "development"
 environment(ENV["APP_ENV"])
 
 if ENV["APP_ENV"] == "development"
-  # better_errors and binding_of_caller works better with only one process and thread
-  workers(1)
+  # better_errors and binding_of_caller works better with only only the master process and one thread
   threads(1, 1)
 else
-  workers(ENV["WEB_CONCURRENCY"] || 3)
-  thread_count = ENV["WEB_THREADS"] || 5
-  threads(thread_count, thread_count)
+  if ENV["PUMA_WORKERS"]
+    workers(ENV["PUMA_WORKERS"].to_i)
+  end
+  if ENV["PUMA_MAX_THREADS"]
+    threads(0, ENV["PUMA_MAX_THREADS"].to_i)
+  end
 end
 
 preload_app!
