@@ -7,12 +7,12 @@ if ENV["APP_ENV"] == "development"
   # better_errors and binding_of_caller works better with only only the master process and one thread
   threads(1, 1)
 else
-  if ENV["PUMA_WORKERS"]
-    workers(ENV["PUMA_WORKERS"].to_i)
+  if ENV["WEB_CONCURRENCY"]
+    workers(ENV["WEB_CONCURRENCY"].to_i)
   end
-  if ENV["PUMA_MAX_THREADS"]
-    threads(0, ENV["PUMA_MAX_THREADS"].to_i)
-  end
+  # The number of threads to run per worker. Note that this also sets the minimum number of threads to the same value, which is a recommended approach, especially in a single-app environment such as Heroku. See https://github.com/puma/puma-heroku
+  threads_count = Integer(ENV["MAX_THREADS"] || 5)
+  threads(threads_count, threads_count)
 end
 
 preload_app!
