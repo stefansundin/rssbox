@@ -216,7 +216,7 @@ get "/youtube" do
 
   if query
     redirect "/youtube/#{channel_id}/#{username}?q=#{query}"
-  elsif params[:type]
+  elsif params[:type] == "live"
     url = "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
     url += "&tz=#{params[:tz]}" if params[:tz]
     redirect url
@@ -258,6 +258,11 @@ get "/youtube/:channel_id/:username" do
   response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
   raise(GoogleError, response) if !response.success?
   @data = response.json["items"]
+
+  # filter out all live streams that are not completed if we don't specifically want specific event types
+  if !params[:eventType]
+    @data.select! { |v| !v["liveStreamingDetails"] || v["liveStreamingDetails"]["actualEndTime"] }
+  end
 
   # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
   @data.select! { |v| v["snippet"]["channelId"] == @channel_id }

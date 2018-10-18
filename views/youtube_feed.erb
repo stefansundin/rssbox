@@ -16,7 +16,12 @@
   title += video["snippet"]["title"].to_line
   updated = video["snippet"]["publishedAt"]
   if video["liveStreamingDetails"]
-    if video["liveStreamingDetails"]["actualStartTime"]
+    if video["liveStreamingDetails"]["actualEndTime"]
+      updated = Time.parse(video["liveStreamingDetails"]["actualEndTime"])
+      id_extra = ":completed:#{updated}"
+      title += " (completed)"
+      content_extra = "<p>Live broadcast completed at: #{updated.readable(@tz)}.</p>"
+    elsif video["liveStreamingDetails"]["actualStartTime"]
       updated = Time.parse(video["liveStreamingDetails"]["actualStartTime"])
       id_extra = ":started:#{updated}"
       title += " (started)"
