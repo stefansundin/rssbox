@@ -106,7 +106,7 @@ get "/twitter" do
   end
 
   response = Twitter.get("/users/show.json", query: query)
-  return "Can't find that user. Sorry." if response.code == 404
+  return [response.code, response.json["errors"][0]["message"]] if response.json["errors"]
   raise(TwitterError, response) if !response.success?
 
   user_id = response.json["id_str"]
@@ -722,6 +722,7 @@ get "/periscope" do
   response = Periscope.get(url)
   return "That username does not exist." if response.code == 404
   return "That broadcast has expired." if response.code == 410
+  return "Please enter a username." if response.code/100 == 4
   raise(PeriscopeError, response) if !response.success?
   doc = Nokogiri::HTML(response.body)
   data = doc.at("div#page-container")["data-store"]
