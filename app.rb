@@ -136,14 +136,6 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     @username = CGI.unescape(username)
   end
 
-  @data.map do |t|
-    t = t["retweeted_status"] if t.has_key?("retweeted_status")
-    for entity in t["entities"]["urls"]
-      t["full_text"].gsub!(entity["url"], entity["expanded_url"])
-    end
-    t["full_text"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
-
   if params[:with_media] == "video"
     @data.select! { |t| t["extended_entities"] && t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
   elsif params[:with_media] == "picture"
@@ -151,6 +143,14 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   elsif params[:with_media]
     @data.select! { |t| t["extended_entities"] }
   end
+
+  @data.map do |t|
+    t = t["retweeted_status"] if t.has_key?("retweeted_status")
+    for entity in t["entities"]["urls"]
+      t["full_text"].gsub!(entity["url"], entity["expanded_url"])
+    end
+    t["full_text"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   erb :twitter_feed
 end
@@ -267,14 +267,14 @@ get "/youtube/:channel_id/:username" do
   # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
   @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
 
-  @data.map do |video|
-    video["snippet"]["description"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
-
   if params[:q]
     q = params[:q].downcase
     @data.select! { |v| v["snippet"]["title"].downcase[q] }
   end
+
+  @data.map do |video|
+    video["snippet"]["description"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   erb :youtube_feed
 end
@@ -314,16 +314,16 @@ get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
   raise(GoogleError, response) if !response.success?
   @data = response.json
 
-  @data["items"].map do |post|
-    post["object"]["body"] = CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags
-    post["object"]["body"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
-
   @user = if @data["items"][0]
     @data["items"][0]["actor"]["displayName"]
   else
     CGI.unescape(username)
   end
+
+  @data["items"].map do |post|
+    post["object"]["body"] = CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags
+    post["object"]["body"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   erb :googleplus_feed
 end
@@ -550,10 +550,6 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     @data.select! { |post| post["live_status"] != "LIVE" }
   end
 
-  @data.map do |post|
-    post.slice("message", "description", "link").values.map(&:grep_urls)
-  end.flatten.tap { |urls| URL.resolve(urls) }
-
   @user = @data[0]["from"]["name"] rescue CGI.unescape(username)
   @title = @user
   if @type == "live"
@@ -562,6 +558,10 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     @title += "'s #{@type}"
   end
   @title += " on Facebook"
+
+  @data.map do |post|
+    post.slice("message", "description", "link").values.map(&:grep_urls)
+  end.flatten.tap { |urls| URL.resolve(urls) }
 
   erb :facebook_feed
 end
@@ -693,15 +693,15 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     @data["edge_owner_to_timeline_media"]["edges"].select! { |post| !post["node"]["is_video"] }
   end
 
+  @title = @user
+  @title += "'s #{type}" if type != "posts"
+  @title += " on Instagram"
+
   @data["edge_owner_to_timeline_media"]["edges"].select do |post|
     post["node"]["edge_media_to_caption"]["edges"][0]
   end.map do |post|
     post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"].grep_urls
   end.flatten.tap { |urls| URL.resolve(urls) }
-
-  @title = @user
-  @title += "'s #{type}" if type != "posts"
-  @title += " on Instagram"
 
   erb :instagram_feed
 end
@@ -1026,13 +1026,13 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @data = response.json["data"]
   @user = @data[0]["user_name"] || CGI.unescape(user)
 
-  @data.map do |video|
-    video["description"]
-  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
-
   @title = @user
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
+
+  @data.map do |video|
+    video["description"]
+  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
   erb :twitch_feed
 end
