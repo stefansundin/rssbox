@@ -16,7 +16,7 @@ class String
   end
 
   def to_filename
-    self.to_line.gsub(/[*?"<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ").gsub(/\.+(\.[a-z0-9]+)$/, '\1')
+    self.to_line.gsub(/[*?"'<>|]/, "").gsub(":", ".").gsub(/[\/\\]/, "-").gsub(/\t+/, " ").gsub(/\.+(\.[a-z0-9]+)$/, '\1')
   end
 
   def titelize
@@ -54,6 +54,16 @@ class String
 
   def tz_offset?
     /^[-+]?\d+(\.\d+)?$/ === self
+  end
+
+  def parse_duration
+    if /^(?:(?<h>\d+)h)?(?:(?<m>\d+)m)?(?:(?<s>\d+)s)?$/ =~ self
+      result = 0
+      result += 3600 * h.to_i if h
+      result += 60 * m.to_i if m
+      result += s.to_i if s
+      result
+    end
   end
 
   def parse_pt
@@ -142,15 +152,16 @@ class String
       "<iframe width='853' height='480' src='https://player.vimeo.com/video/#{id}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?instagram\.com/p/(?<id>[^/?#]+)} =~ self
       "<iframe width='612' height='710' src='https://www.instagram.com/p/#{id}/embed/' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
-    elsif %r{^https?://(?:www\.)?twitch\.tv/(?:videos/(?<vod_id>\d+)|(?<channel_name>[^/]+)(?:/v/(?<vod_id>\d+))?).*(?:[?&#](?<t>t=[^&#]+))?} =~ self
-      # https://www.twitch.tv/videos/25133028
+    elsif %r{^https?://(?:www\.)?twitch\.tv/(?:videos/(?<vod_id>\d+)|(?<channel_name>[^/]+)(?:/(?:v|video)/(?<vod_id>\d+))?).*?(?:[?&#](?:t|time)=(?<t>[^&#]+))?} =~ self
+      # https://www.twitch.tv/videos/76877760?t=20h38m50s
       # https://www.twitch.tv/gamesdonequick
-      # https://www.twitch.tv/gamesdonequick/v/76877760?t=20h38m50s
+      # https://www.twitch.tv/gamesdonequick/video/76877760 (legacy url)
+      # https://www.twitch.tv/gamesdonequick/v/76877760 (legacy url)
       url = "https://player.twitch.tv/?"
-      url += vod_id ? "video=v#{vod_id}" : "channel=#{channel_name}"
+      url += vod_id ? "video=#{vod_id}" : "channel=#{channel_name}"
       url += "&time=#{t}" if t
       <<~EOF
-        <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy='no-referrer'></iframe>
+        <iframe width="853" height="480" src="#{url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
         <a href="#{url}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a>
       EOF
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self

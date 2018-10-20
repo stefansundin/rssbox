@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>twitch:<%= @id %></id>
-  <title><%= @title %></title>
+  <title><%= @title.esc %></title>
   <icon>https://www.twitch.tv/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.twitch.tv/<%= @user.downcase %>" rel="alternate" />
@@ -10,22 +10,20 @@
 <%- @data.each do |video| -%>
 
   <entry>
-    <id>twitch:video:<%= video["_id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= "* " if video["broadcast_type"] == "highlight" %>[<%= video["length"].to_i.to_duration %>] <%= video["title"].to_line.esc %></title>
-    <link href="<%= "https://www.twitch.tv/#{@user.downcase}/video/#{video["_id"][1..-1]}" %>" />
+    <id>twitch:video:<%= video["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= "* " if video["type"] == "highlight" %>[<%= video["duration"].parse_duration.to_duration %>] <%= video["title"].to_line.esc %></title>
+    <link href="https://www.twitch.tv/videos/<%= video["id"] %>" />
     <updated><%= Time.parse(video["created_at"]) %></updated>
-    <author><name><%= video["channel"]["display_name"].esc %></name></author>
+    <author><name><%= video["user_name"].esc %></name></author>
     <content type="html">
 <%= <<~EOF.esc
-  <p><em>#{video["channel"]["display_name"]} was #{video["game"].empty? ? "live" : "playing #{video["game"]}"}.</em></p>
-
-  <iframe width="620" height="378" src="https://player.twitch.tv/?video=#{video["_id"]}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+  <iframe width="620" height="378" src="https://player.twitch.tv/?video=#{video["id"]}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
   <p>
-    <a href="https://player.twitch.tv/?video=#{video["_id"]}" rel="noreferrer">Open embed</a> |
-    <a href="#{request.root_url}/twitch/watch?url=#{video["_id"]}&open">Open in VLC</a> |
-    <a href="#{request.root_url}/twitch/watch?url=#{video["_id"]}">Open in external program</a> |
-    <a href="#{request.root_url}/twitch/download?url=#{video["_id"]}">Download video</a>
+    <a href="https://player.twitch.tv/?video=#{video["id"]}" rel="noreferrer">Open embed</a> |
+    <a href="#{request.root_url}/twitch/watch?url=#{video["id"]}&open">Open in VLC</a> |
+    <a href="#{request.root_url}/twitch/watch?url=#{video["id"]}">Open in external program</a> |
+    <a href="#{request.root_url}/twitch/download?url=#{video["id"]}">Download video</a>
   </p>
 
   #{video["description"].linkify.to_paragraphs}

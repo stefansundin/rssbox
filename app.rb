@@ -882,28 +882,31 @@ get "/twitch" do
   return "Insufficient parameters" if params[:q].empty?
 
   if /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
-    # https://www.twitch.tv/videos/25133028 (legacy url)
+    # https://www.twitch.tv/videos/25133028
   elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/majinphil
-    # https://www.twitch.tv/gsl/video/25133028
+    # https://www.twitch.tv/gsl/video/25133028 (legacy url)
   else
     username = params[:q]
   end
 
   if vod_id
-    response = Twitch.get("/videos/v#{vod_id}")
+    response = Twitch.get("/videos", query: { id: vod_id })
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
-    data = response.json
-    username = data["channel"]["name"]
+    data = response.json["data"][0]
+    user_id = data["user_id"]
+    display_name = data["user_name"]
+  else
+    response = Twitch.get("/users", query: { login: username })
+    raise(TwitchError, response) if !response.success?
+    data = response.json["data"][0]
+    return "Can't find a user with that name. Sorry." if data.nil?
+    user_id = data["id"]
+    display_name = data["display_name"]
   end
 
-  response = Twitch.get("/channels/#{username}")
-  return "Can't find a user with that name. Sorry." if response.code == 404
-  raise(TwitchError, response) if !response.success?
-  data = response.json
-
-  redirect "/twitch/#{data["_id"]}/#{data["display_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+  redirect "/twitch/#{user_id}/#{display_name}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
 get "/twitch/download" do
@@ -913,11 +916,11 @@ get "/twitch/download" do
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (legacy url, redirects to the one above)
     # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
-    # https://www.twitch.tv/gsl/video/25133028
+    # https://www.twitch.tv/videos/25133028
+    # https://www.twitch.tv/gsl/video/25133028 (legacy url)
     # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
-    # https://www.twitch.tv/videos/25133028 (legacy url)
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
-    # https://player.twitch.tv/?video=v103620362
+    # https://player.twitch.tv/?video=v103620362 ("v" is optional)
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
@@ -933,17 +936,17 @@ get "/twitch/download" do
     redirect url
     return
   elsif vod_id
-    response = Twitch.get("/videos/v#{vod_id}")
+    response = Twitch.get("/videos", query: { id: vod_id })
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
-    data = response.json
+    data = response.json["data"][0]
 
     response = TwitchToken.get("/vods/#{vod_id}/access_token")
     raise(TwitchError, response) if !response.success?
     vod_data = response.json
 
     url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
-    fn = "#{data["created_at"].to_date} - #{data["channel"]["display_name"]} - #{data["title"]}.mp4".to_filename
+    fn = "#{data["created_at"].to_date} - #{data["user_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
     response = TwitchToken.get("/channels/#{channel_name}/access_token")
     return "Channel does not seem to exist." if response.code == 404
@@ -955,7 +958,7 @@ get "/twitch/download" do
     url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
     fn = "#{Time.now.to_date} - #{token_data["channel"]} live.mp4".to_filename
   end
-  "ffmpeg -i \"#{url}\" -acodec copy -vcodec copy -absf aac_adtstoasc \"#{fn}\""
+  "ffmpeg -i '#{url}' -acodec copy -vcodec copy -absf aac_adtstoasc '#{fn}'"
 end
 
 get "/twitch/watch" do
@@ -1016,12 +1019,12 @@ end
 get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
 
-  type = %w[all highlight archive].pick(params[:type]) || "all"
-  response = Twitch.get("/channels/#{user}/videos", query: { broadcast_type: type })
+  type = %w[all upload archive highlight].pick(params[:type]) || "all"
+  response = Twitch.get("/videos", query: { user_id: id, type: type })
   raise(TwitchError, response) if !response.success?
 
-  @data = response.json["videos"].select { |video| video["status"] != "recording" }
-  @user = @data[0]["channel"]["display_name"] rescue CGI.unescape(user)
+  @data = response.json["data"]
+  @user = @data[0]["user_name"] || CGI.unescape(user)
 
   @data.map do |video|
     video["description"]

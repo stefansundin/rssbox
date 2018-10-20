@@ -1,12 +1,11 @@
 # frozen_string_literal: true
-# https://github.com/justintv/Twitch-API/
+# https://dev.twitch.tv/docs/api/
 
 class TwitchError < HTTPError; end
 
 class Twitch < HTTP
-  BASE_URL = "https://api.twitch.tv/kraken"
+  BASE_URL = "https://api.twitch.tv/helix"
   HEADERS = {
-    "Accept" => "application/vnd.twitchtv.v3+json",
     "Client-ID" => ENV["TWITCH_CLIENT_ID"],
   }
   ERROR_CLASS = TwitchError
