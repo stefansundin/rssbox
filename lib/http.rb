@@ -38,7 +38,7 @@ class HTTP
       response = http.request_get(uri.request_uri, headers)
       return HTTPResponse.new(response, uri.to_s)
     end
-  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, EOFError
+  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, OpenSSL::SSL::SSLError, Zlib::BufError, EOFError
     self::ERROR_CLASS ||= HTTPError
     raise(self::ERROR_CLASS, $!)
   end
