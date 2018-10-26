@@ -9,7 +9,7 @@
 # docker build --squash -t stefansundin/rssbox .
 # docker push stefansundin/rssbox
 
-FROM stefansundin/ruby:2.5.1
+FROM stefansundin/ruby:2.5.3
 MAINTAINER stefansundin https://github.com/stefansundin/rssbox
 
 # install gem dependencies
