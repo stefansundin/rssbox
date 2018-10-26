@@ -684,13 +684,15 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
     if post["node"]["__typename"] == "GraphSidecar"
       post["nodes"] = Instagram.get_post(post["node"]["shortcode"], options, tokens)
+    else
+      post["nodes"] = [post["node"]]
     end
     post
   end
   if type == "videos"
-    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| post["node"]["is_video"] }
+    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| post["nodes"].any? { |node| node["is_video"] } }
   elsif type == "photos"
-    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| !post["node"]["is_video"] }
+    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| !post["nodes"].any? { |node| node["is_video"] } }
   end
 
   @title = @user

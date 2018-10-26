@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>instagram:<%= @user_id %></id>
-  <title><%= @title %></title>
+  <title><%= @title.esc %></title>
   <icon>https://www.instagram.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.instagram.com/<%= @user %>" rel="alternate" />
@@ -14,44 +14,42 @@ if @data["is_private"] && @data["edge_owner_to_timeline_media"]["edges"].empty?
 
   <entry>
     <id>instagram:user:<%= @user %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= reason %></title>
+    <title><%= reason.esc %></title>
     <link href="https://www.instagram.com/<%= @user %>/" />
     <updated></updated>
     <author><name><%= @data["full_name"] %></name></author>
-    <content type="html"><%= reason %></content>
+    <content type="html"><%= reason.esc %></content>
   </entry>
 <%- else -%>
 <%-
 @data["edge_owner_to_timeline_media"]["edges"].each do |post|
-  node = post["node"]
-  nodes = post["nodes"] || [node]
-  has_video = nodes.any? { |n| n["is_video"] }
-  text = node["edge_media_to_caption"]["edges"][0]["node"]["text"] if node["edge_media_to_caption"]["edges"][0]
+  has_video = post["nodes"].any? { |n| n["is_video"] }
+  text = post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"] if post["node"]["edge_media_to_caption"]["edges"][0]
 -%>
 
   <entry>
-    <id>instagram:post:<%= node["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= "[#{nodes.length}] " if node["__typename"] == "GraphSidecar" %><%= "Video: " if has_video %><%= text.to_line.esc || "No title" %></title>
-    <link href="https://www.instagram.com/p/<%= node["shortcode"] %>/" />
-    <updated><%= Time.at(node["taken_at_timestamp"]) %></updated>
+    <id>instagram:post:<%= post["node"]["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
+    <title><%= "[#{post["nodes"].length}] " if post["nodes"].length > 1 %><%= "Video: " if has_video %><%= text.to_line.esc || "No title" %></title>
+    <link href="https://www.instagram.com/p/<%= post["node"]["shortcode"] %>/" />
+    <updated><%= Time.at(post["node"]["taken_at_timestamp"]) %></updated>
     <author><name><%= @data["full_name"].esc %></name></author>
     <content type="html">
 <%=
 if has_video
   if @data["is_private"]
     <<~EOF.esc
-      <p>#{nodes.select { |n| n["is_video"] }.length} videos, but can't embed since the post is private.</p>
+      <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos, but can't embed since the post is private.</p>
     EOF
   else
     <<~EOF.esc
-      <p>#{nodes.select { |n| n["is_video"] }.length} videos.</p>
-      <iframe width="612" height="710" src="https://www.instagram.com/p/#{node["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos.</p>
+      <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["node"]["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
     EOF
   end
 end
 %>
 <%=
-nodes.select { |n| !n["is_video"] || @data["is_private"] }.map do |n|
+post["nodes"].select { |n| !n["is_video"] || @data["is_private"] }.map do |n|
   <<~EOF.esc
     <img src="#{n["display_url"]}" referrerpolicy="no-referrer">
   EOF
@@ -60,7 +58,7 @@ end.join("\n")
 <%= text.linkify.to_paragraphs.esc %>
 <%=
 <<~EOF.esc
-  <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{node["shortcode"]}/")}">Download with nice filename</a></p>
+  <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{post["node"]["shortcode"]}/")}">Download with nice filename</a></p>
 EOF
 -%>
     </content>
