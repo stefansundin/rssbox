@@ -22,7 +22,7 @@ class URL
     end.uniq.select do |url|
       if !force
         next false if @@cache.has_key?(url)
-        dest = $redis.hget("urls", url)
+        dest = $redis.get("url:#{url}")
         if dest
           @@cache[url] = dest
           next false
@@ -130,6 +130,6 @@ class URL
     # puts "#{url} => #{dest}"
     dest = "" if url == dest
     @@cache[url] = dest
-    $redis.hset("urls", url, dest)
+    $redis.set("url:#{url}", dest)
   end
 end

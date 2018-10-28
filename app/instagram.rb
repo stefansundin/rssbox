@@ -37,7 +37,7 @@ class Instagram < HTTP
 
   def self.get_post(id, opts={}, tokens={})
     return @@cache[id] if @@cache[id]
-    value = $redis.hget("instagram", id)
+    value = $redis.get("instagram:#{id}")
     if value
       @@cache[id] = JSON.parse(value)
       return @@cache[id]
@@ -56,7 +56,7 @@ class Instagram < HTTP
       post.slice("is_video", "display_url", "video_url")
     end
 
-    $redis.hset("instagram", id, @@cache[id].to_json)
+    $redis.set("instagram:#{id}", @@cache[id].to_json)
     return @@cache[id]
   end
 end

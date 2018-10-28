@@ -15,7 +15,7 @@ class Speedrun < HTTP
   def self.resolve_id(type, id)
     @@cache[type] ||= {}
     return @@cache[type][id] if @@cache[type][id]
-    value = $redis.hget("speedrun", "#{type}:#{id}")
+    value = $redis.get("speedrun:#{type}:#{id}")
     if value
       @@cache[type][id] = if type == "level-subcategories"
         JSON.parse(value)
@@ -43,7 +43,7 @@ class Speedrun < HTTP
       redis_value = value.to_json
     end
 
-    $redis.hset("speedrun", "#{type}:#{id}", redis_value)
+    $redis.set("speedrun:#{type}:#{id}", redis_value)
     @@cache[type][id] = value
     return value
   end
