@@ -5,7 +5,7 @@
   <title><%= @title.esc %></title>
   <icon>https://www.twitch.tv/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
-  <link href="https://www.twitch.tv/<%= @user.downcase %>" rel="alternate" />
+  <link href="<%= @alternate_url %>" rel="alternate" />
   <updated><%= Time.parse(@data[0]["created_at"]) if @data[0] %></updated>
 <%- @data.each do |video| -%>
 

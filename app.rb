@@ -883,7 +883,12 @@ end
 get "/twitch" do
   return "Insufficient parameters" if params[:q].empty?
 
-  if /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
+  if /twitch\.tv\/directory\/game\/(?<game_name>[^\/?#]+)/ =~ params[:q]
+    # https://www.twitch.tv/directory/game/Perfect%20Dark
+  elsif /twitch\.tv\/directory/ =~ params[:q]
+    # https://www.twitch.tv/directory/all/tags/7cefbf30-4c3e-4aa7-99cd-70aabb662f27
+    return "Unsupported url. Sorry."
+  elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
     # https://www.twitch.tv/videos/25133028
   elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/majinphil
@@ -892,23 +897,25 @@ get "/twitch" do
     username = params[:q]
   end
 
-  if vod_id
+  if game_name
+    response = Twitch.get("/games", query: { name: game_name })
+    raise(TwitchError, response) if !response.success?
+    data = response.json["data"][0]
+    return "Can't find a game with that name." if data.nil?
+    redirect "/twitch/directory/game/#{data["id"]}/#{game_name}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+  elsif vod_id
     response = Twitch.get("/videos", query: { id: vod_id })
     return "Video does not exist." if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
-    user_id = data["user_id"]
-    display_name = data["user_name"]
+    redirect "/twitch/#{data["user_id"]}/#{data["user_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   else
     response = Twitch.get("/users", query: { login: username })
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
     return "Can't find a user with that name. Sorry." if data.nil?
-    user_id = data["id"]
-    display_name = data["display_name"]
+    redirect "/twitch/#{data["id"]}/#{data["display_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   end
-
-  redirect "/twitch/#{user_id}/#{display_name}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
 get "/twitch/download" do
@@ -1018,6 +1025,27 @@ get "/twitch/watch" do
   end
 end
 
+get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
+  @id = id
+
+  type = %w[all upload archive highlight].pick(params[:type]) || "all"
+  response = Twitch.get("/videos", query: { game_id: id, type: type })
+  raise(TwitchError, response) if !response.success?
+
+  @data = response.json["data"]
+  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/directory/game/#{game_name}").normalize.to_s
+
+  @title = game_name
+  @title += " highlights" if type == "highlight"
+  @title += " on Twitch"
+
+  @data.map do |video|
+    video["description"]
+  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
+
+  erb :twitch_feed
+end
+
 get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
 
@@ -1026,9 +1054,10 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   raise(TwitchError, response) if !response.success?
 
   @data = response.json["data"]
-  @user = @data[0]["user_name"] || CGI.unescape(user)
+  user = @data[0]["user_name"] || CGI.unescape(user)
+  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
 
-  @title = @user
+  @title = user
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
 
