@@ -1035,6 +1035,9 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
   @data = response.json["data"]
   @alternate_url = Addressable::URI.parse("https://www.twitch.tv/directory/game/#{game_name}").normalize.to_s
 
+  # live broadcasts show up here too, and the simplest way of filtering them out seems to be to see if thumbnail_url is populated or not
+  @data.reject! { |v| v["thumbnail_url"].empty? }
+
   @title = game_name
   @title += " highlights" if type == "highlight"
   @title += " on Twitch"
@@ -1056,6 +1059,9 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @data = response.json["data"]
   user = @data[0]["user_name"] || CGI.unescape(user)
   @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
+
+  # live broadcasts show up here too, and the simplest way of filtering them out seems to be to see if thumbnail_url is populated or not
+  @data.reject! { |v| v["thumbnail_url"].empty? }
 
   @title = user
   @title += "'s highlights" if type == "highlight"
