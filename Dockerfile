@@ -2,9 +2,11 @@
 # docker pull stefansundin/rssbox
 # docker run -i -t -p 8080:8080 stefansundin/rssbox
 # docker run -i -t --entrypoint bin/cons stefansundin/rssbox
-# docker run --rm --name=rssbox-redis redis redis-server --appendonly yes
-# docker run --rm --name=rssbox --env-file=.dockerenv --link=rssbox-redis:redis -i -t -p 8080:8080 stefansundin/rssbox
-# docker run --rm --link=rssbox-redis:redis -t redis redis-cli -h redis monitor
+
+# docker network create rssbox
+# docker run --rm --network=rssbox --name=redis redis redis-server --appendonly yes
+# docker run --rm --network=rssbox --name=rssbox --env-file=.dockerenv -i -t -p 8080:8080 stefansundin/rssbox
+# docker run --rm --network=rssbox -t redis redis-cli -h redis monitor
 
 # docker build --squash -t stefansundin/rssbox .
 # docker push stefansundin/rssbox
