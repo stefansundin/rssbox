@@ -1219,6 +1219,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   @username = CGI.unescape(username)
 
   response = Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
+  return "That user no longer exist." if response.code == 404
   raise(DailymotionError, response) if !response.success?
   @data = response.json["list"]
 
