@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /$
-Allow: /live$
 Disallow: /

@@ -8,6 +8,10 @@ require "open-uri"
 
 before do
   content_type :text
+  # only allow search engine indexing of the main page
+  if request.path != "/"
+    headers({"X-Robots-Tag" => "noindex"})
+  end
 end
 
 get "/" do
