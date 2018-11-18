@@ -9,6 +9,14 @@ class Twitter < HTTP
     "Authorization" => "Bearer #{ENV["TWITTER_ACCESS_TOKEN"]}",
   }
   ERROR_CLASS = TwitterError
+
+  def self.get(*args, &block)
+    response = super(*args, &block)
+    if response.headers.key?("x-rate-limit-remaining")
+      $metrics[:ratelimit].set({ service: "twitter" }, response.headers["x-rate-limit-remaining"][0].to_i)
+    end
+    return response
+  end
 end
 
 error TwitterError do |e|

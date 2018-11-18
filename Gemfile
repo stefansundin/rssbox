@@ -17,6 +17,7 @@ gem "secure_headers"
 gem "heroku-env"
 gem "activesupport"
 gem "nokogiri"
+gem "prometheus-client", require: "prometheus/middleware/exporter"
 
 # dilbert feed
 gem "feedjira"

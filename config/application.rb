@@ -12,6 +12,8 @@ configure do
   use Rack::Deflater
   use Rack::SslEnforcer, only_hosts: (ENV["SSL_ENFORCER_HOST"] || /\.herokuapp\.com$/)
   use SecureHeaders::Middleware
+  use Prometheus::Middleware::Exporter
+
   set :protection, :except => [:frame_options] # Disable things that secure_headers handles
   set :erb, trim: "-"
   # Look up Rack::Mime::MIME_TYPES to see rack defaults

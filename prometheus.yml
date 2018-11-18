@@ -1,0 +1,13 @@
+global:
+  scrape_interval: "15s"
+  scrape_timeout: "10s"
+  evaluation_interval: "15s"
+
+scrape_configs:
+- job_name: "rssbox"
+  metrics_path: "/metrics"
+  scheme: "http"
+  static_configs:
+  - targets:
+    - "web:80"
+    # - "host.docker.internal:3000"

@@ -131,5 +131,7 @@ class URL
     dest = "" if url == dest
     @@cache[url] = dest
     $redis.set("url:#{url}", dest)
+
+    $metrics[:urls].increment
   end
 end
