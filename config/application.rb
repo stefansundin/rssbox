@@ -5,6 +5,9 @@ ENV["APP_ENV"] ||= "development"
 require "bundler/setup"
 Bundler.require(:default, ENV["APP_ENV"])
 
+app_path = File.expand_path("../..", __FILE__)
+Dir["#{app_path}/lib/*.rb"].each { |f| require f }
+
 # uncomment to get production error pages in development
 # set :environment, :production
 
@@ -12,6 +15,7 @@ configure do
   use Rack::Deflater
   use Rack::SslEnforcer, only_hosts: (ENV["SSL_ENFORCER_HOST"] || /\.herokuapp\.com$/)
   use SecureHeaders::Middleware
+  use XRobotsTag
   use Prometheus::Middleware::Exporter
 
   set :protection, :except => [:frame_options] # Disable things that secure_headers handles
@@ -32,8 +36,5 @@ configure :development do
   end
 end
 
-# require things
-app_path = File.expand_path("../..", __FILE__)
 Dir["#{app_path}/config/initializers/*.rb"].each { |f| require f }
-Dir["#{app_path}/lib/*.rb"].each { |f| require f }
 Dir["#{app_path}/app/**/*.rb"].each { |f| require f }
