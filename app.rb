@@ -150,7 +150,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @data.map do |t|
     t = t["retweeted_status"] if t.has_key?("retweeted_status")
-    for entity in t["entities"]["urls"]
+    t["entities"]["urls"].each do |entity|
       t["full_text"].gsub!(entity["url"], entity["expanded_url"])
     end
     t["full_text"].grep_urls

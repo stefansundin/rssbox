@@ -17,7 +17,7 @@
     t = tweet
   end
   if t["extended_entities"]
-    for entity in t["extended_entities"]["media"]
+    t["extended_entities"]["media"].each do |entity|
       next if !entity["video_info"]
       video = entity["video_info"]["variants"].sort do |a,b|
         if a["content_type"].start_with?("video/") && b["content_type"].start_with?("video/")
@@ -36,7 +36,7 @@
     end
   end
   if t["entities"]["media"]
-    for media in t["entities"]["media"]
+    t["entities"]["media"].each do |media|
       text += " #{media["media_url_https"]}:large"
     end
   end
