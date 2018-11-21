@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-ENV["APP_ENV"] ||= "development"
+ENV["APP_ENV"] ||= ENV["RACK_ENV"] || "development"
 
 # Load secure_headers rake task
 require "bundler/setup"
