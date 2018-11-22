@@ -8,3 +8,8 @@ Logs on the instances are available at:
 - `/var/log/puma/puma.log`
 
 While testing, it is a lot faster to deploy if there is only one instance running.
+
+To export a deployable zip, use:
+```
+git archive --format zip -9 -o rssbox.zip HEAD
+```
