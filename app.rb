@@ -1031,6 +1031,7 @@ end
 
 get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
   @id = id
+  @type = "game"
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
   response = Twitch.get("/videos", query: { game_id: id, type: type })
@@ -1055,6 +1056,7 @@ end
 
 get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
+  @type = "user"
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
   response = Twitch.get("/videos", query: { user_id: id, type: type })
