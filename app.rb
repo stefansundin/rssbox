@@ -243,7 +243,11 @@ get "/youtube/:channel_id/:username" do
   end
 
   ids = if params[:eventType]
-    params[:eventType].split(",").map do |eventType|
+    eventTypes = params[:eventType].split(",")
+    if eventTypes.any? { |type| !%w[completed live upcoming].include?(type) }
+      return [400, "Invalid eventType. Valid types: completed live upcoming."]
+    end
+    eventTypes.map do |eventType|
       query[:eventType] = eventType
       response = Google.get("/youtube/v3/search", query: query)
       raise(GoogleError, response) if !response.success?
