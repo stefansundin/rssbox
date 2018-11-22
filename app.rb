@@ -120,9 +120,9 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   response = Twitter.get("/statuses/user_timeline.json", query: {
     user_id: id,
     count: 100,
-    include_rts: params[:include_rts] || "1",
-    exclude_replies: params[:exclude_replies] || "0",
-    tweet_mode: "extended"
+    tweet_mode: "extended",
+    include_rts: %w[0 1].pick(params[:include_rts]) || "1",
+    exclude_replies: %w[0 1].pick(params[:exclude_replies]) || "0",
   })
   status response.code
   return response.body if response.code == 401

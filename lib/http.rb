@@ -16,16 +16,16 @@ class HTTP
       end
     end
 
+    uri = Addressable::URI.parse(url).normalize
+
     if options[:query]
-      params = options[:query].map { |k,v| "#{k}=#{v}" }.join("&")
-      if url["?"]
-        url += "&"+params
+      if uri.query_values.nil?
+        uri.query_values = options[:query]
       else
-        url += "?"+params
+        uri.query_values = uri.query_values.merge(options[:query])
       end
     end
 
-    uri = Addressable::URI.parse(url).normalize
     opts = {
       use_ssl: uri.scheme == "https",
       open_timeout: 10,
