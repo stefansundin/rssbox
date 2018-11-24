@@ -41,6 +41,7 @@
   <entry>
     <id>youtube:video:<%= video["id"] %><%= id_extra %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= title.esc %></title>
+    <original_title><%= video["snippet"]["title"].to_line.esc %></original_title>
     <link href="https://www.youtube.com/watch?v=<%= video["id"] %>" />
     <updated><%= updated %></updated>
     <author><name><%= @username.esc %></name></author>
