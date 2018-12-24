@@ -44,7 +44,7 @@ class Instagram < HTTP
     end
 
     response = Instagram.get("/p/#{id}/", opts, tokens)
-    raise(InstagramError, response) if !response.success?
+    raise(InstagramError, response) if !response.success? || !response.json
     post = response.json["graphql"]["shortcode_media"]
 
     @@cache[id] = if post["__typename"] == "GraphSidecar"
