@@ -28,7 +28,7 @@ get "/countdown" do
 end
 
 get "/go" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
     redirect "/twitter?#{params.to_querystring}"
@@ -81,12 +81,12 @@ get "/go" do
 end
 
 get "/twitter" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if params[:q]["twitter.com/i/"] || params[:q]["twitter.com/who_to_follow/"]
-    return "Unsupported url. Sorry."
+    return [404, "Unsupported url. Sorry."]
   elsif params[:q]["twitter.com/hashtag/"]
-    return "This app does not support hashtags. Sorry."
+    return [404, "This app does not support hashtags. Sorry."]
   elsif /twitter\.com\/intent\/.+[?&]user_id=(?<user_id>\d+)/ =~ params[:q]
     # https://twitter.com/intent/user?user_id=34313404
     # https://twitter.com/intent/user?user_id=71996998
@@ -124,9 +124,8 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     include_rts: %w[0 1].pick(params[:include_rts]) || "1",
     exclude_replies: %w[0 1].pick(params[:exclude_replies]) || "0",
   })
-  status response.code
-  return response.body if response.code == 401
-  return "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing." if response.code == 404
+  return [response.code, response.body] if response.code == 401
+  return [response.code, "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing."] if response.code == 404
   raise(TwitterError, response) if !response.success?
 
   @data = response.json
@@ -156,7 +155,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/youtube" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
@@ -192,7 +191,7 @@ get "/youtube" do
       # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
       response = HTTP.get(response.redirect_url)
     end
-    return "Could not find the user. Please try with a video url instead." if response.code == 404
+    return [response.code, "Could not find the user. Please try with a video url instead."] if response.code == 404
     raise(GoogleError, response) if !response.success?
     doc = Nokogiri::HTML(response.body)
     channel_id = doc.at("meta[itemprop='channelId']")["content"]
@@ -284,7 +283,7 @@ get "/youtube/:channel_id/:username" do
 end
 
 get "/googleplus" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
   params[:q] = params[:q].gsub(" ", "+") # spaces in urls is a mess
 
   if /plus\.google\.com\/(u\/\d+\/)?(?<user>\+[a-zA-Z0-9]+)/ =~ params[:q]
@@ -298,7 +297,7 @@ get "/googleplus" do
   end
 
   response = Google.get("/plus/v1/people/#{CGI.escape(user)}")
-  return "Can't find a page with that name. Sorry." if response.code == 404
+  return [response.code, "Can't find a page with that name. Sorry."] if response.code == 404
   raise(GoogleError, response) if !response.success?
   data = response.json
   user_id = data["id"]
@@ -333,7 +332,7 @@ get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/vimeo" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /vimeo\.com\/user(?<user_id>\d+)/ =~ params[:q]
     # https://vimeo.com/user7103699
@@ -365,7 +364,7 @@ end
 
 get "/facebook" do
   return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
   params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q]["facebookcorewwwi.onion"]
 
   if /https:\/\/www\.facebook\.com\/plugins\/.+[?&]href=(?<href>.+)$/ =~ params[:q]
@@ -388,8 +387,8 @@ get "/facebook" do
   end
 
   response = Facebook.get("/", query: { id: id, metadata: "1" })
-  return "Can't find a page with that name. Sorry." if response.code == 404
-  return "#{Facebook::BASE_URL}/#{id} returned code #{response.code}." if response.code == 400
+  return [response.code, "Can't find a page with that name. Sorry."] if response.code == 404
+  return [response.code, "#{Facebook::BASE_URL}/#{id} returned code #{response.code}."] if response.code == 400
   raise(FacebookError, response) if !response.success?
   data = response.json
   if data["metadata"]["fields"].any? { |field| field["name"] == "from" }
@@ -407,7 +406,7 @@ get "/facebook" do
     data = response.json
   end
 
-  return "Please use a link directly to the Facebook page." if !data["id"].numeric?
+  return [404, "Please use a link directly to the Facebook page."] if !data["id"].numeric?
   redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
 end
 
@@ -429,7 +428,6 @@ get "/facebook/download" do
     type = response.json["metadata"]["type"]
     if type == "video"
       response = Facebook.get("/", query: { id: id, fields: "source,created_time,title,description,live_status,from" })
-      status response.code
       data = response.json
       fn = "#{data["created_time"].to_date} - #{data["title"] || data["description"] || data["from"]["name"]}#{" (live)" if data["live_status"]}.mp4".to_filename
       url = if data["live_status"] == "LIVE"
@@ -443,7 +441,7 @@ get "/facebook/download" do
         return {
           url: url,
           filename: fn,
-          live: (data["live_status"] == "LIVE")
+          live: (data["live_status"] == "LIVE"),
         }.to_json
       end
 
@@ -469,7 +467,7 @@ get "/facebook/download" do
 
       redirect url
     else
-      return "Unknown type (#{type})."
+      return [404, "Unknown type (#{type})."]
     end
   else
     if response.json["error"]["code"] == 100
@@ -494,19 +492,18 @@ get "/facebook/download" do
             content_type :json
             return {
               url: url,
-              filename: fn
+              filename: fn,
             }.to_json
           end
           redirect url
         else
-          return "Video/photo not found."
+          return [404, "Video/photo not found."]
         end
       else
-        return "https://www.facebook.com/#{id} returned #{response.code}"
+        return [response.code, "https://www.facebook.com/#{id} returned #{response.code}"]
       end
     else
-      status response.code
-      return response.json.to_json
+      return [response.code, response.json.to_json]
     end
   end
 end
@@ -530,7 +527,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
   end
 
   response = Facebook.get("/#{id}/#{@edge}", query: query)
-  return "#{Facebook::BASE_URL}/#{id}/#{@edge} returned code #{response.code}." if response.code == 400
+  return [response.code, "#{Facebook::BASE_URL}/#{id}/#{@edge} returned code #{response.code}."] if response.code == 400
   raise(FacebookError, response) if !response.success?
 
   @data = response.json["data"]
@@ -571,16 +568,16 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/instagram" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/4KaPsKSjni/
     response = Instagram.get("/p/#{post_id}/")
-    return "This post does not exist or is a private post." if response.code == 404
+    return [response.code, "This post does not exist or is a private post."] if response.code == 404
     raise(InstagramError, response) if !response.success?
     user = response.json["graphql"]["shortcode_media"]["owner"]
   elsif params[:q]["instagram.com/explore/"]
-    return "This app does not support hashtags. Sorry."
+    return [404, "This app does not support hashtags. Sorry."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
   else
@@ -614,12 +611,11 @@ get "/instagram/download" do
   end
 
   response = Instagram.get("/p/#{post_id}/")
-  return "Please use a URL directly to a post." if !response.success?
+  return [404, "Please use a URL directly to a post."] if !response.success?
   data = response.json["graphql"]["shortcode_media"]
 
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
-    status response.code
     created_at = Time.at(data["taken_at_timestamp"])
     caption = data["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
 
@@ -635,7 +631,7 @@ get "/instagram/download" do
       url = data["video_url"] || data["display_url"]
       return [{
         url: url,
-        filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename
+        filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename,
       }].to_json
     end
   end
@@ -677,8 +673,8 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   end
 
   response = Instagram.get("/#{username}/", options, tokens)
-  return "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1" if response.code == 404
-  return "The sessionid expired!" if params[:sessionid] && response.code == 302
+  return [response.code, "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1"] if response.code == 404
+  return [401, "The sessionid expired!"] if params[:sessionid] && response.code == 302
   raise(InstagramError, response) if !response.success? || !response.json
 
   @data = response.json["graphql"]["user"]
@@ -713,7 +709,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
 end
 
 get "/periscope" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /(?:periscope|pscp)\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
     # https://www.periscope.tv/w/1gqxvBmMZdexB
@@ -731,9 +727,9 @@ get "/periscope" do
     "https://www.periscope.tv/#{CGI.escape(username)}"
   end
   response = Periscope.get(url)
-  return "That username does not exist." if response.code == 404
-  return "That broadcast has expired." if response.code == 410
-  return "Please enter a username." if response.code/100 == 4
+  return [response.code, "That username does not exist."] if response.code == 404
+  return [response.code, "That broadcast has expired."] if response.code == 410
+  return [response.code, "Please enter a username."] if response.code/100 == 4
   raise(PeriscopeError, response) if !response.success?
   doc = Nokogiri::HTML(response.body)
   data = doc.at("div#page-container")["data-store"]
@@ -765,13 +761,11 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   # Can't just redirect either since it looks at the referer header, and most web based RSS clients will send that
   # For whatever reason, the accessVideoPublic endpoint doesn't require a session_id
   response = Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
-  status response.code
   cache_control :public, :max_age => 31556926 # cache a long time
-  return "Image not found." if response.code == 404
+  return [response.code, "Image not found."] if response.code == 404
   raise(PeriscopeError, response) if !response.success?
   if response.json["broadcast"]["image_url"].empty?
-    status 404
-    return "Image not found."
+    return [404, "Image not found."]
   end
   response = HTTP.get(response.json["broadcast"]["image_url"])
   content_type response.headers["content-type"][0]
@@ -779,7 +773,7 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
 end
 
 get "/soundcloud" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
@@ -790,15 +784,15 @@ get "/soundcloud" do
   response = Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
   if response.code == 302
     uri = Addressable::URI.parse(response.json["location"])
-    return "URL does not resolve to a user." if !uri.path.start_with?("/users/")
+    return [404, "URL does not resolve to a user."] if !uri.path.start_with?("/users/")
     id = uri.path[/\d+/]
   elsif response.code == 404 && username.numeric?
     response = Soundcloud.get("/users/#{username}")
-    return "Can't find a user with that id. Sorry." if response.code == 404
+    return [response.code, "Can't find a user with that id. Sorry."] if response.code == 404
     raise(SoundcloudError, response) if !response.success?
     id = response.json["id"]
   elsif response.code == 404
-    return "Can't find a user with that name. Sorry."
+    return [response.code, "Can't find a user with that name. Sorry."]
   else
     raise(SoundcloudError, response)
   end
@@ -814,10 +808,10 @@ get "/soundcloud/download" do
   url = params[:url]
   url = "https://#{url}" if !url.start_with?("http:", "https:")
   response = Soundcloud.get("/resolve", query: { url: url })
-  return "URL does not resolve." if response.code == 404
+  return [response.code, "URL does not resolve."] if response.code == 404
   raise(SoundcloudError, response) if response.code != 302
   uri = Addressable::URI.parse(response.json["location"])
-  return "URL does not resolve to a track." if !uri.path.start_with?("/tracks/")
+  return [404, "URL does not resolve to a track."] if !uri.path.start_with?("/tracks/")
   response = Soundcloud.get("#{uri.path}/stream")
   raise(SoundcloudError, response) if response.code != 302
   media_url = response.json["location"]
@@ -825,12 +819,11 @@ get "/soundcloud/download" do
   if env["HTTP_ACCEPT"] == "application/json"
     response = Soundcloud.get("#{uri.path}")
     content_type :json
-    status response.code
     data = response.json
     created_at = Time.parse(data["created_at"])
     return {
       url: media_url,
-      filename: "#{created_at.to_date} - #{data["title"]}.mp3".to_filename
+      filename: "#{created_at.to_date} - #{data["title"]}.mp3".to_filename,
     }.to_json
   end
 
@@ -841,7 +834,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   @id = id
 
   response = Soundcloud.get("/users/#{id}/tracks")
-  return "That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
+  return [404, "That user no longer exist."] if response.code == 500 && response.body == '{"error":"Match failed"}'
   raise(SoundcloudError, response) if !response.success?
 
   @data = response.json
@@ -856,7 +849,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/mixcloud" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /mixcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.mixcloud.com/infected-live/infected-mushroom-liveedc-las-vegas-21-5-2014/
@@ -865,7 +858,7 @@ get "/mixcloud" do
   end
 
   response = Mixcloud.get("/#{username}/")
-  return "Can't find a user with that name. Sorry." if response.code == 404
+  return [response.code, "Can't find a user with that name. Sorry."] if response.code == 404
   raise(MixcloudError, response) if !response.success?
   data = response.json
 
@@ -874,7 +867,7 @@ end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
   response = Mixcloud.get("/#{username}/cloudcasts/")
-  return "That username no longer exist." if response.code == 404
+  return [response.code, "That username no longer exist."] if response.code == 404
   raise(MixcloudError, response) if !response.success?
 
   @data = response.json["data"]
@@ -885,13 +878,13 @@ get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
 end
 
 get "/twitch" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /twitch\.tv\/directory\/game\/(?<game_name>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/directory/game/Perfect%20Dark
   elsif /twitch\.tv\/directory/ =~ params[:q]
     # https://www.twitch.tv/directory/all/tags/7cefbf30-4c3e-4aa7-99cd-70aabb662f27
-    return "Unsupported url. Sorry."
+    return [404, "Unsupported url. Sorry."]
   elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
     # https://www.twitch.tv/videos/25133028
   elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
@@ -905,24 +898,27 @@ get "/twitch" do
     response = Twitch.get("/games", query: { name: game_name })
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
-    return "Can't find a game with that name." if data.nil?
+    return [404, "Can't find a game with that name."] if data.nil?
     redirect "/twitch/directory/game/#{data["id"]}/#{game_name}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   elsif vod_id
     response = Twitch.get("/videos", query: { id: vod_id })
-    return "Video does not exist." if response.code == 404
+    return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
     redirect "/twitch/#{data["user_id"]}/#{data["user_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   else
     response = Twitch.get("/users", query: { login: username })
+    return [response.code, "The username contains invalid characters."] if response.code == 400
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
-    return "Can't find a user with that name. Sorry." if data.nil?
+    return [404, "Can't find a user with that name. Sorry."] if data.nil?
     redirect "/twitch/#{data["id"]}/#{data["display_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   end
 end
 
 get "/twitch/download" do
+  return [400, "Insufficient parameters"] if params[:url].empty?
+
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
@@ -942,15 +938,15 @@ get "/twitch/download" do
 
   if clip_slug
     response = HTTP.get("https://clips.twitch.tv/api/v2/clips/#{clip_slug}/status")
-    return "Clip does not seem to exist." if response.code == 404
+    return [response.code, "Clip does not seem to exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     url = response.json["quality_options"][0]["source"]
-    return "Can't find clip." if url.nil?
+    return [404, "Can't find clip."] if url.nil?
     redirect url
     return
   elsif vod_id
     response = Twitch.get("/videos", query: { id: vod_id })
-    return "Video does not exist." if response.code == 404
+    return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
 
@@ -962,7 +958,7 @@ get "/twitch/download" do
     fn = "#{data["created_at"].to_date} - #{data["user_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
     response = TwitchToken.get("/channels/#{channel_name}/access_token")
-    return "Channel does not seem to exist." if response.code == 404
+    return [response.code, "Channel does not seem to exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
 
     data = response.json
@@ -975,6 +971,8 @@ get "/twitch/download" do
 end
 
 get "/twitch/watch" do
+  return [400, "Insufficient parameters"] if params[:url].empty?
+
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
@@ -994,13 +992,13 @@ get "/twitch/watch" do
 
   if clip_slug
     response = HTTP.get("https://clips.twitch.tv/api/v2/clips/#{clip_slug}/status")
-    return "Clip does not seem to exist." if response.code == 404
+    return [response.code, "Clip does not seem to exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     streams = response.json["quality_options"].map { |s| s["source"] }
-    return "Can't find clip." if streams.empty?
+    return [404, "Can't find clip."] if streams.empty?
   elsif vod_id
     response = TwitchToken.get("/vods/#{vod_id}/access_token")
-    return "Video does not exist." if response.code == 404
+    return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json
     playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
@@ -1009,7 +1007,7 @@ get "/twitch/watch" do
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
     response = TwitchToken.get("/channels/#{channel_name}/access_token")
-    return "Channel does not seem to exist." if response.code == 404
+    return [response.code, "Channel does not seem to exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
 
     data = response.json
@@ -1017,7 +1015,7 @@ get "/twitch/watch" do
     playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
 
     response = HTTP.get(playlist_url)
-    return "Channel does not seem to be online." if response.code == 404
+    return [response.code, "Channel does not seem to be online."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
   end
@@ -1081,7 +1079,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
 end
 
 get "/speedrun" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /speedrun\.com\/run\/(?<run_id>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/run/1zx0qkez
@@ -1099,7 +1097,7 @@ get "/speedrun" do
     game = response.headers["location"][0].split("/")[-1]
     response = Speedrun.get("/games/#{game}")
   end
-  return "Can't find a game with that name. Sorry." if response.code == 404
+  return [response.code, "Can't find a game with that name. Sorry."] if response.code == 404
   raise(SpeedrunError, response) if !response.success?
   data = response.json["data"]
 
@@ -1126,7 +1124,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
 end
 
 get "/ustream" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   url = if /^https?:\/\/(www\.)?ustream\.tv\// =~ params[:q]
     # http://www.ustream.tv/recorded/74562214
@@ -1141,7 +1139,7 @@ get "/ustream" do
     doc = Nokogiri::HTML(open("http://www.ustream.tv/channel/#{channel_id}"))
     channel_title = doc.at("meta[property='og:title']")["content"]
   rescue
-    return "Could not find the channel."
+    return [404, "Could not find the channel."]
   end
 
   redirect "/ustream/#{channel_id}/#{channel_title}"
@@ -1168,20 +1166,20 @@ get "/ustream/download" do
   elsif params[:url].numeric?
     id = params[:url]
   else
-    return "Please use a link directly to a video."
+    return [404, "Please use a link directly to a video."]
   end
 
   response = Ustream.get("/videos/#{id}.json")
-  return "Video does not exist." if response.code == 404
-  return "#{Ustream::BASE_URL}/videos/#{id}.json returned code #{response.code}." if response.code == 401
+  return [response.code, "Video does not exist."] if response.code == 404
+  return [response.code, "#{Ustream::BASE_URL}/videos/#{id}.json returned code #{response.code}."] if response.code == 401
   raise(UstreamError, response) if !response.success?
   url = response.json["video"]["media_urls"]["flv"]
-  return "#{Ustream::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something." if url.nil?
+  return [404, "#{Ustream::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something."] if url.nil?
   redirect url
 end
 
 get "/dailymotion" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /dailymotion\.com\/video\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q] || /dai\.ly\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
@@ -1225,7 +1223,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   @username = CGI.unescape(username)
 
   response = Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
-  return "That user no longer exist." if response.code == 404
+  return [response.code, "That user no longer exist."] if response.code == 404
   raise(DailymotionError, response) if !response.success?
   @data = response.json["list"]
 
@@ -1233,7 +1231,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
 end
 
 get "/imgur" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /imgur\.com\/user\/(?<username>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/user/thebookofgray
@@ -1257,19 +1255,19 @@ get "/imgur" do
   if image_id
     response = Imgur.get("/gallery/image/#{image_id}")
     response = Imgur.get("/image/#{image_id}") if !response.success?
-    return "Can't identify #{image_id} as an image or gallery." if !response.success?
+    return [404, "Can't identify #{image_id} as an image or gallery."] if !response.success?
     raise(ImgurError, response) if !response.success?
     user_id = response.json["data"]["account_id"]
     username = response.json["data"]["account_url"]
   elsif album_id
     response = Imgur.get("/album/#{album_id}")
-    return "Can't identify #{album_id} as an album." if response.code == 404
+    return [response.code, "Can't identify #{album_id} as an album."] if response.code == 404
     raise(ImgurError, response) if !response.success?
     user_id = response.json["data"]["account_id"]
     username = response.json["data"]["account_url"]
   elsif username
     response = Imgur.get("/account/#{CGI.escape(username)}")
-    return "Can't find a user with that name. Sorry. If you want a feed for a subreddit, enter \"r/#{username}\"." if response.code == 404
+    return [response.code, "Can't find a user with that name. Sorry. If you want a feed for a subreddit, enter \"r/#{username}\"."] if response.code == 404
     raise(ImgurError, response) if !response.success?
     user_id = response.json["data"]["id"]
     username = response.json["data"]["url"]
@@ -1320,7 +1318,7 @@ get "/imgur/:user_id/:username" do
 end
 
 get "/svtplay" do
-  return "Insufficient parameters" if params[:q].empty?
+  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /https?:\/\/(?:www\.)?svtplay\.se\/video\/\d+\/(?<program>[^\/]+)/ =~ params[:q]
     # https://www.svtplay.se/video/7181623/veckans-brott/veckans-brott-sasong-12-avsnitt-10
@@ -1400,12 +1398,10 @@ if ENV["BING_VERIFICATION_TOKEN"]
 end
 
 error do |e|
-  status 500
-  "Sorry, a nasty error occurred: #{e}"
+  [500, "Sorry, a nasty error occurred: #{e}"]
 end
 
 error Sinatra::NotFound do
   content_type :text
-  status 404
-  "Sorry, that route does not exist."
+  [404, "Sorry, that route does not exist."]
 end
