@@ -32,6 +32,9 @@ h2 {
 progress {
   width: 100%;
 }
+input[type="submit"] {
+  min-width: 130px;
+}
 
 .input-group {
   margin-top: 10px;

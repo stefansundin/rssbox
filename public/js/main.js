@@ -64,6 +64,60 @@ $(document).ready(function() {
     });
   });
 
+  $("form[method=get]").submit(function(event) {
+    var form = $(this);
+    var action = form.attr("action");
+    var qs = form.serialize();
+    form.find("[name=type]").detach();
+
+    var submit = form.find("input[type='submit']");
+    submit.attr("data-original-value", submit.attr("value"));
+    submit.attr("value", "Working...");
+    form.find("input").prop("disabled", true);
+
+    fetch(`${action}?${qs}`, {
+      headers: { "Accept": "application/json" },
+    }).then(async function(response) {
+      submit.attr("value", submit.attr("data-original-value"));
+      form.find("input").prop("disabled", false);
+      if (!response.ok) {
+        alert(await response.text());
+        return;
+      }
+      var url;
+      if (response.redirected) {
+        url = response.url;
+      }
+      else {
+        var data = await response.json();
+        if (data.startsWith("/")) {
+          // local feed
+          var pathname = window.location.pathname;
+          if (pathname.endsWith("/")) {
+            pathname = pathname.substr(0, pathname.length-1);
+          }
+          url = `${window.location.protocol}//${window.location.host}${pathname}${data}`;
+          // initiate a request just to get a head start on resolving urls
+          fetch(url);
+        }
+        else {
+          // external feed
+          url = data;
+        }
+      }
+      $("#feed-url").val(url);
+      $("#feed-modal").modal("show");
+      $("#feed-url").select();
+    });
+
+    event.preventDefault();
+  });
+
+  $("#copy-button").click(function() {
+    $("#feed-url").select();
+    document.execCommand("copy");
+  });
+
   $("[data-submit-type]").click(function() {
     var form = $(this).parents("form");
     var val = $(this).attr("data-submit-type");
@@ -71,7 +125,7 @@ $(document).ready(function() {
     if (form.attr("action") == "youtube") {
       $('<input type="hidden" name="tz">').val(-new Date().getTimezoneOffset()/60).insertAfter(this);
     }
-    form.find("[type=submit]").click();
+    form.submit();
   });
   $(window).bind("pageshow", function() {
     $("[name=type]").detach(); // remove type inputs which remain when using the back button

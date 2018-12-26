@@ -10,6 +10,19 @@ before do
   content_type :text
 end
 
+after do
+  if env["HTTP_ACCEPT"] == "application/json" && @response.redirect?
+    content_type :json
+    status 200
+    location = @response.headers["Location"]
+    @response.headers.delete("Location")
+    if location.start_with?(@request.root_url)
+      location = location[@request.root_url.length..-1]
+    end
+    body location.to_json
+  end
+end
+
 get "/" do
   SecureHeaders.use_secure_headers_override(request, :index)
   erb :index

@@ -95,7 +95,7 @@
       <div class="input-group-append">
         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu dropdown-menu-right">
-          <a class="dropdown-item" data-submit-type="posts">All posts (default)</a>
+          <a class="dropdown-item" data-submit-type="">All posts (default)</a>
           <a class="dropdown-item" data-submit-type="live">Live videos</a>
           <a class="dropdown-item" data-submit-type="videos">Videos</a>
           <a class="dropdown-item" data-submit-type="photos">Photos</a>
@@ -117,7 +117,7 @@
       <div class="input-group-append">
         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu dropdown-menu-right">
-          <a class="dropdown-item" data-submit-type="posts">All posts (default)</a>
+          <a class="dropdown-item" data-submit-type="">All posts (default)</a>
           <a class="dropdown-item" data-submit-type="videos">Videos</a>
           <a class="dropdown-item" data-submit-type="photos">Photos</a>
           <div class="dropdown-divider"></div>
@@ -299,6 +299,25 @@
     <h2>Credits</h2>
 
     <p>Made by <a href="https://stefansundin.github.io/">Stefan Sundin</a>.</p>
+  </div>
+
+  <div class="modal" id="feed-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <label for="feed-url" class="col-form-label">Feed URL:</label>
+          <form class="input-group">
+            <input class="form-control" type="text" id="feed-url" placeholder="Feed URL">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-primary" id="copy-button">Copy</button>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <%- if request.host == "rssbox.herokuapp.com" -%>
