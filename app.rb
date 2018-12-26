@@ -76,7 +76,7 @@ get "/go" do
   elsif /^https?:\/\/(?:www\.)?svtplay\.se/ =~ params[:q]
     redirect "/svtplay?#{params.to_querystring}"
   else
-    "Unknown service"
+    return [404, "Unknown service"]
   end
 end
 
@@ -214,9 +214,9 @@ get "/youtube" do
   end
 
   if query
-    redirect "/youtube/#{channel_id}/#{username}?q=#{query}"
+    redirect "/youtube/#{channel_id}/#{CGI.escape(username)}?q=#{CGI.escape(query)}"
   elsif params[:type] == "live"
-    url = "/youtube/#{channel_id}/#{username}?eventType=live,upcoming"
+    url = "/youtube/#{channel_id}/#{CGI.escape(username)}?eventType=live,upcoming"
     url += "&tz=#{params[:tz]}" if params[:tz]
     redirect url
   elsif channel_id
@@ -224,7 +224,7 @@ get "/youtube" do
   elsif playlist_id
     redirect "https://www.youtube.com/feeds/videos.xml?playlist_id=#{playlist_id}"
   else
-    "Could not find the channel. Sorry."
+    return [404, "Could not find the channel. Sorry."]
   end
 end
 
@@ -307,7 +307,7 @@ get "/googleplus" do
     username = data["displayName"]
   end
 
-  redirect "/googleplus/#{user_id}/#{username}"
+  redirect "/googleplus/#{user_id}/#{CGI.escape(username)}"
 end
 
 get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
@@ -358,7 +358,7 @@ get "/vimeo" do
   if user_id
     redirect "https://vimeo.com/user#{user_id}/videos/rss"
   else
-    "Could not find the channel. Sorry."
+    return [404, "Could not find the channel. Sorry."]
   end
 end
 
@@ -599,7 +599,7 @@ get "/instagram" do
   if user
     redirect "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
   else
-    "Can't find a user with that name. Sorry."
+    return [404, "Can't find a user with that name. Sorry."]
   end
 end
 
@@ -736,7 +736,7 @@ get "/periscope" do
   json = JSON.parse(data)
   username, user_id = json["UserCache"]["usernames"].first
 
-  redirect "/periscope/#{user_id}/#{username}"
+  redirect "/periscope/#{user_id}/#{CGI.escape(username)}"
 end
 
 get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
@@ -862,7 +862,7 @@ get "/mixcloud" do
   raise(MixcloudError, response) if !response.success?
   data = response.json
 
-  redirect "/mixcloud/#{data["username"]}/#{data["name"]}"
+  redirect "/mixcloud/#{data["username"]}/#{CGI.escape(data["name"])}"
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
@@ -1142,7 +1142,7 @@ get "/ustream" do
     return [404, "Could not find the channel."]
   end
 
-  redirect "/ustream/#{channel_id}/#{channel_title}"
+  redirect "/ustream/#{channel_id}/#{CGI.escape(channel_title)}"
 end
 
 get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
@@ -1212,9 +1212,9 @@ get "/dailymotion" do
   if response.success?
     user_id = response.json["id"]
     username = response.json["username"]
-    redirect "/dailymotion/#{user_id}/#{username}"
+    redirect "/dailymotion/#{user_id}/#{CGI.escape(username)}"
   else
-    "Could not find a user with the name #{user}. Sorry."
+    return [404, "Could not find a user with the name #{user}. Sorry."]
   end
 end
 
@@ -1240,7 +1240,7 @@ get "/imgur" do
   elsif /(?:(?:imgur|reddit)\.com)?\/?r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
-    redirect "/imgur/r/#{subreddit}#{"?#{params[:type]}" if !params[:type].empty?}"
+    redirect "/imgur/r/#{CGI.escape(subreddit)}#{"?#{params[:type]}" if !params[:type].empty?}"
     return
   elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] && username != "i"
     # https://thebookofgray.imgur.com/
@@ -1274,9 +1274,9 @@ get "/imgur" do
   end
 
   if user_id.nil?
-    "This image was probably uploaded anonymously. Sorry."
+    return [404, "This image was probably uploaded anonymously. Sorry."]
   else
-    redirect "/imgur/#{user_id}/#{username}#{"?#{params[:type]}" if !params[:type].empty?}"
+    redirect "/imgur/#{user_id}/#{CGI.escape(username)}#{"?#{params[:type]}" if !params[:type].empty?}"
   end
 end
 
@@ -1332,7 +1332,7 @@ get "/svtplay" do
   if program
     redirect "https://www.svtplay.se/#{program}/atom.xml"
   else
-    "Could not find the program. Sorry."
+    return [404, "Could not find the program. Sorry."]
   end
 end
 
