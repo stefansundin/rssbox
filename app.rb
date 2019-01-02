@@ -549,7 +549,7 @@ get "/instagram" do
   end
 
   if user
-    redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{data["username"]}", query_values: params.slice(:type)).normalize.to_s
+    redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}", query_values: params.slice(:type)).normalize.to_s
   else
     return [404, "Can't find a user with that name. Sorry."]
   end
@@ -954,7 +954,7 @@ get "/twitch/watch" do
     return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json
-    playlist_url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{vod_data["sig"]}&nauth=#{vod_data["token"]}").normalize.to_s
+    playlist_url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{data["sig"]}&nauth=#{data["token"]}").normalize.to_s
 
     response = HTTP.get(playlist_url)
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
