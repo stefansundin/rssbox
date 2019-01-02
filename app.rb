@@ -44,41 +44,41 @@ get "/go" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
-    redirect "/twitter?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/twitter", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.|gaming\.)?youtu(?:\.be|be\.com)/ =~ params[:q]
-    redirect "/youtube?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/youtube", query_values: params).normalize.to_s
   elsif /^https?:\/\/plus\.google\.com/ =~ params[:q]
-    redirect "/googleplus?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/googleplus", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?facebook\.com/ =~ params[:q]
-    redirect "/facebook?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/facebook", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?instagram\.com/ =~ params[:q]
-    redirect "/instagram?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/instagram", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?(?:periscope|pscp)\.tv/ =~ params[:q]
-    redirect "/periscope?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/periscope", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?soundcloud\.com/ =~ params[:q]
-    redirect "/soundcloud?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/soundcloud", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?mixcloud\.com/ =~ params[:q]
-    redirect "/mixcloud?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/mixcloud", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.|go\.)?twitch\.tv/ =~ params[:q]
-    redirect "/twitch?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/twitch", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?speedrun\.com/ =~ params[:q]
-    redirect "/speedrun?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/speedrun", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?ustream\.tv/ =~ params[:q]
-    redirect "/ustream?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/ustream", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?dailymotion\.com/ =~ params[:q]
-    redirect "/dailymotion?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/dailymotion", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?vimeo\.com/ =~ params[:q]
-    redirect "/vimeo?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/vimeo", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:[a-z0-9]+\.)?imgur\.com/ =~ params[:q]
-    redirect "/imgur?#{params.to_querystring}"
-  elsif /^https?:\/\/\medium\.com\/(?<user>@?[^\/?&#]+)/ =~ params[:q]
-    redirect "https://medium.com/feed/#{user}"
+    redirect Addressable::URI.new(path: "/imgur", query_values: params).normalize.to_s
+  elsif /^https?:\/\/medium\.com\/(?<user>@?[^\/?&#]+)/ =~ params[:q]
+    redirect Addressable::URI.parse("https://medium.com/feed/#{user}").normalize.to_s
   elsif /^https?:\/\/(?<name>[a-z0-9\-]+)\.blogspot\./ =~ params[:q]
-    redirect "https://#{name}.blogspot.com/feeds/posts/default"
+    redirect Addressable::URI.parse("https://#{name}.blogspot.com/feeds/posts/default").normalize.to_s
   elsif /^https?:\/\/groups\.google\.com\/forum\/#!(?:[a-z]+)\/(?<name>[^\/?&#]+)/ =~ params[:q]
-    redirect "https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50"
-  elsif /^https?:\/\/(?<user>[a-zA-Z0-9\-]+)\.deviantart\.com/ =~ params[:q]
-    redirect "https://backend.deviantart.com/rss.xml?type=deviation&q=by%3A#{user}+sort%3Atime"
+    redirect Addressable::URI.parse("https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50").normalize.to_s
+  elsif /^https?:\/\/www\.deviantart\.com\/(?<user>[^\/]+)/ =~ params[:q]
+    redirect "https://backend.deviantart.com/rss.xml" + Addressable::URI.new(query: "type=deviation&q=by:#{user} sort:time").normalize.to_s
   elsif /^(?<baseurl>https?:\/\/[a-zA-Z0-9\-]+\.tumblr\.com)/ =~ params[:q]
     redirect "#{baseurl}/rss"
   elsif /^https?:\/\/itunes\.apple\.com\/.+\/id(?<id>\d+)/ =~ params[:q]
@@ -87,7 +87,7 @@ get "/go" do
     raise(HTTPError, response) if !response.success?
     redirect response.json["results"][0]["feedUrl"]
   elsif /^https?:\/\/(?:www\.)?svtplay\.se/ =~ params[:q]
-    redirect "/svtplay?#{params.to_querystring}"
+    redirect Addressable::URI.new(path: "/svtplay", query_values: params).normalize.to_s
   else
     return [404, "Unknown service"]
   end
@@ -124,7 +124,7 @@ get "/twitter" do
 
   user_id = response.json["id_str"]
   screen_name = response.json["screen_name"].or(response.json["name"])
-  redirect "/twitter/#{user_id}/#{screen_name}#{"?#{params[:type]}" if !params[:type].empty?}"
+  redirect Addressable::URI.new(path: "/twitter/#{user_id}/#{screen_name}", query: params[:type]).normalize.to_s
 end
 
 get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
@@ -199,7 +199,7 @@ get "/youtube" do
   end
 
   if user
-    response = HTTP.get("https://www.youtube.com/#{CGI.escape(user)}")
+    response = HTTP.get("https://www.youtube.com/#{user}")
     if response.redirect?
       # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
       response = HTTP.get(response.redirect_url)
@@ -227,15 +227,13 @@ get "/youtube" do
   end
 
   if query
-    redirect "/youtube/#{channel_id}/#{CGI.escape(username)}?q=#{CGI.escape(query)}"
+    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }).normalize.to_s
   elsif params[:type] == "live"
-    url = "/youtube/#{channel_id}/#{CGI.escape(username)}?eventType=live,upcoming"
-    url += "&tz=#{params[:tz]}" if params[:tz]
-    redirect url
+    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { eventType: "live,upcoming" }.merge(params.slice(:tz))).normalize.to_s
   elsif channel_id
-    redirect "https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}"
+    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s
   elsif playlist_id
-    redirect "https://www.youtube.com/feeds/videos.xml?playlist_id=#{playlist_id}"
+    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s
   else
     return [404, "Could not find the channel. Sorry."]
   end
@@ -309,7 +307,7 @@ get "/googleplus" do
     user = "+#{user}" if user[0] != "+" && !user.numeric?
   end
 
-  response = Google.get("/plus/v1/people/#{CGI.escape(user)}")
+  response = Google.get("/plus/v1/people/#{user}")
   return [response.code, "Can't find a page with that name. Sorry."] if response.code == 404
   raise(GoogleError, response) if !response.success?
   data = response.json
@@ -320,7 +318,7 @@ get "/googleplus" do
     username = data["displayName"]
   end
 
-  redirect "/googleplus/#{user_id}/#{CGI.escape(username)}"
+  redirect Addressable::URI.new(path: "/googleplus/#{user_id}/#{username}").normalize.to_s
 end
 
 get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
@@ -420,7 +418,7 @@ get "/facebook" do
   end
 
   return [404, "Please use a link directly to the Facebook page."] if !data["id"].numeric?
-  redirect "/facebook/#{data["id"]}/#{data["username"] || data["name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+  redirect Addressable::URI.new(path: "/facebook/#{data["id"]}/#{data["username"] || data["name"]}", query_values: params.slice(:type)).normalize.to_s
 end
 
 get "/facebook/download" do
@@ -539,7 +537,7 @@ get "/instagram" do
   end
 
   if name
-    response = Instagram.get("/#{CGI.escape(name)}/")
+    response = Instagram.get("/#{name}/")
     if response.success?
       user = response.json["graphql"]["user"]
     else
@@ -551,7 +549,7 @@ get "/instagram" do
   end
 
   if user
-    redirect "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+    redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{data["username"]}", query_values: params.slice(:type)).normalize.to_s
   else
     return [404, "Can't find a user with that name. Sorry."]
   end
@@ -678,7 +676,7 @@ get "/periscope" do
   url = if broadcast_id
     "https://www.periscope.tv/w/#{broadcast_id}"
   else
-    "https://www.periscope.tv/#{CGI.escape(username)}"
+    "https://www.periscope.tv/#{username}"
   end
   response = Periscope.get(url)
   return [response.code, "That username does not exist."] if response.code == 404
@@ -690,7 +688,7 @@ get "/periscope" do
   json = JSON.parse(data)
   username, user_id = json["UserCache"]["usernames"].first
 
-  redirect "/periscope/#{user_id}/#{CGI.escape(username)}"
+  redirect Addressable::URI.new(path: "/periscope/#{user_id}/#{username}").normalize.to_s
 end
 
 get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
@@ -755,7 +753,7 @@ get "/soundcloud" do
   raise(SoundcloudError, response) if !response.success?
   data = response.json
 
-  redirect "/soundcloud/#{data["id"]}/#{data["permalink"]}"
+  redirect Addressable::URI.new(path: "/soundcloud/#{data["id"]}/#{data["permalink"]}").normalize.to_s
 end
 
 get "/soundcloud/download" do
@@ -816,7 +814,7 @@ get "/mixcloud" do
   raise(MixcloudError, response) if !response.success?
   data = response.json
 
-  redirect "/mixcloud/#{data["username"]}/#{CGI.escape(data["name"])}"
+  redirect Addressable::URI.new(path: "/mixcloud/#{data["username"]}/#{data["name"]}").normalize.to_s
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
@@ -836,6 +834,7 @@ get "/twitch" do
 
   if /twitch\.tv\/directory\/game\/(?<game_name>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/directory/game/Perfect%20Dark
+    game_name = Addressable::URI.unescape(game_name)
   elsif /twitch\.tv\/directory/ =~ params[:q]
     # https://www.twitch.tv/directory/all/tags/7cefbf30-4c3e-4aa7-99cd-70aabb662f27
     return [404, "Unsupported url. Sorry."]
@@ -853,20 +852,20 @@ get "/twitch" do
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
     return [404, "Can't find a game with that name."] if data.nil?
-    redirect "/twitch/directory/game/#{data["id"]}/#{game_name}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+    redirect Addressable::URI.new(path: "/twitch/directory/game/#{data["id"]}/#{game_name}", query_values: params.slice(:type)).normalize.to_s
   elsif vod_id
     response = Twitch.get("/videos", query: { id: vod_id })
     return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
-    redirect "/twitch/#{data["user_id"]}/#{data["user_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+    redirect Addressable::URI.new(path: "/twitch/#{data["user_id"]}/#{data["user_name"]}", query_values: params.slice(:type)).normalize.to_s
   else
     response = Twitch.get("/users", query: { login: username })
     return [response.code, "The username contains invalid characters."] if response.code == 400
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
     return [404, "Can't find a user with that name. Sorry."] if data.nil?
-    redirect "/twitch/#{data["id"]}/#{data["display_name"]}#{"?type=#{params[:type]}" if !params[:type].empty?}"
+    redirect Addressable::URI.new(path: "/twitch/#{data["id"]}/#{data["display_name"]}", query_values: params.slice(:type)).normalize.to_s
   end
 end
 
@@ -908,7 +907,7 @@ get "/twitch/download" do
     raise(TwitchError, response) if !response.success?
     vod_data = response.json
 
-    url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{vod_data["sig"]}&nauth=#{CGI.escape(vod_data["token"])}"
+    url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{vod_data["sig"]}&nauth=#{vod_data["token"]}").normalize.to_s
     fn = "#{data["created_at"].to_date} - #{data["user_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
     response = TwitchToken.get("/channels/#{channel_name}/access_token")
@@ -918,7 +917,7 @@ get "/twitch/download" do
     data = response.json
     token_data = JSON.parse(data["token"])
 
-    url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
+    url = "http://usher.ttvnw.net" + Addressable::URI.new(path: "/api/channel/hls/#{token_data["channel"]}.m3u8", query: "token=#{data["token"]}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true").normalize.to_s
     fn = "#{Time.now.to_date} - #{token_data["channel"]} live.mp4".to_filename
   end
   "ffmpeg -i '#{url}' -acodec copy -vcodec copy -absf aac_adtstoasc '#{fn}'"
@@ -955,7 +954,7 @@ get "/twitch/watch" do
     return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json
-    playlist_url = "http://usher.twitch.tv/vod/#{vod_id}?nauthsig=#{data["sig"]}&nauth=#{CGI.escape(data["token"])}"
+    playlist_url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{vod_data["sig"]}&nauth=#{vod_data["token"]}").normalize.to_s
 
     response = HTTP.get(playlist_url)
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
@@ -966,7 +965,7 @@ get "/twitch/watch" do
 
     data = response.json
     token_data = JSON.parse(data["token"])
-    playlist_url = "http://usher.ttvnw.net/api/channel/hls/#{token_data["channel"]}.m3u8?token=#{CGI.escape(data["token"])}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true"
+    playlist_url = "http://usher.ttvnw.net" + Addressable::URI.new(path: "/api/channel/hls/#{token_data["channel"]}.m3u8", query: "token=#{data["token"]}&sig=#{data["sig"]}&allow_source=true&allow_spectre=true").normalize.to_s
 
     response = HTTP.get(playlist_url)
     return [response.code, "Channel does not seem to be online."] if response.code == 404
@@ -1055,7 +1054,7 @@ get "/speedrun" do
   raise(SpeedrunError, response) if !response.success?
   data = response.json["data"]
 
-  redirect "/speedrun/#{data["id"]}/#{data["abbreviation"]}"
+  redirect Addressable::URI.new(path: "/speedrun/#{data["id"]}/#{data["abbreviation"]}").normalize.to_s
 end
 
 get "/speedrun/:id/:abbr" do |id, abbr|
@@ -1096,7 +1095,7 @@ get "/ustream" do
     return [404, "Could not find the channel."]
   end
 
-  redirect "/ustream/#{channel_id}/#{CGI.escape(channel_title)}"
+  redirect Addressable::URI.new(path: "/ustream/#{channel_id}/#{channel_title}").normalize.to_s
 end
 
 get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
@@ -1162,11 +1161,9 @@ get "/dailymotion" do
     user = response.json["owner"]
   end
 
-  response = Dailymotion.get("/user/#{CGI.escape(user)}", query: { fields: "id,username" })
+  response = Dailymotion.get("/user/#{user}", query: { fields: "id,username" })
   if response.success?
-    user_id = response.json["id"]
-    username = response.json["username"]
-    redirect "/dailymotion/#{user_id}/#{CGI.escape(username)}"
+    redirect Addressable::URI.new(path: "/dailymotion/#{response.json["id"]}/#{response.json["username"]}").normalize.to_s
   else
     return [404, "Could not find a user with the name #{user}. Sorry."]
   end
@@ -1191,11 +1188,10 @@ get "/imgur" do
     # https://imgur.com/user/thebookofgray
   elsif /imgur\.com\/a\/(?<album_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/a/IwyIm
-  elsif /(?:(?:imgur|reddit)\.com)?\/?r\/(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
+  elsif /(?:^\/?r\/|(?:imgur|reddit)\.com\/r\/)(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
-    redirect "/imgur/r/#{CGI.escape(subreddit)}#{"?#{params[:type]}" if !params[:type].empty?}"
-    return
+    redirect Addressable::URI.new(path: "/imgur/r/#{subreddit}", query: params[:type]).normalize.to_s and return
   elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] && username != "i"
     # https://thebookofgray.imgur.com/
   elsif /imgur\.com\/(gallery\/)?(?<image_id>[a-zA-Z0-9]+)/ =~ params[:q]
@@ -1220,7 +1216,7 @@ get "/imgur" do
     user_id = response.json["data"]["account_id"]
     username = response.json["data"]["account_url"]
   elsif username
-    response = Imgur.get("/account/#{CGI.escape(username)}")
+    response = Imgur.get("/account/#{username}")
     return [response.code, "Can't find a user with that name. Sorry. If you want a feed for a subreddit, enter \"r/#{username}\"."] if response.code == 404
     raise(ImgurError, response) if !response.success?
     user_id = response.json["data"]["id"]
@@ -1230,7 +1226,7 @@ get "/imgur" do
   if user_id.nil?
     return [404, "This image was probably uploaded anonymously. Sorry."]
   else
-    redirect "/imgur/#{user_id}/#{CGI.escape(username)}#{"?#{params[:type]}" if !params[:type].empty?}"
+    redirect Addressable::URI.new(path: "/imgur/#{user_id}/#{username}", query_values: params.slice(:type)).normalize.to_s
   end
 end
 
@@ -1284,7 +1280,7 @@ get "/svtplay" do
   end
 
   if program
-    redirect "https://www.svtplay.se/#{program}/atom.xml"
+    redirect Addressable::URI.parse("https://www.svtplay.se/#{program}/atom.xml").normalize.to_s
   else
     return [404, "Could not find the program. Sorry."]
   end

@@ -22,8 +22,8 @@
 
 <%= track["description"].linkify.to_paragraphs.esc %>
 
-&lt;p>&lt;a href="<%= request.root_url %>/soundcloud/download?url=<%= CGI.escape(track["permalink_url"]) %>">Download track&lt;/a>&lt;/p>
-&lt;p>&lt;a href="<%= request.root_url %>/?download=<%= CGI.escape(track["permalink_url"]) %>">Download track with nice filename&lt;/a>&lt;/p>
+&lt;p>&lt;a href="<%= request.root_url %>/soundcloud/download<%= Addressable::URI.new(query: "url=#{track["permalink_url"]}").normalize.to_s %>">Download track&lt;/a>&lt;/p>
+&lt;p>&lt;a href="<%= request.root_url %>/<%= Addressable::URI.new(query: "download=#{track["permalink_url"]}").normalize.to_s %>">Download track with nice filename&lt;/a>&lt;/p>
     </content>
   </entry>
 <%- end -%>

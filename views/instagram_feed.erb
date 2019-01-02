@@ -58,7 +58,7 @@ end.join("\n")
 <%= text.linkify.to_paragraphs.esc %>
 <%=
 <<~EOF.esc
-  <p><a href="#{request.root_url}/?download=#{CGI.escape("https://www.instagram.com/p/#{post["node"]["shortcode"]}/")}">Download with nice filename</a></p>
+  <p><a href="#{request.root_url}/#{Addressable::URI.new(query: "download=https://www.instagram.com/p/#{post["node"]["shortcode"]}/").normalize.to_s}">Download with nice filename</a></p>
 EOF
 -%>
     </content>

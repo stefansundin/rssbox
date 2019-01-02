@@ -18,7 +18,7 @@
 
       #{image["description"].linkify.to_paragraphs}
       <p><a href="http://s.imgur.com/a/#{image["id"]}/zip" rel="noreferrer">Download album</a></p>
-      <p><a href="https://www.reddit.com/search?include_over_18=on&q=#{CGI.escape("url:#{image["id"]} OR url:#{image["cover"]}")}">Search for this on Reddit</a></p>
+      <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]} OR url:#{image["cover"]}").normalize.to_s}">Search for this on Reddit</a></p>
     EOF
   else
     id = "imgur:image:#{image["id"]}"
@@ -32,8 +32,8 @@
         <p><a href="#{gifv_url}" rel="noreferrer">Open embed</a></p>
 
         #{image["description"].linkify.to_paragraphs}
-        <p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}" rel="noreferrer">Download</a></p>
-        <p><a href="https://www.reddit.com/search?include_over_18=on&q=#{CGI.escape("url:#{image["id"]}")}">Search for this on Reddit</a></p>
+        <p><a href="https://imgur.com#{Addressable::URI.new(path: "/download/#{image["id"]}/#{image["title"]}").normalize.to_s}" rel="noreferrer">Download</a></p>
+        <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]}").normalize.to_s}">Search for this on Reddit</a></p>
         <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
       EOF
     else
@@ -42,8 +42,8 @@
         <a href="#{link}.#{ext}" rel="noreferrer"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}" referrerpolicy="no-referrer"></a>
 
         #{image["description"].linkify.to_paragraphs}
-        <p><a href="https://imgur.com/download/#{image["id"]}/#{CGI.escape(image["title"])}" rel="noreferrer">Download</a></p>
-        <p><a href="https://www.reddit.com/search?include_over_18=on&q=#{CGI.escape("url:#{image["id"]}")}">Search for this on Reddit</a></p>
+        <p><a href="https://imgur.com#{Addressable::URI.new(path: "/download/#{image["id"]}/#{image["title"]}").normalize.to_s}" rel="noreferrer">Download</a></p>
+        <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]}").normalize.to_s}">Search for this on Reddit</a></p>
         <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
       EOF
     end
