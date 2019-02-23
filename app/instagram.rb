@@ -15,7 +15,7 @@ class Instagram < HTTP
   @@csrftoken = nil
   @@rhx_gis = nil
 
-  def self.get(url, options={headers: {}, query: nil}, tokens={csrftoken: nil, rhx_gis: nil})
+  def self.get(url, options={headers: {}}, tokens={csrftoken: nil, rhx_gis: nil})
     if !tokens[:csrftoken] && !@@csrftoken
       response = HTTP.get("https://www.instagram.com/", headers: HEADERS)
       raise(InstagramTokenError, response) if !response.success?

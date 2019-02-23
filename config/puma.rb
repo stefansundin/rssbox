@@ -4,7 +4,7 @@ ENV["APP_ENV"] ||= ENV["RACK_ENV"] || "development"
 environment(ENV["APP_ENV"])
 
 if ENV["APP_ENV"] == "development"
-  # better_errors and binding_of_caller works better with only only the master process and one thread
+  # better_errors and binding_of_caller works better with only the master process and one thread
   threads(1, 1)
 else
   if ENV["WEB_CONCURRENCY"]
