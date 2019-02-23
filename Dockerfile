@@ -11,7 +11,7 @@
 # docker build --squash -t stefansundin/rssbox .
 # docker push stefansundin/rssbox
 
-FROM stefansundin/ruby:2.5.3
+FROM stefansundin/ruby:2.6
 MAINTAINER stefansundin https://github.com/stefansundin/rssbox
 
 # install gem dependencies
@@ -23,7 +23,7 @@ RUN \
 
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --without development:test --path=.bundle/gems
+RUN bundle install --retry=3 --without=development:test --path=.bundle/gems
 COPY . .
 
 EXPOSE 8080

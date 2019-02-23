@@ -88,7 +88,7 @@ class String
   def short_host
     uri = Addressable::URI.parse(self).normalize!
     if uri.host[0..3] == "www."
-      uri.host[4..-1]
+      uri.host[4..]
     else
       uri.host
     end

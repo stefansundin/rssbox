@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby ">= 2.5.0"
+ruby ">= 2.6.0"
 
 gem "yajl-ruby", require: "yajl/json_gem"
 gem "rake", require: false

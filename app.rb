@@ -17,7 +17,7 @@ after do
     location = @response.headers["Location"]
     @response.headers.delete("Location")
     if location.start_with?(@request.root_url)
-      location = location[@request.root_url.length..-1]
+      location = location[@request.root_url.length..]
     end
     body location.to_json
   end

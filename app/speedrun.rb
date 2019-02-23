@@ -32,14 +32,14 @@ class Speedrun < HTTP
     elsif type == "level-subcategories"
       response = Speedrun.get("/levels/#{id}/variables")
       raise(SpeedrunError, response) if !response.success?
-      value = response.json["data"].select { |var| var["is-subcategory"] }.map do |var|
+      value = response.json["data"].select { |var| var["is-subcategory"] }.to_h do |var|
         [
           var["id"],
-          var["values"]["values"].map do |id, val|
+          var["values"]["values"].to_h do |id, val|
             [id, val["label"]]
-          end.to_h
+          end
         ]
-      end.to_h
+      end
       redis_value = value.to_json
     end
 

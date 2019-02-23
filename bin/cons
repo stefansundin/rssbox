@@ -1,2 +1,2 @@
 #!/bin/bash
-bundle exec irb -r ./app
+irb -r ./app
