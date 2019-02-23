@@ -534,7 +534,7 @@ get "/instagram" do
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
   else
-    name = params[:q]
+    name = params[:q][/[^\/?#]+/]
   end
 
   if name
