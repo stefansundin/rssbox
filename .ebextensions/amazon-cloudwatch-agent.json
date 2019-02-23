@@ -1,5 +1,8 @@
 {
 	"metrics": {
+		"append_dimensions": {
+			"AutoScalingGroupName": "${aws:AutoScalingGroupName}"
+		},
 		"metrics_collected": {
 			"cpu": {
 				"measurement": [
@@ -9,9 +12,6 @@
 					"cpu_usage_system"
 				],
 				"metrics_collection_interval": 60,
-				"resources": [
-					"*"
-				],
 				"totalcpu": false
 			},
 			"disk": {
