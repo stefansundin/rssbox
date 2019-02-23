@@ -96,9 +96,9 @@ end
 get "/twitter" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
-  if params[:q]["twitter.com/i/"] || params[:q]["twitter.com/who_to_follow/"]
+  if params[:q].include?("twitter.com/i/") || params[:q].include?("twitter.com/who_to_follow/")
     return [404, "Unsupported url. Sorry."]
-  elsif params[:q]["twitter.com/hashtag/"]
+  elsif params[:q].include?("twitter.com/hashtag/") || params[:q].start_with?("#")
     return [404, "This app does not support hashtags. Sorry."]
   elsif /twitter\.com\/intent\/.+[?&]user_id=(?<user_id>\d+)/ =~ params[:q]
     # https://twitter.com/intent/user?user_id=34313404
@@ -119,7 +119,7 @@ get "/twitter" do
   end
 
   response = Twitter.get("/users/show.json", query: query)
-  return [response.code, response.json["errors"][0]["message"]] if response.json["errors"]
+  return [response.code, response.json["errors"][0]["message"]] if response.json.has_key?("errors")
   raise(TwitterError, response) if !response.success?
 
   user_id = response.json["id_str"]
@@ -245,14 +245,14 @@ get "/youtube/:channel_id/:username" do
   @tz = params[:tz]
 
   query = { part: "id", type: "video", order: "date", channelId: @channel_id, maxResults: 50 }
-  if params[:q]
+  if params.has_key?(:q)
     query[:q] = params[:q]
     @title = "\"#{params[:q]}\" from #{@username}"
   else
     @title = "#{@username} on YouTube"
   end
 
-  ids = if params[:eventType]
+  ids = if params.has_key?(:eventType)
     eventTypes = params[:eventType].split(",")
     if eventTypes.any? { |type| !%w[completed live upcoming].include?(type) }
       return [400, "Invalid eventType. Valid types: completed live upcoming."]
@@ -281,9 +281,9 @@ get "/youtube/:channel_id/:username" do
   # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
   @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
 
-  if params[:q]
+  if params.has_key?(:q)
     q = params[:q].downcase
-    @data.select! { |v| v["snippet"]["title"].downcase[q] }
+    @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
   end
 
   @data.map do |video|
@@ -376,7 +376,7 @@ end
 get "/facebook" do
   return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
   return [400, "Insufficient parameters"] if params[:q].empty?
-  params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q]["facebookcorewwwi.onion"]
+  params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q].include?("facebookcorewwwi.onion")
 
   if /https:\/\/www\.facebook\.com\/plugins\/.+[?&]href=(?<href>.+)$/ =~ params[:q]
     # https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Finfectedmushroom%2Fvideos%2F10154638763917261%2F&show_text=0&width=400
@@ -474,7 +474,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   query = { fields: fields, since: Time.now.to_i-365*24*60*60 } # date -v -1w +%s
 
-  if params[:locale]
+  if params.has_key?(:locale)
     query[:locale] = params[:locale]
   end
 
@@ -486,7 +486,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
   if @edge == "posts"
     # Copy down video length from properties array
     @data.each do |post|
-      if post["properties"]
+      if post.has_key?("properties")
         post["properties"].each do |prop|
           if prop["name"] == "Length" && /^(?<m>\d+):(?<s>\d+)$/ =~ prop["text"]
             post["length"] = 60*m.to_i + s.to_i
@@ -528,7 +528,7 @@ get "/instagram" do
     return [response.code, "This post does not exist or is a private post."] if response.code == 404
     raise(InstagramError, response) if !response.success?
     user = response.json["graphql"]["shortcode_media"]["owner"]
-  elsif params[:q]["instagram.com/explore/"]
+  elsif params[:q].include?("instagram.com/explore/") || params[:q].start_with?("#")
     return [404, "This app does not support hashtags. Sorry."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
@@ -571,7 +571,7 @@ get "/instagram/download" do
     created_at = Time.at(data["taken_at_timestamp"])
     caption = data["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
 
-    if data["edge_sidecar_to_children"]
+    if data.has_key?("edge_sidecar_to_children")
       return data["edge_sidecar_to_children"]["edges"].map { |edge| edge["node"] }.map.with_index do |node, i|
         url = node["video_url"] || node["display_url"]
         {
@@ -588,7 +588,7 @@ get "/instagram/download" do
     end
   end
 
-  if data["edge_sidecar_to_children"]
+  if data.has_key?("edge_sidecar_to_children")
     node = data["edge_sidecar_to_children"]["edges"][0]["node"]
     url = node["video_url"] || node["display_url"]
   else
@@ -626,7 +626,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
 
   response = Instagram.get("/#{username}/", options, tokens)
   return [response.code, "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1"] if response.code == 404
-  return [401, "The sessionid expired!"] if params[:sessionid] && response.code == 302
+  return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
   raise(InstagramError, response) if !response.success? || !response.json
 
   @data = response.json["graphql"]["user"]
@@ -686,7 +686,7 @@ get "/periscope" do
   doc = Nokogiri::HTML(response.body)
   data = doc.at("div#page-container")["data-store"]
   json = JSON.parse(data)
-  username, user_id = json["UserCache"]["usernames"].first
+  username, user_id = json["UserCache"]["usernames"][0]
 
   redirect Addressable::URI.new(path: "/periscope/#{user_id}/#{username}").normalize.to_s
 end
@@ -698,8 +698,8 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
   response = Periscope.get_broadcasts(id)
   raise(PeriscopeError, response) if !response.success?
   @data = response.json["broadcasts"]
-  @user = if @data.first
-    @data.first["user_display_name"]
+  @user = if @data.length > 0
+    @data[0]["user_display_name"]
   else
     @username
   end

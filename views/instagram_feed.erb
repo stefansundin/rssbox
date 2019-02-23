@@ -9,7 +9,7 @@
   <updated><%= Time.at(@data["edge_owner_to_timeline_media"]["edges"][0]["node"]["taken_at_timestamp"]) if @data["edge_owner_to_timeline_media"]["edges"][0] %></updated>
 <%-
 if @data["is_private"] && @data["edge_owner_to_timeline_media"]["edges"].empty?
-  reason = params[:sessionid] ? "The sessionid token is no longer valid." : "This user is private."
+  reason = params.has_key?(:sessionid) ? "The sessionid token is no longer valid." : "This user is private."
 -%>
 
   <entry>

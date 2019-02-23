@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class HTTP
-  def self.get(url, options={headers: nil, query: nil})
+  def self.get(url, options={})
     relative_url = (url[0] == "/")
 
     if defined?(self::BASE_URL) && relative_url
@@ -18,7 +18,7 @@ class HTTP
 
     uri = Addressable::URI.parse(url).normalize
 
-    if options[:query]
+    if options.has_key?(:query)
       if uri.query_values.nil?
         uri.query_values = options[:query]
       else
@@ -34,7 +34,7 @@ class HTTP
     Net::HTTP.start(uri.host, uri.port, opts) do |http|
       headers = {}
       headers.merge!(self::HEADERS) if defined?(self::HEADERS) && relative_url
-      headers.merge!(options[:headers]) if options[:headers]
+      headers.merge!(options[:headers]) if options.has_key?(:headers)
       response = http.request_get(uri.request_uri, headers)
       $metrics[:requests].increment({ service: self.to_s.downcase, response_code: response.code })
       return HTTPResponse.new(response, uri.to_s)

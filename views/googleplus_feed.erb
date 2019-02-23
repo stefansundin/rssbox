@@ -17,7 +17,7 @@
     <author><name><%= post["actor"]["displayName"].esc %></name></author>
     <content type="html">
 <%= post["object"]["body"].linkify.to_paragraphs.esc %>
-<%- if post["object"]["attachments"] -%>
+<%- if post["object"].has_key?("attachments") -%>
 <%- post["object"]["attachments"].select { |attachment| attachment["objectType"] == "video" }.each do |attachment| -%>
 <%= "<a href='#{attachment["url"]}' rel='noreferrer'><img src='#{attachment["image"]["url"]}' referrerpolicy='no-referrer'></a>".esc %>
 <%- end -%>

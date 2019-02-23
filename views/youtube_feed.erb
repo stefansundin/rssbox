@@ -15,18 +15,18 @@
   title += "[#{duration.to_duration}] " if duration > 0
   title += video["snippet"]["title"].to_line
   updated = video["snippet"]["publishedAt"]
-  if video["liveStreamingDetails"]
-    if video["liveStreamingDetails"]["actualEndTime"]
+  if video.has_key?("liveStreamingDetails")
+    if video["liveStreamingDetails"].has_key?("actualEndTime")
       updated = Time.parse(video["liveStreamingDetails"]["actualEndTime"])
       id_extra = ":completed:#{updated}"
       title += " (completed)"
       content_extra = "<p>Live broadcast completed at: #{updated.readable(@tz)}.</p>"
-    elsif video["liveStreamingDetails"]["actualStartTime"]
+    elsif video["liveStreamingDetails"].has_key?("actualStartTime")
       updated = Time.parse(video["liveStreamingDetails"]["actualStartTime"])
       id_extra = ":started:#{updated}"
       title += " (started)"
       content_extra = "<p>Live broadcast started at: #{updated.readable(@tz)}.</p>"
-    elsif video["liveStreamingDetails"]["scheduledStartTime"]
+    elsif video["liveStreamingDetails"].has_key?("scheduledStartTime")
       updated = Time.parse(video["liveStreamingDetails"]["scheduledStartTime"])
       id_extra = ":scheduled:#{updated}"
       title += " (scheduled for #{updated.readable(@tz)})"
