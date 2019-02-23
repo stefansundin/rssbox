@@ -227,6 +227,7 @@ get "/youtube" do
   end
 
   if query
+    query = CGI.unescape(query) # youtube uses + here instead of %20
     redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }).normalize.to_s
   elsif params[:type] == "live"
     redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { eventType: "live,upcoming" }.merge(params.slice(:tz))).normalize.to_s
@@ -246,7 +247,7 @@ get "/youtube/:channel_id/:username" do
 
   query = { part: "id", type: "video", order: "date", channelId: @channel_id, maxResults: 50 }
   if params.has_key?(:q)
-    query[:q] = params[:q]
+    @query = query[:q] = params[:q]
     @title = "\"#{params[:q]}\" from #{@username}"
   else
     @title = "#{@username} on YouTube"
