@@ -47,8 +47,6 @@ get "/go" do
     redirect Addressable::URI.new(path: "/twitter", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.|gaming\.)?youtu(?:\.be|be\.com)/ =~ params[:q]
     redirect Addressable::URI.new(path: "/youtube", query_values: params).normalize.to_s
-  elsif /^https?:\/\/plus\.google\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/googleplus", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?facebook\.com/ =~ params[:q]
     redirect Addressable::URI.new(path: "/facebook", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?instagram\.com/ =~ params[:q]
@@ -294,53 +292,8 @@ get "/youtube/:channel_id/:username" do
   erb :youtube_feed
 end
 
-get "/googleplus" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-  params[:q] = params[:q].gsub(" ", "+") # spaces in urls is a mess
-
-  if /plus\.google\.com\/(u\/\d+\/)?(?<user>\+[a-zA-Z0-9]+)/ =~ params[:q]
-    # https://plus.google.com/+TIME
-  elsif /plus\.google\.com\/(u\/\d+\/)?(?<user>\d+)/ =~ params[:q]
-    # https://plus.google.com/112161921284629501085
-  else
-    # it's probably a username
-    user = params[:q]
-    user = "+#{user}" if user[0] != "+" && !user.numeric?
-  end
-
-  response = Google.get("/plus/v1/people/#{user}")
-  return [response.code, "Can't find a page with that name. Sorry."] if response.code == 404
-  raise(GoogleError, response) if !response.success?
-  data = response.json
-  user_id = data["id"]
-  if /\/\+(?<user>[a-zA-Z0-9]+)$/ =~ data["url"]
-    username = user
-  else
-    username = data["displayName"]
-  end
-
-  redirect Addressable::URI.new(path: "/googleplus/#{user_id}/#{username}").normalize.to_s
-end
-
 get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
-  @id = id
-
-  response = Google.get("/plus/v1/people/#{id}/activities/public")
-  raise(GoogleError, response) if !response.success?
-  @data = response.json
-
-  @user = if @data["items"][0]
-    @data["items"][0]["actor"]["displayName"]
-  else
-    CGI.unescape(username)
-  end
-
-  @data["items"].map do |post|
-    post["object"]["body"] = CGI.unescapeHTML(post["object"]["content"]).gsub("<br />", "\n").strip_tags
-    post["object"]["body"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
-
-  erb :googleplus_feed
+  return [404, "RIP Google+ 2011-2019"]
 end
 
 get "/vimeo" do
