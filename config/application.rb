@@ -20,6 +20,7 @@ configure do
 
   set :protection, :except => [:frame_options] # Disable things that secure_headers handles
   set :erb, trim: "-"
+  disable :absolute_redirects
   # Look up Rack::Mime::MIME_TYPES to see rack defaults
   mime_type :opensearch, "application/opensearchdescription+xml"
   settings.add_charset << "application/atom+xml"
