@@ -54,13 +54,9 @@ curl -X POST -d grant_type=client_credentials -u CONSUMER_KEY:CONSUMER_SECRET ht
 
 Copy the `access_token` and put it in the config.
 
-#### Google
+#### YouTube
 
-Go to the [Google Developer Console](https://console.developers.google.com/), create a project and a server key. Copy the server key.
-
-Enable the following APIs in the project:
-- YouTube Data API v3
-- Google+ API
+Go to the [Google Developer Console](https://console.developers.google.com/), create a project and a server key. Copy the server key. Enable "YouTube Data API v3" in the project.
 
 #### Vimeo
 

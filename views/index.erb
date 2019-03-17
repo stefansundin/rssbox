@@ -28,6 +28,8 @@
   </header>
 
   <div class="container">
+    <noscript>FYI: If you enable JavaScript then you be able to access additional options in the dropdown menus. The website should still be somewhat usable, but recent versions of Firefox will try to download the RSS feeds.</noscript>
+
 <% if ENV["TWITTER_ACCESS_TOKEN"] %>
     <form class="input-group" method="get" action="twitter">
       <div class="input-group-prepend">
@@ -245,7 +247,7 @@
     <p>This website lets you subscribe to RSS feeds for websites that do not support RSS themselves, by using the respective website's API and then translating that data to RSS feeds.</p>
     <p>If you get a page saying "Application error", simply try again. This website resolves shortlink URLs to give the reader a better experience, and embeds linked content directly into the RSS feed. You will get this error if this takes longer than the web server allows.</p>
     <p>Some websites like YouTube support RSS feeds but they are quite hard to find, so this website will simply redirect you to the correct URL.</p>
-    <p>You can download Facebook videos, Instagram videos, SoundCloud tracks, etc. Just paste the url and use the dropdown.</p>
+    <p>You can download Instagram videos, SoundCloud tracks, etc. Just paste the url and use the dropdown.</p>
     <p>To open <tt>vlc://</tt> links, see <a href="https://github.com/stefansundin/vlc-protocol">vlc-protocol</a>.</p>
     <p><a href="https://github.com/stefansundin/rssbox">This app is free software.</a></p>
 

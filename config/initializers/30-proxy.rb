@@ -3,7 +3,7 @@
 # Helper function for nginx proxy that uses a subdir.
 # Example use:
 # location /rssbox/ {
-#   proxy_pass http://unix:/home/deploy/rssbox/tmp/unicorn.sock:/;
+#   proxy_pass http://unix:/home/deploy/rssbox/tmp/puma.sock:/;
 #   proxy_set_header Host $host;
 #   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 #   proxy_set_header X-Forwarded-Proto $scheme;
