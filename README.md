@@ -10,31 +10,7 @@ You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.c
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/stefansundin/rssbox)
 
-### Elastic Beanstalk
-
-If you are using the free tier, then use a t2.micro instance. If not, you can use a t1.micro with spot to get the lowest price.
-
-Create environment:
-```
-git tag -a -m "First deploy" eb-v1
-eb init rssbox --platform "Ruby 2.5 (Puma)" --keyname id_rsa
-eb create --single --instance_type t2.micro
-```
-
-For spot:
-```
-eb create --single --instance_type t1.micro --envvars EC2_SPOT_PRICE=0.01
-```
-
-With a load balancer:
-```
-eb create --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
-```
-
-Deploy with:
-```
-eb deploy --staged
-```
+To deploy to Elastic Beanstalk, see [.ebextensions/README.md](.ebextensions/README.md).
 
 ### Configuration
 
