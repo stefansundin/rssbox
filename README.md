@@ -42,6 +42,8 @@ You need to get API keys for the respective services and populate the environmen
 
 A couple of services do not have official APIs, or do not require API keys, so they will work without any keys.
 
+These services do not require API keys: Instagram, Periscope, Mixcloud, Speedrun, Ustream, Dailymotion.
+
 #### Twitter
 
 Go to [Twitter Application Management](https://apps.twitter.com/) and create a new app.
@@ -69,10 +71,6 @@ Go to the [Vimeo developer website](https://developer.vimeo.com/apps) and create
 Go to the [Facebook developer website](https://developers.facebook.com/) and create an app. Copy your app id and secret.
 
 Facebook live hax: After a live stream has ended, trying to access the stream via playlist.m3u8 will still give you a list of .ts files, however the domain is `interncache-prn.fbcdn.net` which doesn't resolve. However, if you edit your `/etc/hosts` file and point that domain to the IP of `origincache-prn.fbcdn.net`, you can watch the video again (use `dig origincache-prn.fbcdn.net +short`). This only works for a couple of days after the live event.
-
-#### Instagram
-
-Go to the [Instagram developer website](https://www.instagram.com/developer/) and create a client. Copy your client id and secret.
 
 #### SoundCloud
 

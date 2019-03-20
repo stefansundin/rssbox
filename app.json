@@ -21,7 +21,7 @@
       "required": false
     },
     "GOOGLE_API_KEY": {
-      "description": "Your Google API key for YouTube and Google+.",
+      "description": "Your Google API key for YouTube.",
       "required": false
     },
     "VIMEO_ACCESS_TOKEN": {
