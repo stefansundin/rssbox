@@ -7,7 +7,8 @@ class Instagram < HTTP
   BASE_URL = "https://www.instagram.com"
   PARAMS = "__a=1"
   HEADERS = {
-    "User-Agent" => "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:59.0) Gecko/20100101 Firefox/59.0",
+    "User-Agent" => "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:65.0) Gecko/20100101 Firefox/65.0",
+    "Cookie" => "ig_cb=1",
   }
   ERROR_CLASS = InstagramError
 
