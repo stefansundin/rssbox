@@ -5,6 +5,9 @@ class PeriscopeError < HTTPError; end
 
 class Periscope < HTTP
   BASE_URL = "https://api.periscope.tv/api/v2"
+  HEADERS = {
+    "User-Agent" => "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:65.0) Gecko/20100101 Firefox/65.0",
+  }
   ERROR_CLASS = PeriscopeError
 
   # The session_id is valid for one hour

@@ -640,7 +640,7 @@ get "/periscope" do
   doc = Nokogiri::HTML(response.body)
   data = doc.at("div#page-container")["data-store"]
   json = JSON.parse(data)
-  username, user_id = json["UserCache"]["usernames"][0]
+  username, user_id = json["UserCache"]["usernames"].to_a[0]
 
   redirect Addressable::URI.new(path: "/periscope/#{user_id}/#{username}").normalize.to_s
 end
