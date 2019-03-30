@@ -1,0 +1,32 @@
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: rssbox
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rssbox
+    spec:
+      containers:
+      - name: rssbox
+        image: stefansundin/rssbox
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: rssbox
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rssbox
+spec:
+  type: NodePort
+  selector:
+    app: rssbox
+  ports:
+  - port: 8080
+    nodePort: 30000

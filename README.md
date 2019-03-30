@@ -12,6 +12,8 @@ You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.c
 
 To deploy to Elastic Beanstalk, see [.ebextensions/README.md](.ebextensions/README.md).
 
+To deploy to Kubernetes, see [kubernetes/README.md](kubernetes/README.md).
+
 ### Configuration
 
 You need to get API keys for the respective services and populate the environment variables, e.g. by using an [.env](.env.example) file.

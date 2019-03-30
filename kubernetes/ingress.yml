@@ -1,0 +1,14 @@
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: rssbox
+spec:
+  rules:
+  - host: rssbox.k8s.localhost
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rssbox
+          servicePort: 8080
