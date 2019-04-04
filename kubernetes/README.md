@@ -1,23 +1,23 @@
 First create a namespace and switch to it:
 ```
 # you can skip this if you want to use the default namespace
-kubectl apply -f namespace.yml
+kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/namespace.yml
 kubectl config set-context --current --namespace=rssbox
 ```
 
 Then create the redis service:
 ```
-kubectl apply -f redis.yml
+kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/redis.yml
 ```
 
 Then update `configmap.yml` and create the configmap:
 ```
-kubectl apply -f configmap.yml
+kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/configmap.yml
 ```
 
 Finally create the app itself:
 ```
-kubectl apply -f rssbox.yml
+kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/rssbox.yml
 ```
 
 It should then be available on NodePort 30000.
@@ -26,7 +26,7 @@ Alternatively, you can access the app using `kubectl proxy` at http://localhost:
 
 You can also update `ingress.yml` and create an nginx ingress:
 ```
-kubectl apply -f ingress.yml
+kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/ingress.yml
 ```
 
 # Misc
