@@ -1,0 +1,24 @@
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: rssbox
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/issuer: letsencrypt-prod
+    certmanager.k8s.io/acme-challenge-type: http01
+spec:
+  tls:
+  - hosts:
+    # update this:
+    # - rssbox.example.com
+    secretName: rssbox-tls
+  rules:
+  # update this:
+  # - host: rssbox.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rssbox
+          servicePort: 8080

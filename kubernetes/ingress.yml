@@ -5,7 +5,7 @@ metadata:
   name: rssbox
 spec:
   rules:
-  - host: rssbox.k8s.localhost
+  - host: rssbox.localhost
     http:
       paths:
       - path: /

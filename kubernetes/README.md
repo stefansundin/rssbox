@@ -10,9 +10,12 @@ Then create the redis service:
 kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/redis.yml
 ```
 
-Then update `configmap.yml` and create the configmap:
+Then use `configmap.yml` to create the configmap:
 ```
-kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/configmap.yml
+kubectl create --edit -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/configmap.yml
+
+# to update later, run:
+kubectl edit configmap/rssbox
 ```
 
 Finally create the app itself:
@@ -22,11 +25,14 @@ kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/ku
 
 It should then be available on NodePort 30000.
 
-Alternatively, you can access the app using `kubectl proxy` at http://localhost:8001/api/v1/namespaces/rssbox/services/rssbox:/proxy/.
+You can access the app using `kubectl proxy` at http://localhost:8001/api/v1/namespaces/rssbox/services/rssbox:/proxy/.
 
-You can also update `ingress.yml` and create an nginx ingress:
+You can use `ingress.yml` (or `ingress-tls.yml`) to create an nginx ingress:
 ```
-kubectl apply -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/ingress.yml
+kubectl create --edit -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/ingress.yml
+
+# or:
+kubectl create --edit -f https://raw.githubusercontent.com/stefansundin/rssbox/master/kubernetes/ingress-tls.yml
 ```
 
 # Misc
