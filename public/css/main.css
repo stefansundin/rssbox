@@ -54,6 +54,9 @@ input[type="submit"] {
 *[monospace] {
   font-family: monospace;
 }
+input[monospace] {
+  min-height: 38px;
+}
 
 .expander {
   display: none;
