@@ -1151,6 +1151,8 @@ get "/imgur" do
   elsif /imgur\.com\/(gallery\/)?(?<image_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/NdyrgaE
     # https://imgur.com/gallery/NdyrgaE
+  elsif params[:q].start_with?("#")
+    return [404, "This app does not support hashtags. Sorry."]
   else
     # it's probably a username
     username = params[:q]
