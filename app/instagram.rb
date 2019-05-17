@@ -14,21 +14,17 @@ class Instagram < HTTP
 
   @@cache = {}
   @@csrftoken = nil
-  @@rhx_gis = nil
 
-  def self.get(url, options={headers: {}}, tokens={csrftoken: nil, rhx_gis: nil})
+  def self.get(url, options={headers: {}}, tokens={csrftoken: nil})
     if !tokens[:csrftoken] && !@@csrftoken
       response = HTTP.get("https://www.instagram.com/", headers: HEADERS)
       raise(InstagramTokenError, response) if !response.success?
       /csrftoken=(?<csrftoken>[A-Za-z0-9]+);/ =~ response.headers["set-cookie"].find { |c| /csrftoken=[A-Za-z0-9]+/.match?(c) }
-      /"rhx_gis":"(?<rhx_gis>[a-z0-9]{32})"/ =~ response.body
-      raise(InstagramTokenError, response) if !csrftoken || !rhx_gis
+      raise(InstagramTokenError, response) if !csrftoken
       @@csrftoken = csrftoken
-      @@rhx_gis = rhx_gis
     end
     options ||= {}
     options[:headers] ||= {}
-    options[:headers]["x-instagram-gis"] = Digest::MD5.hexdigest("#{tokens[:rhx_gis] || @@rhx_gis}:#{url}")
     response = super(url, options)
     if response.code == 403
       raise(InstagramTokenError, response)
