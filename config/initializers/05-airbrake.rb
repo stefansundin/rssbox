@@ -6,6 +6,7 @@ if ENV["AIRBRAKE_API_KEY"]
     config.host = ENV["AIRBRAKE_HOST"] if ENV["AIRBRAKE_HOST"]
     config.project_id = ENV["AIRBRAKE_PROJECT_ID"]
     config.project_key = ENV["AIRBRAKE_API_KEY"]
+    config.environment = ENV["AIRBRAKE_ENVIRONMENT"] if ENV["AIRBRAKE_ENVIRONMENT"]
   end
 
   use Airbrake::Rack::Middleware

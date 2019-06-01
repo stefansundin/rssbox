@@ -23,10 +23,8 @@ gem "prometheus-client", require: "prometheus/middleware/exporter"
 gem "feedjira"
 gem "opengraph_parser"
 
-group :production do
-  gem "airbrake", "= 9.2.1", require: false
-  gem "newrelic_rpm", require: false
-end
+gem "airbrake", "= 9.2.1", require: false
+gem "newrelic_rpm", require: false
 
 group :development do
   gem "sinatra-contrib", require: "sinatra/reloader"
