@@ -8,8 +8,8 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
-    airbrake (9.2.2)
-      airbrake-ruby (~> 4.4)
+    airbrake (9.2.1)
+      airbrake-ruby (~> 4.3)
     airbrake-ruby (4.4.0)
       rbtree3 (~> 0.5)
     backports (3.15.0)
@@ -97,7 +97,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport
   addressable
-  airbrake
+  airbrake (= 9.2.1)
   dotenv
   feedjira
   github-release-party

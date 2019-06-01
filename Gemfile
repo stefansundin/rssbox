@@ -24,7 +24,7 @@ gem "feedjira"
 gem "opengraph_parser"
 
 group :production do
-  gem "airbrake", require: false
+  gem "airbrake", "= 9.2.1", require: false
   gem "newrelic_rpm", require: false
 end
 
