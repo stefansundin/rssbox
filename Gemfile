@@ -23,7 +23,7 @@ gem "prometheus-client", require: "prometheus/middleware/exporter"
 gem "feedjira"
 gem "opengraph_parser"
 
-gem "airbrake", require: false
+gem "airbrake", git: "https://github.com/airbrake/airbrake.git", require: false
 gem "newrelic_rpm", require: false
 
 group :development do

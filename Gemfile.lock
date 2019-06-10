@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/airbrake/airbrake.git
+  revision: 54f6ed8469c5838c61e5eeda87643e0d18a22f22
+  specs:
+    airbrake (9.2.2)
+      airbrake-ruby (~> 4.4)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -8,8 +15,6 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
-    airbrake (9.2.2)
-      airbrake-ruby (~> 4.4)
     airbrake-ruby (4.4.0)
       rbtree3 (~> 0.5)
     backports (3.15.0)
@@ -97,7 +102,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport
   addressable
-  airbrake
+  airbrake!
   dotenv
   feedjira
   github-release-party
