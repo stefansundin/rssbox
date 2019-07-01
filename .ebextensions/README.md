@@ -9,14 +9,24 @@ eb init rssbox --platform "Ruby 2.6 (Puma)" --keyname id_rsa
 eb create --single --instance_type t2.micro
 ```
 
-For spot:
+Using spot instances:
 ```
 eb create --single --instance_type t1.micro --envvars EC2_SPOT_PRICE=0.01
 ```
 
-With a load balancer:
+With an application load balancer:
 ```
-eb create --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
+eb create --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB,EC2_SPOT_PRICE=0.01
+```
+
+With a network load balancer:
+```
+eb create --instance_type t2.micro --elb-type network --envvars ASG_HEALTH_CHECK_TYPE=ELB,EC2_SPOT_PRICE=0.01
+```
+
+Launch in a specific VPC (alternatively update `vpc.config` and omit `--vpc`):
+```
+eb create --vpc --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB,EC2_SPOT_PRICE=0.01
 ```
 
 When selecting Ruby as the platform, the following variables are automatically set:
@@ -48,6 +58,9 @@ aws elasticbeanstalk update-environment --region us-west-2 --environment-name rs
 ```
 
 # Misc
+
+Application files are located at:
+- `/var/app/current`
 
 Logs on the instances are available at:
 - `/var/log/puma/puma.log`
