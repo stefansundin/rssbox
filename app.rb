@@ -259,9 +259,6 @@ get "/youtube/:channel_id/:username" do
     @data.select! { |v| v.has_key?("liveStreamingDetails") }
   end
 
-  # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
-  @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
-
   if params.has_key?(:q)
     @query = params[:q]
     q = @query.downcase
