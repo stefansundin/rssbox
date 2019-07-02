@@ -1230,7 +1230,7 @@ get "/dilbert" do
     if data
       data = JSON.parse(data)
     else
-      og = OpenGraph.new("http://dilbert.com/strip/#{entry.id}")
+      og = OpenGraph.new("https://dilbert.com/strip/#{entry.id}")
       data = {
         "image" => og.images.first,
         "title" => og.title,

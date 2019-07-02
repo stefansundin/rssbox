@@ -3,16 +3,16 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>dilbert</id>
   <title><%= @feed.title %></title>
-  <icon>http://dilbert.com/favicon.ico</icon>
+  <icon>https://dilbert.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
-  <link href="http://dilbert.com/" rel="alternate" />
+  <link href="https://dilbert.com/" rel="alternate" />
   <updated><%= Time.parse(@entries[0]["id"]) if @entries[0] %></updated>
 <%- @entries.each do |entry| -%>
 
   <entry>
     <id>dilbert:<%= entry["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title><%= entry["id"] %>: <%= entry["title"].to_line.esc %></title>
-    <link href="http://dilbert.com/strip/<%= entry["id"] %>" />
+    <link href="https://dilbert.com/strip/<%= entry["id"] %>" />
     <updated><%= Time.parse(entry["id"]) %></updated>
     <author><name>Scott Adams</name></author>
     <content type="html">
