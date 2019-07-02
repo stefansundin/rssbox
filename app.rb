@@ -237,7 +237,7 @@ get "/youtube" do
 end
 
 get "/youtube/:channel_id/:username" do
-  if params.has_key?(:eventType)
+  if params.has_key?(:eventType) && params[:eventType] != "completed"
     return [400, "Sorry, the eventType parameter has been discontinued since it is very expensive on my YouTube API quota, which has been running out every day for a while. I am unsure if it will be supported again in the future."]
   end
 
@@ -254,6 +254,10 @@ get "/youtube/:channel_id/:username" do
   response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
   raise(GoogleError, response) if !response.success?
   @data = response.json["items"]
+
+  if params[:eventType] == "completed"
+    @data.select! { |v| v.has_key?("liveStreamingDetails") }
+  end
 
   # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
   @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
