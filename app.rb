@@ -226,9 +226,7 @@ get "/youtube" do
 
   if query
     query = CGI.unescape(query) # youtube uses + here instead of %20
-    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }).normalize.to_s
-  elsif params[:type] == "live"
-    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { eventType: "live,upcoming" }.merge(params.slice(:tz))).normalize.to_s
+    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }.merge(params.slice(:tz))).normalize.to_s
   elsif channel_id
     redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s
   elsif playlist_id
@@ -239,50 +237,34 @@ get "/youtube" do
 end
 
 get "/youtube/:channel_id/:username" do
-  @channel_id = params[:channel_id]
-  @username = params[:username]
-  @tz = params[:tz]
-
-  query = { part: "id", type: "video", order: "date", channelId: @channel_id, maxResults: 50 }
-  if params.has_key?(:q)
-    @query = query[:q] = params[:q]
-    @title = "\"#{params[:q]}\" from #{@username}"
-  else
-    @title = "#{@username} on YouTube"
+  if params.has_key?(:eventType)
+    return [400, "Sorry, the eventType parameter has been discontinued since it is very expensive on my YouTube API quota, which has been running out every day for a while. I am unsure if it will be supported again in the future."]
   end
 
-  ids = if params.has_key?(:eventType)
-    eventTypes = params[:eventType].split(",")
-    if eventTypes.any? { |type| !%w[completed live upcoming].include?(type) }
-      return [400, "Invalid eventType. Valid types: completed live upcoming."]
-    end
-    eventTypes.map do |eventType|
-      query[:eventType] = eventType
-      response = Google.get("/youtube/v3/search", query: query)
-      raise(GoogleError, response) if !response.success?
-      response.json["items"]
-    end.flatten.uniq { |v| v["id"]["videoId"] }.sort_by { |v| v["snippet"]["publishedAt"] }.reverse
-  else
-    response = Google.get("/youtube/v3/search", query: query)
-    raise(GoogleError, response) if !response.success?
-    response.json["items"]
-  end.map { |v| v["id"]["videoId"] }
+  @channel_id = params[:channel_id]
+  playlist_id = "UU" + @channel_id[2..]
+  @username = params[:username]
+
+  # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
+  response = Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
+  return [response.code, "It seems like this channel no longer exists."] if response.code == 404
+  raise(GoogleError, response) if !response.success?
+  ids = response.json["items"].sort_by { |v| Time.parse(v["snippet"]["publishedAt"]) }.reverse.map { |v| v["snippet"]["resourceId"]["videoId"] }
 
   response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
   raise(GoogleError, response) if !response.success?
   @data = response.json["items"]
 
-  # filter out all live streams that are not completed if we don't specifically want specific event types
-  if !params[:eventType]
-    @data.select! { |v| !v["liveStreamingDetails"] || v["liveStreamingDetails"]["actualEndTime"] }
-  end
-
   # The YouTube API can bug out and return videos from other channels even though "channelId" is used, so make doubly sure
   @data.select! { |v| v["snippet"]["channelId"] == @channel_id }
 
   if params.has_key?(:q)
-    q = params[:q].downcase
+    @query = params[:q]
+    q = @query.downcase
     @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
+    @title = "\"#{@query}\" from #{@username}"
+  else
+    @title = "#{@username} on YouTube"
   end
 
   @data.map do |video|

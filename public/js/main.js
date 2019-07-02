@@ -122,9 +122,6 @@ $(document).ready(function() {
     var form = $(this).parents("form");
     var val = $(this).attr("data-submit-type");
     $('<input type="hidden" name="type">').val(val).insertAfter(this);
-    if (form.attr("action") == "youtube") {
-      $('<input type="hidden" name="tz">').val(-new Date().getTimezoneOffset()/60).insertAfter(this);
-    }
     form.submit();
   });
   $(window).bind("pageshow", function() {
@@ -279,6 +276,8 @@ $(document).ready(function() {
     xhr.setRequestHeader("Accept", "application/json");
     xhr.send();
   });
+
+  $("form[action=youtube]").append($('<input type="hidden" name="tz">').val(-new Date().getTimezoneOffset()/60));
 
   var params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
   if (params.q) {
