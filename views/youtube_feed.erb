@@ -5,7 +5,8 @@
   <title><%= @title %></title>
   <icon>https://s.ytimg.com/yts/img/favicon_48-vfl1s0rGh.png</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
-  <link href="https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::URI.new(path: "/search", query: "query=#{@query}").normalize.to_s if @query %>" rel="alternate" />
+  <link href="https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::URI.new(path: "/search", query: "query=#{@query}").normalize.to_s if @query %>" rel="alternate" type="text/html" />
+  <link href="https://www.youtube.com/feeds/videos.xml?channel_id=<%= @channel_id %>" rel="alternate" type="text/xml" />
   <updated><%= @data[0]["snippet"]["publishedAt"] if @data[0] %></updated>
 <%-
 @data.each do |video|
