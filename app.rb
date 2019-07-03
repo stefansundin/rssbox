@@ -264,6 +264,9 @@ get "/youtube/:channel_id/:username" do
         (eventType_upcoming  && v["liveStreamingDetails"].has_key?("scheduledStartTime") && !v["liveStreamingDetails"].has_key?("actualStartTime"))
       )
     end
+  else
+    # filter out all live streams that are not completed if we don't specifically want specific event types
+    @data.select! { |v| !v["liveStreamingDetails"] || v["liveStreamingDetails"]["actualEndTime"] }
   end
 
   if params.has_key?(:q)
