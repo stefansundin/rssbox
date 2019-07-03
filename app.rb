@@ -240,6 +240,7 @@ get "/youtube/:channel_id/:username" do
   @channel_id = params[:channel_id]
   playlist_id = "UU" + @channel_id[2..]
   @username = params[:username]
+  @tz = params[:tz]
 
   # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
   response = Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
