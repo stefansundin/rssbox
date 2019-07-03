@@ -14,6 +14,8 @@ To deploy to Elastic Beanstalk, see [.ebextensions/README.md](.ebextensions/READ
 
 To deploy to Kubernetes, see [kubernetes/README.md](kubernetes/README.md).
 
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/stefansundin/rssbox).
+
 ### Configuration
 
 You need to get API keys for the respective services and populate the environment variables, e.g. by using an [.env](.env.example) file.

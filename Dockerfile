@@ -1,4 +1,4 @@
-# https://hub.docker.com/r/stefansundin/rssbox/
+# https://hub.docker.com/r/stefansundin/rssbox
 # docker pull stefansundin/rssbox
 # docker run -i -t -p 8080:8080 stefansundin/rssbox
 # docker run -i -t --entrypoint bin/cons stefansundin/rssbox
