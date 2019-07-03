@@ -237,10 +237,6 @@ get "/youtube" do
 end
 
 get "/youtube/:channel_id/:username" do
-  if params.has_key?(:eventType) && params[:eventType] != "completed"
-    return [400, "Sorry, the eventType parameter has been discontinued since it is very expensive on my YouTube API quota, which has been running out every day for a while. I am unsure if it will be supported again in the future."]
-  end
-
   @channel_id = params[:channel_id]
   playlist_id = "UU" + @channel_id[2..]
   @username = params[:username]
@@ -255,8 +251,18 @@ get "/youtube/:channel_id/:username" do
   raise(GoogleError, response) if !response.success?
   @data = response.json["items"]
 
-  if params[:eventType] == "completed"
-    @data.select! { |v| v.has_key?("liveStreamingDetails") }
+  if params.has_key?(:eventType)
+    eventTypes = params[:eventType].split(",")
+    eventType_completed = eventTypes.include?("completed")
+    eventType_live = eventTypes.include?("live")
+    eventType_upcoming = eventTypes.include?("upcoming")
+    @data.select! do |v|
+      v.has_key?("liveStreamingDetails") && (
+        (eventType_completed && v["liveStreamingDetails"].has_key?("actualEndTime")) ||
+        (eventType_live      && v["liveStreamingDetails"].has_key?("actualStartTime")    && !v["liveStreamingDetails"].has_key?("actualEndTime")) ||
+        (eventType_upcoming  && v["liveStreamingDetails"].has_key?("scheduledStartTime") && !v["liveStreamingDetails"].has_key?("actualStartTime"))
+      )
+    end
   end
 
   if params.has_key?(:q)
