@@ -1002,7 +1002,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
 
   @data.map do |run|
     [
-      run["videos"]["links"].map { |link| link["uri"] },
+      run["videos"]["links"]&.map { |link| link["uri"] },
       run["videos"]["text"],
       run["comment"],
     ].flatten.compact.map(&:grep_urls)
