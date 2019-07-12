@@ -109,7 +109,7 @@ class HTTPResponse
 end
 
 class HTTPError < StandardError
-  def initialize(obj)
+  def initialize(obj=nil)
     @obj = obj
   end
 

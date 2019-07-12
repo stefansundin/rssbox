@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class InstagramError < HTTPError; end
+class InstagramRatelimitError < HTTPError; end
 class InstagramTokenError < InstagramError; end
 
 class Instagram < HTTP
@@ -28,6 +29,9 @@ class Instagram < HTTP
     response = super(url, options)
     if response.code == 403
       raise(InstagramTokenError, response)
+    end
+    if response.code == 429
+      raise(InstagramRatelimitError)
     end
     response
   end
@@ -61,4 +65,9 @@ end
 error InstagramError do |e|
   status 503
   "There was a problem talking to Instagram. Please try again in a moment."
+end
+
+error InstagramRatelimitError do |e|
+  status 429
+  "There are too many requests going to Instagram right now. Someone is probably abusing this service. PLEASE SLOW DOWN!"
 end
