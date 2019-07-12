@@ -1234,7 +1234,7 @@ get "/svtplay" do
 end
 
 get "/dilbert" do
-  @feed = Feedjira::Feed.fetch_and_parse("http://feeds.dilbert.com/DilbertDailyStrip")
+  @feed = Feedjira.parse(HTTP.get("http://feeds.dilbert.com/DilbertDailyStrip").body)
   @entries = @feed.entries.map do |entry|
     data = $redis.get("dilbert:#{entry.id}")
     if data
