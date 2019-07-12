@@ -545,6 +545,10 @@ get "/instagram/download" do
   redirect url
 end
 
+get "/instagram/1/*" do
+  erb :moron
+end
+
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
 
