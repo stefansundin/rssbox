@@ -79,8 +79,8 @@ get "/go" do
     redirect "https://backend.deviantart.com/rss.xml" + Addressable::URI.new(query: "type=deviation&q=by:#{user} sort:time").normalize.to_s
   elsif /^(?<baseurl>https?:\/\/[a-zA-Z0-9\-]+\.tumblr\.com)/ =~ params[:q]
     redirect "#{baseurl}/rss"
-  elsif /^https?:\/\/itunes\.apple\.com\/.+\/id(?<id>\d+)/ =~ params[:q]
-    # https://itunes.apple.com/us/podcast/the-bernie-sanders-show/id1223800705
+  elsif /^https?:\/\/(?:itunes|podcasts)\.apple\.com\/.+\/id(?<id>\d+)/ =~ params[:q]
+    # https://podcasts.apple.com/us/podcast/the-bernie-sanders-show/id1223800705
     response = HTTP.get("https://itunes.apple.com/lookup?id=#{id}")
     raise(HTTPError, response) if !response.success?
     redirect response.json["results"][0]["feedUrl"]
