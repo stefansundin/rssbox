@@ -551,11 +551,11 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   options = nil
   if params[:sessionid]
     # To subscribe to private feeds, follow these steps in bash:
+    # ua="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101 Firefox/68.0"
     # u=your_username
     # p=your_password
     # your_friends_username=your_friends_username
-    # your_friends_userid=$(curl -s "https://www.instagram.com/$your_friends_username/" | grep -oE '"id":"([0-9]+)"' | head -1 | cut -d'"' -f4)
-    # ua="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:59.0) Gecko/20100101 Firefox/59.0"
+    # your_friends_userid=$(curl -s "https://www.instagram.com/$your_friends_username/" -A "$ua" | grep -oE '"id":"([0-9]+)"' | head -1 | cut -d'"' -f4)
     # csrftoken=$(curl -sI https://www.instagram.com/ -A "$ua" | grep -i 'set-cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
     # sessionid=$(curl -sv https://www.instagram.com/accounts/login/ajax/ -A "$ua" -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2)
     # echo "https://rssbox.herokuapp.com/instagram/$your_friends_userid/$your_friends_username?sessionid=$sessionid"
