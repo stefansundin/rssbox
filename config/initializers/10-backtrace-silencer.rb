@@ -7,13 +7,14 @@ configure :production do
 
     # Monkey-patch the backtrace method in order to return a custom backtrace so that we can cut down on log filesize
     def backtrace
-      # For certain errors, we don't care about the stack trace at all
-      if exception.is_a?(InstagramRatelimitError)
-        return []
-      end
-      # If this function is called from Sinatra, then we want to return a partial backtrace
+      # If this function is called from Sinatra, then we want to return a partial backtrace in order to print fewer lines to stdout
       if caller_locations(1,1)[0].path.end_with?("/lib/sinatra/base.rb")
-        return full_backtrace.select { |l| !l.start_with?("/app/vendor/bundle/ruby/") }
+        # For some errors, we don't care about the stack trace at all
+        if exception.is_a?(InstagramRatelimitError)
+          return []
+        end
+        # Otherwise, remove all lines from files in the bundle directory
+        return full_backtrace.reject { |l| l.start_with?("/app/vendor/bundle/ruby/") }
       end
       return full_backtrace
     end
