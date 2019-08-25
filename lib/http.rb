@@ -123,7 +123,11 @@ class HTTPError < StandardError
 
   def message
     msg = if @obj.is_a?(HTTPResponse)
-      "#{@obj.code}: #{@obj.body}"
+      if @obj.redirect?
+        "#{@obj.code}: #{@obj.headers["location"].join(", ")}"
+      else
+        "#{@obj.code}: #{@obj.body}"
+      end
     else
       @obj.inspect
     end
