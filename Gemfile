@@ -4,6 +4,7 @@ ruby ">= 2.6.0"
 
 gem "yajl-ruby", require: "yajl/json_gem"
 gem "rake", require: false
+gem "irb"
 gem "rack"
 gem "sinatra"
 gem "puma"

@@ -26,6 +26,7 @@ GEM
     heroku-env (0.1.4)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
+    irb (1.0.0)
     loofah (2.2.3)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -97,6 +98,7 @@ DEPENDENCIES
   feedjira
   github-release-party
   heroku-env
+  irb
   newrelic_rpm
   nokogiri
   opengraph_parser
