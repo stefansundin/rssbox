@@ -14,29 +14,20 @@ class Instagram < HTTP
   ERROR_CLASS = InstagramError
 
   @@cache = {}
-  @@csrftoken = nil
 
-  def self.get(url, options={headers: {}}, tokens={csrftoken: nil})
-    if !tokens[:csrftoken] && !@@csrftoken
-      response = HTTP.get("https://www.instagram.com/", headers: HEADERS)
-      raise(InstagramTokenError, response) if !response.success?
-      /csrftoken=(?<csrftoken>[A-Za-z0-9]+);/ =~ response.headers["set-cookie"].find { |c| /csrftoken=[A-Za-z0-9]+/.match?(c) }
-      raise(InstagramTokenError, response) if !csrftoken
-      @@csrftoken = csrftoken
-    end
+  def self.get(url, options={headers: {}})
     options ||= {}
     options[:headers] ||= {}
     response = super(url, options)
     if response.code == 403
       raise(InstagramTokenError, response)
-    end
-    if response.code == 429
+    elsif response.code == 429
       raise(InstagramRatelimitError)
     end
     response
   end
 
-  def self.get_post(id, opts={}, tokens={})
+  def self.get_post(id, opts={})
     return @@cache[id] if @@cache[id]
     value = $redis.get("instagram:#{id}")
     if value
@@ -44,7 +35,7 @@ class Instagram < HTTP
       return @@cache[id]
     end
 
-    response = Instagram.get("/p/#{id}/", opts, tokens)
+    response = Instagram.get("/p/#{id}/", opts)
     raise(InstagramError, response) if !response.success? || !response.json
     post = response.json["graphql"]["shortcode_media"]
 

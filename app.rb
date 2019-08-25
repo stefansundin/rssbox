@@ -549,8 +549,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
 
   options = nil
-  tokens = nil
-  if params[:csrftoken] && params[:sessionid]
+  if params[:sessionid]
     # To subscribe to private feeds, follow these steps in bash:
     # u=your_username
     # p=your_password
@@ -559,17 +558,14 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     # ua="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:59.0) Gecko/20100101 Firefox/59.0"
     # csrftoken=$(curl -sI https://www.instagram.com/ -A "$ua" | grep -i 'set-cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
     # sessionid=$(curl -sv https://www.instagram.com/accounts/login/ajax/ -A "$ua" -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2)
-    # echo "https://rssbox.herokuapp.com/instagram/$your_friends_userid/$your_friends_username?csrftoken=$csrftoken&sessionid=$sessionid"
-    # Please host the app yourself if you decide to do this, otherwise you will leak the tokens to me and the privacy of your friends posts.
+    # echo "https://rssbox.herokuapp.com/instagram/$your_friends_userid/$your_friends_username?sessionid=$sessionid"
+    # Please host the app yourself if you decide to do this, otherwise you will leak your sessionid to me and the privacy of your friends posts.
     options = {
       headers: {"Cookie" => "sessionid=#{CGI.escape(params[:sessionid])}"}
     }
-    tokens = {
-      csrftoken: params[:csrftoken],
-    }
   end
 
-  response = Instagram.get("/#{username}/", options, tokens)
+  response = Instagram.get("/#{username}/", options)
   return [response.code, "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_id=17880160963012870&id=#{@user_id}&first=1"] if response.code == 404
   return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
   raise(InstagramError, response) if !response.success? || !response.json
@@ -580,7 +576,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   type = %w[videos photos].pick(params[:type]) || "posts"
   @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
     if post["node"]["__typename"] == "GraphSidecar"
-      post["nodes"] = Instagram.get_post(post["node"]["shortcode"], options, tokens)
+      post["nodes"] = Instagram.get_post(post["node"]["shortcode"], options)
     else
       post["nodes"] = [post["node"]]
     end
