@@ -563,6 +563,9 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     options = {
       headers: {"Cookie" => "sessionid=#{CGI.escape(params[:sessionid])}"}
     }
+  else
+    # Temporary?
+    return [404, "Unfortunately, due to a change by Instagram, you must now supply a sessionid (i.e. a logged-in request). For details, see: https://github.com/stefansundin/rssbox/issues/21\n\nIMPORTANT:\n- My free hosting has very limited resources. It has been overloaded for the last year.\n- Because of this, please configure your feed reader to update infrequently.\n- If you need to subscribe to a lot of feeds, then host this app on your own infrastructure!\n\nIf you want me to find a better workaround, then please donate money!\nAnything better than this workaround will cost me money.\nDonate using the form at https://rssbox.herokuapp.com/#donate\n\nThank you."]
   end
 
   response = Instagram.get("/#{username}/", options)
