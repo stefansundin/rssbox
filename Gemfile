@@ -16,7 +16,7 @@ gem "rack-ssl-enforcer"
 gem "secure_headers"
 # gem "clogger"
 gem "heroku-env"
-gem "activesupport", "~> 5.0"
+gem "tzinfo"
 gem "nokogiri"
 gem "prometheus-client", require: "prometheus/middleware/exporter"
 

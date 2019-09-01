@@ -3,7 +3,6 @@
 
 require "sinatra"
 require "./config/application"
-require "active_support/core_ext/string"
 require "open-uri"
 
 before do
@@ -240,7 +239,13 @@ get "/youtube/:channel_id/:username" do
   @channel_id = params[:channel_id]
   playlist_id = "UU" + @channel_id[2..]
   @username = params[:username]
-  @tz = params[:tz]
+  if params.has_key?(:tz)
+    if params[:tz].tz_offset?
+      @tz = params[:tz]
+    elsif TZInfo::Timezone.all_identifiers.include?(params[:tz])
+      @tz = TZInfo::Timezone.get(params[:tz])
+    end
+  end
 
   # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
   response = Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })

@@ -39,7 +39,7 @@ if @type == "posts" || @type == "videos"
   prefix = if post.has_key?("live_status") || post["story"].include?(" live")
     "Live"
   elsif %w[link video photo event].include?(post["type"])
-    post["type"].camelize
+    post["type"].capitalize
   end
 end
 
@@ -60,7 +60,7 @@ if prefix && suffix
 elsif suffix || prefix
   suffix || prefix
 else
-  type.camelize
+  type.capitalize
 end
 %></title>
     <link href="<%= link.esc %>" />

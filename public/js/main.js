@@ -1,3 +1,17 @@
+function pad(s) {
+  return ("0"+s).slice(-2);
+}
+
+function sign(n) {
+  if (n < 0) {
+    return "-";
+  }
+  if (n > 0) {
+    return "+";
+  }
+  return "";
+}
+
 function fmt_filesize(bytes, digits=1) {
   var units = ['B', 'kiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   var i = 0;
@@ -277,7 +291,10 @@ $(document).ready(function() {
     xhr.send();
   });
 
-  $("form[action=youtube]").append($('<input type="hidden" name="tz">').val(-new Date().getTimezoneOffset()/60));
+  const tz_offset = -new Date().getTimezoneOffset();
+  if (tz_offset != 0) {
+    $("form[action=youtube]").append($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${pad(Math.abs(tz_offset/60))}:${pad(Math.abs(tz_offset%60))}`));
+  }
 
   var params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
   if (params.q) {

@@ -26,8 +26,13 @@ class String
     end
   end
 
-  def trunc(i=140)
-    self.truncate(i, separator: " ", omission: " …") # &hellip;
+  def truncate(i=140)
+    omission = "…" # &hellip;
+    if self.length > i
+      self[0...i-omission.length] + omission
+    else
+      self
+    end
   end
 
   def or(alt)
@@ -53,7 +58,7 @@ class String
   end
 
   def tz_offset?
-    /^[-+]?\d+(\.\d+)?$/ === self
+    /^[-+]\d{2}:\d{2}$/ === self
   end
 
   def parse_duration
