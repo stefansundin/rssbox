@@ -26,6 +26,11 @@
     category = run["category"]["data"]["name"]
   end
 
+  if run["platform"]["data"].is_a?(Hash)
+    platform = run["platform"]["data"]["name"]
+    platform += " (#{run["region"]["data"]["name"]})" if run["system"]["region"]
+  end
+
   if !run["level"]["data"].empty?
     level_subcategories = Speedrun.resolve_id("level-subcategories", run["level"]["data"]["id"])
     category += level_subcategories.select { |id, values| run["values"].has_key?(id) }.map { |id, values| " - " + values[run["values"][id]] }.join
@@ -46,7 +51,10 @@
 
   <p>Category: <a href="#{category_link}" rel="noreferrer">#{category}</a></p>
   <p>Runners: #{players.map { |name| "<a href='https://www.speedrun.com/user/#{name}' rel='noreferrer'>#{name}</a>" }.join(", ")}</p>
-  <p>Platform: #{run["platform"]["data"]["name"]}#{" (#{run["region"]["data"]["name"]})" if run["system"]["region"]}</p>
+EOF
+-%>
+<%= <<~EOF.esc if platform
+  <p>Platform: #{platform}</p>
 EOF
 -%>
     </content>
