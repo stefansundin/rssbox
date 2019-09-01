@@ -22,7 +22,7 @@ class Instagram < HTTP
     if response.code == 403
       raise(InstagramTokenError, response)
     elsif response.code == 429
-      raise(InstagramRatelimitError)
+      raise(InstagramRatelimitError, response)
     end
     response
   end
