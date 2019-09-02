@@ -857,7 +857,7 @@ get "/twitch/download" do
     vod_data = response.json
 
     url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{vod_data["sig"]}&nauth=#{vod_data["token"]}").normalize.to_s
-    fn = "#{data["created_at"].to_date} - #{data["user_name"]} - #{data["title"]}.mp4".to_filename
+    fn = "#{Date.parse(data["created_at"])} - #{data["user_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
     response = TwitchToken.get("/channels/#{channel_name}/access_token")
     return [response.code, "Channel does not seem to exist."] if response.code == 404
