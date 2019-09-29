@@ -577,6 +577,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   return [response.code, "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_hash=aec5501414615eca36a9acf075655b1e&variables={\"user_id\":\"#{@user_id}\",\"include_reel\":true}"] if response.code == 404
   return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
   raise(InstagramError, response) if !response.success? || !response.json
+  return [response.code, "Instagram user does not exist or has been deleted."] if response.json.empty?
 
   @data = response.json["graphql"]["user"]
   @user = @data["username"] rescue CGI.unescape(username)
