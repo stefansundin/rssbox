@@ -12,11 +12,12 @@
 # docker push stefansundin/rssbox
 
 FROM stefansundin/ruby:2.6
-MAINTAINER stefansundin https://github.com/stefansundin/rssbox
+LABEL maintainer="stefansundin https://github.com/stefansundin/rssbox"
 
 # install gem dependencies
 RUN \
   apt-get update && \
+  apt-get upgrade -y && \
   apt-get install -y --no-install-recommends libxml2-dev libxslt1-dev libcurl4 && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
@@ -26,6 +27,11 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle install --retry=3 --without=development:test --path=.bundle/gems
 COPY . .
 
-EXPOSE 8080
-ENV PORT=8080
+# Run the container as an unprivileged user
+RUN mkdir tmp
+RUN chown nobody:nogroup tmp
+USER nobody:nogroup
+
+EXPOSE 3000
+ENV PORT=3000
 ENTRYPOINT ["bin/server"]

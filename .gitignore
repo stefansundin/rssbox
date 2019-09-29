@@ -1,7 +1,5 @@
-/log/*.log
-/tmp/*.pid
-/tmp/*.sock
-/tmp/restart.txt
+/log
+/tmp
 /.env
 /.dockerenv
 /.vagrant

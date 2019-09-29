@@ -1,9 +1,6 @@
 # https://caddyserver.com/docs
 
-# I use this to forward port 80 to 8080 and 443 to 8443:
-# https://gist.github.com/stefansundin/f0ad99195333480157ce67e97c8d28c7
-
-http://rssbox.test:8080 {
+http://rssbox.localhost {
   on startup rackup
   proxy / http://localhost:9292 {
     transparent

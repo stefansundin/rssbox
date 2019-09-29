@@ -6,11 +6,11 @@ services:
     build: .
     entrypoint: bin/server
     environment:
-      - PORT=80
+      - PORT=3000
       - REDIS_URL=redis://redis:6379/3
     env_file: .dockerenv
     ports:
-      - "3000:80"
+      - "3000:3000"
     networks:
       - backend
       - monitoring
