@@ -28,7 +28,7 @@ RUN bundle install --retry=3 --without=development:test --path=.bundle/gems
 COPY . .
 
 # Run the container as an unprivileged user
-RUN mkdir tmp
+RUN mkdir -p tmp
 RUN chown nobody:nogroup tmp
 USER nobody:nogroup
 
