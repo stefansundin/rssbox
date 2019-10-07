@@ -143,7 +143,7 @@ class String
       EOF
     elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))+} =~ self || %r{^https?://(?:youtu\.be|(?:www\.)?youtube\.com/embed)/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
-      url = "https://www.youtube.com/embed/#{id}?rel=0"
+      url = "https://www.youtube.com/embed/#{id}?rel=0 &autoplay=1"
       url += "&list=#{list}" if list
       if t
         if /(?:(?<h>\d+)h|(?<m>\d+)m|(?<s>\d+)s)+/ =~ t
