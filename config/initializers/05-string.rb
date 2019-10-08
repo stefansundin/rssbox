@@ -189,15 +189,15 @@ class String
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.(?:gif|jpg|png)(?::large)?}i =~ self
       "<img src='#{self.https}' referrerpolicy='no-referrer'>"
     elsif %r{^https?://video\.twimg\.com/.+/(?<width>\d+)x(?<height>\d+)/.+\.mp4}i =~ self
-      "<video width='#{width}' height='#{height}' controls='controls' autoplay='1' loop='loop' muted='muted'><source type='video/mp4' src='#{self}'></video>"
+      "<video width='#{width}' height='#{height}' controls='controls' autoplay='autoplay' loop='loop' muted='muted'><source type='video/mp4' src='#{self}'></video>"
     elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
       uri = URI.parse(self)
       query = CGI.parse(uri.query || "").merge(CGI.parse(uri.fragment || "")) { |key,oldval,newval| oldval + newval }
       width = query["w"][0] || "640"
       height = query["h"][0] || "538"
-      "<video width='#{width}' height='#{height}' controls='controls'><source type='video/mp4' src='#{self}'></video>"
+      "<video width='#{width}' height='#{height}' controls='controls' autoplay='autoplay' loop='loop' muted='muted'><source type='video/mp4' src='#{self}'></video>"
     elsif %r{^https?://amp\.twimg\.com/v/.+}i =~ self
-      "<video width='#{width}' height='#{height}' controls='controls'><source type='video/mp4' src='#{self}'></video>"
+      "<video width='#{width}' height='#{height}' controls='controls' autoplay='autoplay' loop='loop' muted='muted'><source type='video/mp4' src='#{self}'></video>"
     end
   end
 end
