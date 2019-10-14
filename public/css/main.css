@@ -39,6 +39,9 @@ input[type="submit"] {
 .input-group {
   margin-top: 10px;
 }
+.form-inline {
+  margin-bottom: 15px;
+}
 .form-inline .input-group {
   margin-top: 0;
   margin-right: 10px;
@@ -60,7 +63,6 @@ input[monospace] {
 
 .expander {
   display: none;
-  margin-top: 15px;
 }
 a.blue {
   color: #007bff !important;
