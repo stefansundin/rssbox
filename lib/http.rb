@@ -36,7 +36,7 @@ class HTTP
       headers.merge!(self::HEADERS) if defined?(self::HEADERS) && relative_url
       headers.merge!(options[:headers]) if options.has_key?(:headers)
       response = http.request_get(uri.request_uri, headers)
-      $metrics[:requests].increment({ service: self.to_s.downcase, response_code: response.code })
+      $metrics[:requests].increment(labels: { service: self.to_s.downcase, response_code: response.code })
       return HTTPResponse.new(response, uri.to_s)
     end
   rescue Net::OpenTimeout, Net::ReadTimeout, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, OpenSSL::SSL::SSLError, Zlib::BufError, EOFError, ArgumentError

@@ -13,7 +13,7 @@ class Twitter < HTTP
   def self.get(*args, &block)
     response = super(*args, &block)
     if response.headers.has_key?("x-rate-limit-remaining")
-      $metrics[:ratelimit].set({ service: "twitter" }, response.headers["x-rate-limit-remaining"][0].to_i)
+      $metrics[:ratelimit].set(response.headers["x-rate-limit-remaining"][0].to_i, labels: { service: "twitter" })
     end
     return response
   end
