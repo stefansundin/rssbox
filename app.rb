@@ -553,7 +553,11 @@ end
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
 
-  options = nil
+  # To find the query_hash, simply use the Instagram website and monitor the network calls.
+  # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
+  options = {
+    query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{@user_id}\",\"first\":12}"},
+  }
   if params[:sessionid]
     # To subscribe to private feeds, follow these steps in bash:
     # ua="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -565,22 +569,16 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     # sessionid=$(curl -sv https://www.instagram.com/accounts/login/ajax/ -A "$ua" -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2)
     # echo "https://rssbox.herokuapp.com/instagram/$your_friends_userid/$your_friends_username?sessionid=$sessionid"
     # Please host the app yourself if you decide to do this, otherwise you will leak your sessionid to me and the privacy of your friends posts.
-    options = {
-      headers: {"Cookie" => "sessionid=#{CGI.escape(params[:sessionid])}"}
-    }
-  else
-    # Temporary?
-    return [404, "Unfortunately, due to a change by Instagram, you must now supply a sessionid (i.e. a logged-in request). For details, see: https://github.com/stefansundin/rssbox/issues/21\n\nIMPORTANT:\n- My free hosting has very limited resources. It has been overloaded for the last year.\n- Because of this, please configure your feed reader to update infrequently.\n- If you need to subscribe to a lot of feeds, then host this app on your own infrastructure!\n\nIf you want me to find a better workaround, then please donate money!\nAnything better than this workaround will cost me money.\nDonate using the form at https://rssbox.herokuapp.com/#donate\n\nThank you."]
+    options[:headers] = {"Cookie" => "ig_cb=1; sessionid=#{CGI.escape(params[:sessionid])}"}
   end
 
-  response = Instagram.get("/#{username}/", options)
-  return [response.code, "Instagram username does not exist. If the user changed their username, go here to find the new username: https://www.instagram.com/graphql/query/?query_hash=aec5501414615eca36a9acf075655b1e&variables={\"user_id\":\"#{@user_id}\",\"include_reel\":true}"] if response.code == 404
+  response = Instagram.get("/graphql/query/", options)
   return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
+  return [response.code, "Instagram user does not exist."] if !response.json["data"]["user"]
   raise(InstagramError, response) if !response.success? || !response.json
-  return [response.code, "Instagram user does not exist or has been deleted."] if response.json.empty?
 
-  @data = response.json["graphql"]["user"]
-  @user = @data["username"] rescue CGI.unescape(username)
+  @data = response.json["data"]["user"]
+  @user = CGI.unescape(username)
 
   type = %w[videos photos].pick(params[:type]) || "posts"
   @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
