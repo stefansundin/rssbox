@@ -16,6 +16,14 @@ To deploy to Kubernetes, see [kubernetes/README.md](kubernetes/README.md).
 
 A Docker image is available on [Docker Hub](https://hub.docker.com/r/stefansundin/rssbox).
 
+#### Heroku
+
+If you need to re-provision redis, or you didn't use the deploy button above to provision the app initially, then you need to make sure to set the maxmemory policy:
+
+```
+heroku redis:maxmemory --policy=allkeys-lru
+```
+
 ### Configuration
 
 You need to get API keys for the respective services and populate the environment variables, e.g. by using an [.env](.env.example) file.
