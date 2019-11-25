@@ -97,7 +97,8 @@ class URL
             throw :done
           end
         end
-      rescue Net::OpenTimeout, Net::ReadTimeout, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, OpenSSL::SSL::SSLError, Zlib::BufError, EOFError, ArgumentError, Addressable::URI::InvalidURIError
+      rescue => e
+        puts "Exception trying to resolve URL #{dest}: #{e.message}"
         throw :done
       end
     end

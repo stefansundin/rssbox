@@ -39,9 +39,9 @@ class HTTP
       $metrics[:requests].increment(labels: { service: self.to_s.downcase, response_code: response.code })
       return HTTPResponse.new(response, uri.to_s)
     end
-  rescue Net::OpenTimeout, Net::ReadTimeout, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, SocketError, Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, OpenSSL::SSL::SSLError, Zlib::BufError, EOFError, ArgumentError
+  rescue => e
     self::ERROR_CLASS ||= HTTPError
-    raise(self::ERROR_CLASS, $!)
+    raise(self::ERROR_CLASS, e)
   end
 end
 
