@@ -10,6 +10,7 @@ Thumbs.db
 *~
 ubuntu-*-cloudimg-console.log
 .powder
+.irb_history
 *.crt
 *.key
 
