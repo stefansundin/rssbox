@@ -1,32 +1,37 @@
 # Initial setup
 
-If you are using the free tier, then use a t2.micro instance. If not, you can use a t1.micro with spot to get the lowest price.
+First of all, make sure you are running the latest version of the eb cli:
+```
+pip3 install -U --user awscli awsebcli
+```
+
+If you are using the free tier, then use a t2.micro instance. If not, you can use a t3.nano or t3a.nano with spot to get the lowest price.
 
 Create environment:
 ```
 git tag -a -m "First deploy" eb-v1
 eb init rssbox --platform "Ruby 2.6 (Puma)" --keyname id_rsa
-eb create --single --instance_type t2.micro
+eb create --single --instance-types t2.micro
 ```
 
 Using spot instances:
 ```
-eb create --single --instance_type t1.micro --envvars EC2_SPOT_PRICE=0.01
+eb create --single --enable-spot --instance-types t3.nano,t3a.nano
 ```
 
 With an application load balancer:
 ```
-eb create --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB,EC2_SPOT_PRICE=0.01
+eb create --enable-spot --instance-types t3.nano,t3a.nano --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
 With a network load balancer:
 ```
-eb create --instance_type t2.micro --elb-type network --envvars ASG_HEALTH_CHECK_TYPE=ELB,EC2_SPOT_PRICE=0.01
+eb create --enable-spot --instance-types t3.nano,t3a.nano --elb-type network --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
-Launch in a specific VPC (alternatively update `vpc.config` and omit `--vpc`):
+Launch in a specific VPC (alternatively omit `--vpc` and update [vpc.config](vpc.config)):
 ```
-eb create --vpc --instance_type t2.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB,EC2_SPOT_PRICE=0.01
+eb create --vpc --instance-types t3.nano,t3a.nano --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
 The following environment variables are automatically set:
@@ -34,6 +39,9 @@ The following environment variables are automatically set:
 - `RACK_ENV=production` (this is why the app still has to default `APP_ENV` to `RACK_ENV`)
 - `RAILS_SKIP_ASSET_COMPILATION=false`
 - `RAILS_SKIP_MIGRATIONS=false`
+
+For best experience, please set the following variables as well:
+- `LANG=en_US.UTF-8`
 
 # Deploy
 
