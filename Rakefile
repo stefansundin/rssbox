@@ -11,4 +11,4 @@ if ENV["APP_ENV"] == "development"
   require "github-release-party/tasks/heroku"
 end
 
-Dir["lib/tasks/*.rake"].each { |f| load f }
+Dir["lib/tasks/*.rake"].sort.each { |f| load f }

@@ -6,7 +6,7 @@ require "bundler/setup"
 Bundler.require(:default, ENV["APP_ENV"])
 
 app_path = File.expand_path("../..", __FILE__)
-Dir["#{app_path}/lib/*.rb"].each { |f| require f }
+Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
 
 # Expose the request path in the exception message for Sinatra::NotFound
 # This makes it easier to scan the list of errors in Airbrake to see what paths causes 404 errors
@@ -52,5 +52,5 @@ configure :development do
   end
 end
 
-Dir["#{app_path}/config/initializers/*.rb"].each { |f| require f }
-Dir["#{app_path}/app/**/*.rb"].each { |f| require f }
+Dir["#{app_path}/config/initializers/*.rb"].sort.each { |f| require f }
+Dir["#{app_path}/app/**/*.rb"].sort.each { |f| require f }
