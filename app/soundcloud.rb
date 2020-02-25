@@ -4,7 +4,7 @@
 class SoundcloudError < HTTPError; end
 
 class Soundcloud < HTTP
-  BASE_URL = "https://api.soundcloud.com"
+  BASE_URL = "https://api-v2.soundcloud.com"
   PARAMS = "client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}"
   ERROR_CLASS = SoundcloudError
 end

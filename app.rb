@@ -682,24 +682,20 @@ get "/soundcloud" do
   end
 
   response = Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
-  if response.code == 302
-    uri = Addressable::URI.parse(response.json["location"])
-    return [404, "URL does not resolve to a user."] if !uri.path.start_with?("/users/")
-    id = uri.path[/\d+/]
+  if response.code == 200
+    data = response.json
+    data = data["user"] if data.has_key?("user")
+    return [404, "Can't identify the user."] if data["kind"] != "user"
   elsif response.code == 404 && username.numeric?
     response = Soundcloud.get("/users/#{username}")
-    return [response.code, "Can't find a user with that id. Sorry."] if response.code == 404
+    return [response.code, "Can't find a user with that id. Sorry."] if response.code == 400 || response.code == 404
     raise(SoundcloudError, response) if !response.success?
-    id = response.json["id"]
+    data = response.json
   elsif response.code == 404
     return [response.code, "Can't find a user with that name. Sorry."]
   else
     raise(SoundcloudError, response)
   end
-
-  response = Soundcloud.get("/users/#{id}")
-  raise(SoundcloudError, response) if !response.success?
-  data = response.json
 
   redirect Addressable::URI.new(path: "/soundcloud/#{data["id"]}/#{data["permalink"]}").normalize.to_s
 end
@@ -709,25 +705,19 @@ get "/soundcloud/download" do
   url = "https://#{url}" if !url.start_with?("http:", "https:")
   response = Soundcloud.get("/resolve", query: { url: url })
   return [response.code, "URL does not resolve."] if response.code == 404
-  raise(SoundcloudError, response) if response.code != 302
-  uri = Addressable::URI.parse(response.json["location"])
-  return [404, "URL does not resolve to a track."] if !uri.path.start_with?("/tracks/")
-  response = Soundcloud.get("#{uri.path}/stream")
-  raise(SoundcloudError, response) if response.code != 302
-  media_url = response.json["location"]
+  raise(SoundcloudError, response) if response.code != 200
 
-  if env["HTTP_ACCEPT"] == "application/json"
-    response = Soundcloud.get("#{uri.path}")
-    content_type :json
-    data = response.json
-    created_at = Time.parse(data["created_at"])
-    return {
-      url: media_url,
-      filename: "#{created_at.to_date} - #{data["title"]}.mp3".to_filename,
-    }.to_json
-  end
+  data = response.json
+  return [404, "URL does not resolve to a track."] if data["kind"] != "track"
 
-  redirect media_url
+  data_uri = Addressable::URI.parse(data["media"]["transcodings"][0]["url"])
+  response = Soundcloud.get(data_uri.path)
+  raise(SoundcloudError, response) if response.code != 200
+
+  url = response.json["url"]
+  fn = "#{Date.parse(data["created_at"])} - #{data["title"]}.mp3".to_filename
+
+  "ffmpeg -i '#{url}' -acodec copy '#{fn}'"
 end
 
 get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
@@ -737,7 +727,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
   return [404, "That user no longer exist."] if response.code == 500 && response.body == '{"error":"Match failed"}'
   raise(SoundcloudError, response) if !response.success?
 
-  @data = response.json
+  @data = response.json["collection"]
   @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
 
