@@ -867,12 +867,12 @@ get "/twitch/watch" do
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
-    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (legacy url, redirects to the one above)
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (deprecated url)
     # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
-    # https://www.twitch.tv/gsl/video/25133028
-    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
-    # https://www.twitch.tv/videos/25133028 (legacy url)
+    # https://www.twitch.tv/videos/25133028
+    # https://www.twitch.tv/gsl/video/25133028 (legacy url)
+    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s (legacy url)
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
     # https://player.twitch.tv/?video=v103620362
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
@@ -895,6 +895,8 @@ get "/twitch/watch" do
     playlist_url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{data["sig"]}&nauth=#{data["token"]}").normalize.to_s
 
     response = HTTP.get(playlist_url)
+    return [response.code, "Video does not exist."] if response.code == 404
+    raise(TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
     response = TwitchToken.get("/channels/#{channel_name}/access_token")
