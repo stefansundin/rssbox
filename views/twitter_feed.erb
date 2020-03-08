@@ -41,12 +41,6 @@
     end
   end
   body = text.linkify_and_embed(request)
-  if body.include?("snappytv.com")
-    body += "\n<iframe width='560' height='314' src='https://twitter.com/i/videos/tweet/#{tweet["id_str"]}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
-  end
-  if body.include?("https://www.pscp.tv/w/")
-    body += "\n<iframe width='420' height='480' src='https://twitter.com/i/cards/tfw/v1/#{tweet["id_str"]}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
-  end
 -%>
 
   <entry>
