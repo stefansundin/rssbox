@@ -11,4 +11,4 @@ spec:
       - path: /
         backend:
           serviceName: rssbox
-          servicePort: 8080
+          servicePort: 3000

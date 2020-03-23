@@ -11,7 +11,7 @@ http://rssbox.localhost {
 # For https:
 # openssl req -new -x509 -sha256 -days 3650 -nodes -newkey rsa:4096 -keyout rssbox.key -out rssbox.crt -subj /CN=rssbox.test
 
-# http://rssbox.test:8080 {
+# http://rssbox.test:3000 {
 #   redir / https://{host}{uri}
 # }
 # https://rssbox.test:8443 {

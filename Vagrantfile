@@ -40,7 +40,7 @@ Type=simple
 User=vagrant
 WorkingDirectory=/vagrant/
 EnvironmentFile=/home/vagrant/rssbox.env
-ExecStart=/home/vagrant/.rbenv/versions/global/bin/puma -C config/puma.rb -p 8080
+ExecStart=/home/vagrant/.rbenv/versions/global/bin/puma -C config/puma.rb -p 3000
 Restart=always
 
 [Install]
@@ -52,7 +52,7 @@ $puma_socket = <<SCRIPT
 Description=Puma Socket
 
 [Socket]
-ListenStream=0.0.0.0:8080
+ListenStream=0.0.0.0:3000
 NoDelay=true
 ReusePort=true
 Backlog=1024
@@ -128,7 +128,7 @@ SCRIPT
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
   config.vm.hostname = "rssbox"
-  config.vm.network "forwarded_port", guest: 8080, host: 3000
+  config.vm.network "forwarded_port", guest: 3000, host: 3000
   config.vm.provision "shell", inline: $root_provision
   config.vm.provision "shell", inline: $user_provision, privileged: false
   config.vm.provision "shell", inline: "systemctl start puma.socket puma.service", run: "always"
