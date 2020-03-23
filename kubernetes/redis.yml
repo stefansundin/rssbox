@@ -19,6 +19,12 @@ spec:
         ports:
         - containerPort: 6379
           name: service
+        volumeMounts:
+        - mountPath: /data
+          name: data-volume
+      volumes:
+      - name: data-volume
+        emptyDir: {}
 
 ---
 kind: Service
