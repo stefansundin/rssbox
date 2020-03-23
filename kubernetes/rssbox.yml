@@ -1,10 +1,13 @@
 ---
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: rssbox
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: rssbox
   template:
     metadata:
       labels:
