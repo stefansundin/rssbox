@@ -8,21 +8,6 @@ Bundler.require(:default, ENV["APP_ENV"])
 app_path = File.expand_path("../..", __FILE__)
 Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
 
-# Expose the request path in the exception message for Sinatra::NotFound
-# This makes it easier to scan the list of errors in Airbrake to see what paths causes 404 errors
-# https://github.com/sinatra/sinatra/pull/1566
-module Sinatra
-  class Base
-    def route_missing
-      if @app
-        forward
-      else
-        raise NotFound, "#{request.request_method} #{request.path_info}"
-      end
-    end
-  end
-end
-
 # uncomment to get production error pages in development
 # set :environment, :production
 
