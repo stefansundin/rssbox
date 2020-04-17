@@ -235,6 +235,58 @@ get "/youtube" do
   end
 end
 
+get "/youtube/:channel_id/:username.ics" do
+  @channel_id = params[:channel_id]
+  @username = params[:username]
+
+  # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
+  response = HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{@channel_id}")
+  raise(GoogleError, response) if !response.success?
+  doc = Nokogiri::XML(response.body)
+  ids = doc.xpath("//yt:videoId").map(&:text)
+
+  response = Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
+  raise(GoogleError, response) if !response.success?
+  @data = response.json["items"]
+
+  if params.has_key?(:eventType)
+    eventTypes = params[:eventType].split(",")
+    eventType_completed = eventTypes.include?("completed")
+    eventType_live = eventTypes.include?("live")
+    eventType_upcoming = eventTypes.include?("upcoming")
+    @data.select! do |v|
+      v.has_key?("liveStreamingDetails") && (
+        (eventType_completed && v["liveStreamingDetails"].has_key?("actualEndTime")) ||
+        (eventType_live      && v["liveStreamingDetails"].has_key?("actualStartTime")    && !v["liveStreamingDetails"].has_key?("actualEndTime")) ||
+        (eventType_upcoming  && v["liveStreamingDetails"].has_key?("scheduledStartTime") && !v["liveStreamingDetails"].has_key?("actualStartTime"))
+      )
+    end
+  end
+
+  if params.has_key?(:q)
+    @query = params[:q]
+    q = @query.downcase
+    @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
+    @title = "\"#{@query}\" from #{@username}"
+  else
+    @title = "#{@username} on YouTube"
+  end
+
+  @data.sort_by! do |video|
+    if video.has_key?("liveStreamingDetails")
+      Time.parse(video["liveStreamingDetails"]["actualStartTime"] || video["liveStreamingDetails"]["scheduledStartTime"])
+    else
+      Time.parse(video["snippet"]["publishedAt"])
+    end
+  end.reverse!
+
+  @data.map do |video|
+    video["snippet"]["description"].grep_urls
+  end.flatten.tap { |urls| URL.resolve(urls) }
+
+  erb :"youtube.ics"
+end
+
 get "/youtube/:channel_id/:username" do
   @channel_id = params[:channel_id]
   playlist_id = "UU" + @channel_id[2..]

@@ -1,0 +1,55 @@
+<%- content_type :ics -%>
+BEGIN:VCALENDAR
+PRODID:-//RSSBox//RSSBox <%= ENV["APP_VERSION"] %>//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:<%= @title %>
+X-WR-CALDESC:https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::URI.new(path: "/search", query: "query=#{@query}").normalize.to_s if @query %>
+
+<%-
+@data.each do |video|
+  duration = video["contentDetails"]["duration"].parse_pt
+  title = video["snippet"]["title"].to_line
+  url = "https://www.youtube.com/watch?v=#{video["id"]}"
+  description = if duration > 0
+    "Duration: #{duration.to_duration}"
+  end
+  published_at = Time.parse(video["snippet"]["publishedAt"])
+
+  if video.has_key?("liveStreamingDetails")
+    dtstart = Time.parse(video["liveStreamingDetails"]["actualStartTime"] || video["liveStreamingDetails"]["scheduledStartTime"])
+    dtend = if video["liveStreamingDetails"]["actualEndTime"]
+      Time.parse(video["liveStreamingDetails"]["actualEndTime"])
+    else
+      [Time.now, dtstart].max + 7200
+    end
+    if video["liveStreamingDetails"].has_key?("actualEndTime")
+    elsif video["liveStreamingDetails"].has_key?("actualStartTime")
+      title += " (started)"
+    elsif video["liveStreamingDetails"].has_key?("scheduledStartTime")
+      title += " (scheduled)"
+    end
+  else
+    dtstart = published_at
+    dtend = published_at + duration
+  end
+
+  dtstart = dtstart.strftime("%Y%m%dT%H%M%SZ")
+  dtend = dtend.strftime("%Y%m%dT%H%M%SZ")
+  published_at = published_at.strftime("%Y%m%dT%H%M%SZ")
+-%>
+BEGIN:VEVENT
+UID:video-<%= video["id"] %>@youtube.com
+DTSTART:<%= dtstart %>
+DTEND:<%= dtend %>
+DTSTAMP:<%= published_at %>
+CREATED:<%= published_at %>
+LAST-MODIFIED:<%= published_at %>
+SUMMARY:<%= title %>
+LOCATION:<%= url %>
+DESCRIPTION:<%= description %>
+END:VEVENT
+
+<%- end -%>
+END:VCALENDAR
