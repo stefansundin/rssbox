@@ -35,9 +35,26 @@
       end
     end
   end
-  if t["entities"].has_key?("media")
-    t["entities"]["media"].each do |media|
-      text += " #{media["media_url_https"]}:large"
+    if t.has_key?("extended_entities")
+    t["extended_entities"]["media"].each do |entity|
+      if entity["video_info"]
+        video = entity["video_info"]["variants"].sort do |a,b|
+          if a["content_type"].start_with?("video/") && b["content_type"].start_with?("video/")
+            b["bitrate"] - a["bitrate"]
+          else
+            b["content_type"].start_with?("video/") <=> a["content_type"].start_with?("video/")
+          end
+        end[0]
+        if /\/\d+x\d+\// =~ video["url"]
+          # there is dimension information in the URL (i.e. /ext_tw_video/)
+          text += " #{video["url"]}"
+        else
+          # no dimension information in the URL, so add some (i.e. /tweet_video/)
+          text += " #{video["url"]}#w=#{entity["sizes"]["large"]["w"]}&h=#{entity["sizes"]["large"]["h"]}"
+        end
+      else
+        text += " #{entity["media_url_https"]}"
+      end
     end
   end
   body = text.linkify_and_embed(request)
