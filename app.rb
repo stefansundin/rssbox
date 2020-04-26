@@ -20,6 +20,13 @@ after do
     end
     body location.to_json
   end
+
+  if headers["Content-Type"].start_with?("text/calendar")
+    headers({
+      "Content-Transfer-Encoding" => "binary",
+      "Content-Disposition" => "attachment; filename=\"#{@title}.ics\"",
+    })
+  end
 end
 
 get "/" do
@@ -238,6 +245,7 @@ end
 get "/youtube/:channel_id/:username.ics" do
   @channel_id = params[:channel_id]
   @username = params[:username]
+  @title = "#{@username} on YouTube"
 
   # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
   response = HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{@channel_id}")
@@ -267,9 +275,6 @@ get "/youtube/:channel_id/:username.ics" do
     @query = params[:q]
     q = @query.downcase
     @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
-    @title = "\"#{@query}\" from #{@username}"
-  else
-    @title = "#{@username} on YouTube"
   end
 
   @data.sort_by! do |video|
