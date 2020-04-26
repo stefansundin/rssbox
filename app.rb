@@ -998,6 +998,20 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
   erb :"twitch.atom"
 end
 
+get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
+  @title = "#{user} on Twitch"
+
+  type = %w[all upload archive highlight].pick(params[:type]) || "all"
+  response = Twitch.get("/videos", query: { user_id: id, type: type })
+  raise(TwitchError, response) if !response.success?
+
+  @data = response.json["data"]
+  user = @data[0]["user_name"] || CGI.unescape(user)
+  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
+
+  erb :"twitch.ics"
+end
+
 get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @id = id
   @type = "user"

@@ -1,0 +1,38 @@
+<%- content_type :ics -%>
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//RSSBox//RSSBox <%= ENV["APP_VERSION"] %>//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:<%= @title %>
+X-WR-CALDESC:<%= @alternate_url %>
+
+<%-
+@data.each do |video|
+  duration = video["duration"].parse_duration
+  if video["thumbnail_url"] == ""
+    # video is currently live
+    duration += 7200
+  end
+  dtstart = Time.parse(video["created_at"])
+  dtend = dtstart + duration
+  published_at = Time.parse(video["published_at"])
+
+  dtstart = dtstart.strftime("%Y%m%dT%H%M%SZ")
+  dtend = dtend.strftime("%Y%m%dT%H%M%SZ")
+  published_at = published_at.strftime("%Y%m%dT%H%M%SZ")
+-%>
+BEGIN:VEVENT
+UID:video-<%= video["id"] %>@twitch.com
+DTSTART:<%= dtstart %>
+DTEND:<%= dtend %>
+DTSTAMP:<%= published_at %>
+CREATED:<%= published_at %>
+LAST-MODIFIED:<%= published_at %>
+SUMMARY:<%= video["title"].to_line %>
+LOCATION:https://www.twitch.tv/videos/<%= video["id"] %>
+DESCRIPTION:<%= video["description"].gsub("\n", "\\n") %>
+END:VEVENT
+
+<%- end -%>
+END:VCALENDAR
