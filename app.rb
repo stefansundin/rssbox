@@ -168,7 +168,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     t["full_text"].grep_urls
   end.flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :twitter_feed
+  erb :"twitter.atom"
 end
 
 get "/youtube" do
@@ -340,7 +340,7 @@ get "/youtube/:channel_id/:username" do
     video["snippet"]["description"].grep_urls
   end.flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :youtube_feed
+  erb :"youtube.atom"
 end
 
 get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
@@ -521,7 +521,7 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
     post.slice("message", "description", "link").values.map(&:grep_urls)
   end.flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :facebook_feed
+  erb :"facebook.atom"
 end
 
 get "/instagram" do
@@ -658,7 +658,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"].grep_urls
   end.flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :instagram_feed
+  erb :"instagram.atom"
 end
 
 get "/periscope" do
@@ -705,7 +705,7 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
     @username
   end
 
-  erb :periscope_feed
+  erb :"periscope.atom"
 end
 
 get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
@@ -788,7 +788,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
     track["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :soundcloud_feed
+  erb :"soundcloud.atom"
 end
 
 get "/mixcloud" do
@@ -817,7 +817,7 @@ get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
   @username = @data[0]["user"]["username"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["name"] rescue CGI.unescape(user)
 
-  erb :mixcloud_feed
+  erb :"mixcloud.atom"
 end
 
 get "/twitch" do
@@ -995,7 +995,7 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
     video["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :twitch_feed
+  erb :"twitch.atom"
 end
 
 get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
@@ -1021,7 +1021,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
     video["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :twitch_feed
+  erb :"twitch.atom"
 end
 
 get "/speedrun" do
@@ -1066,7 +1066,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
     ].flatten.compact.map(&:grep_urls)
   end.flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :speedrun_feed
+  erb :"speedrun.atom"
 end
 
 get "/ustream" do
@@ -1103,7 +1103,7 @@ get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
     video["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :ustream_feed
+  erb :"ustream.atom"
 end
 
 get "/ustream/download" do
@@ -1171,7 +1171,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   raise(DailymotionError, response) if !response.success?
   @data = response.json["list"]
 
-  erb :dailymotion_feed
+  erb :"dailymotion.atom"
 end
 
 get "/imgur" do
@@ -1259,7 +1259,7 @@ get "/imgur/:user_id/:username" do
     image["description"]
   end.flatten.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
 
-  erb :imgur_feed
+  erb :"imgur.atom"
 end
 
 get "/svtplay" do
