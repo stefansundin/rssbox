@@ -1,7 +1,7 @@
 <%- content_type :ics -%>
 BEGIN:VCALENDAR
-PRODID:-//RSSBox//RSSBox <%= ENV["APP_VERSION"] %>//EN
 VERSION:2.0
+PRODID:-//RSSBox//RSSBox <%= ENV["APP_VERSION"] %>//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:<%= @title %>
@@ -9,12 +9,7 @@ X-WR-CALDESC:https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::
 
 <%-
 @data.each do |video|
-  duration = video["contentDetails"]["duration"].parse_pt
   title = video["snippet"]["title"].to_line
-  url = "https://www.youtube.com/watch?v=#{video["id"]}"
-  description = if duration > 0
-    "Duration: #{duration.to_duration}"
-  end
   published_at = Time.parse(video["snippet"]["publishedAt"])
 
   if video.has_key?("liveStreamingDetails")
@@ -32,7 +27,7 @@ X-WR-CALDESC:https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::
     end
   else
     dtstart = published_at
-    dtend = published_at + duration
+    dtend = published_at + video["contentDetails"]["duration"].parse_pt
   end
 
   dtstart = dtstart.strftime("%Y%m%dT%H%M%SZ")
@@ -47,8 +42,8 @@ DTSTAMP:<%= published_at %>
 CREATED:<%= published_at %>
 LAST-MODIFIED:<%= published_at %>
 SUMMARY:<%= title %>
-LOCATION:<%= url %>
-DESCRIPTION:<%= description %>
+LOCATION:https://www.youtube.com/watch?v=<%= video["id"] %>
+DESCRIPTION:<%= video["snippet"]["description"].gsub("\n", "\\n") %>
 END:VEVENT
 
 <%- end -%>

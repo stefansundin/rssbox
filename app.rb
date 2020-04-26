@@ -285,10 +285,6 @@ get "/youtube/:channel_id/:username.ics" do
     end
   end.reverse!
 
-  @data.map do |video|
-    video["snippet"]["description"].grep_urls
-  end.flatten.tap { |urls| URL.resolve(urls) }
-
   erb :"youtube.ics"
 end
 
