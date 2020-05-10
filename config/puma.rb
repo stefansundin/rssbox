@@ -21,6 +21,10 @@ app_path = File.expand_path("../..", __FILE__)
 pidfile("#{app_path}/tmp/puma.pid")
 bind("unix://#{app_path}/tmp/puma.sock")
 
+if ENV["PORT"]
+  port(ENV["PORT"])
+end
+
 if ENV["LOG_ENABLED"]
   stdout_redirect("#{app_path}/log/puma-stdout.log", "#{app_path}/log/puma-stderr.log", true)
 end

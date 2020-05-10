@@ -1,5 +1,6 @@
 #!/bin/bash
 # listens on port 3000 unless PORT is specified
 # export RUBYOPT="--jit --jit-verbose=1"
-echo http://localhost:${PORT-3000}/
-bundle exec puma -b unix://tmp/puma.sock -p ${PORT-3000} -C config/puma.rb "$@"
+export PORT=${PORT-3000}
+echo http://localhost:$PORT/
+bundle exec puma -C config/puma.rb "$@"
