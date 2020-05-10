@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# eb has issues deploying if the latest tag has a slash in it.. annoying since my heroku deploy tags have slashes, e.g. heroku/v123
+# eb has issues deploying if the most recent tag has a slash in it.. annoying since my heroku deploy tags have slashes, e.g. heroku/v123
 label=$(date -u '+%FT%TZ')
 
 set -x

@@ -5,13 +5,13 @@ First of all, make sure you are running the latest version of the eb cli:
 pip3 install -U --user awscli awsebcli
 ```
 
-If you are using the free tier, then use a t2.micro instance. If not, you can use a t3.nano or t3a.nano with spot to get the lowest price.
+Use a t2.micro instance if you are using the AWS free tier. Otherwise, use t3.nano or t3a.nano with spot to get the lowest price.
 
 Create environment:
 ```
-git tag -a -m "First deploy" eb-v1
+git tag -f -a -m "First deploy" eb
 eb init rssbox --platform "Ruby 2.6 (Puma)" --keyname id_rsa
-eb create --single --instance-types t2.micro
+eb create --single --instance_type t2.micro
 ```
 
 Using spot instances:
