@@ -10,7 +10,7 @@ Use a t2.micro instance if you are using the AWS free tier. Otherwise, use t3.na
 Create environment:
 ```
 git tag -f -a -m "First deploy" eb
-eb init rssbox --platform "Ruby 2.6 (Puma)" --keyname id_rsa
+eb init rssbox --platform "Ruby 2.7 running on 64bit Amazon Linux 2" --keyname id_rsa
 eb create --single --instance_type t2.micro
 ```
 
@@ -35,6 +35,7 @@ eb create --vpc --instance-types t3.nano,t3a.nano --elb-type application --envva
 ```
 
 The following environment variables are automatically set:
+- `BUNDLER_DEPLOYMENT_MODE=true`
 - `BUNDLE_WITHOUT=test:development`
 - `RACK_ENV=production` (this is why the app still has to default `APP_ENV` to `RACK_ENV`)
 - `RAILS_SKIP_ASSET_COMPILATION=false`
