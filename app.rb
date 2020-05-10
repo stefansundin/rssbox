@@ -98,6 +98,7 @@ get "/go" do
 end
 
 get "/twitter" do
+  return [404, "Credentials not configured"] if !ENV["TWITTER_ACCESS_TOKEN"]
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if params[:q].include?("twitter.com/i/") || params[:q].include?("twitter.com/who_to_follow/")
@@ -132,6 +133,8 @@ get "/twitter" do
 end
 
 get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
+  return [404, "Credentials not configured"] if !ENV["TWITTER_ACCESS_TOKEN"]
+
   @user_id = id
 
   response = Twitter.get("/statuses/user_timeline.json", query: {
@@ -172,6 +175,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/youtube" do
+  return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
@@ -243,6 +247,8 @@ get "/youtube" do
 end
 
 get "/youtube/:channel_id/:username.ics" do
+  return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
+
   @channel_id = params[:channel_id]
   @username = params[:username]
   @title = "#{@username} on YouTube"
@@ -289,6 +295,8 @@ get "/youtube/:channel_id/:username.ics" do
 end
 
 get "/youtube/:channel_id/:username" do
+  return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
+
   @channel_id = params[:channel_id]
   playlist_id = "UU" + @channel_id[2..]
   @username = params[:username]
@@ -379,8 +387,9 @@ get "/vimeo" do
 end
 
 get "/facebook" do
-  return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
+  return [404, "Credentials not configured"] if !ENV["FACEBOOK_APP_ID"] || !ENV["FACEBOOK_APP_SECRET"]
   return [400, "Insufficient parameters"] if params[:q].empty?
+
   params[:q].gsub!("facebookcorewwwi.onion", "facebook.com") if params[:q].include?("facebookcorewwwi.onion")
 
   if /https:\/\/www\.facebook\.com\/plugins\/.+[?&]href=(?<href>.+)$/ =~ params[:q]
@@ -427,6 +436,8 @@ get "/facebook" do
 end
 
 get "/facebook/download" do
+  return [404, "Credentials not configured"] if !ENV["FACEBOOK_APP_ID"] || !ENV["FACEBOOK_APP_SECRET"]
+
   if /\/(?<id>\d+)/ =~ params[:url]
     # https://www.facebook.com/infectedmushroom/videos/10153430677732261/
     # https://www.facebook.com/infectedmushroom/videos/vb.8811047260/10153371214897261/?type=2&theater
@@ -466,7 +477,7 @@ get "/facebook/download" do
 end
 
 get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
-  return [404, "Facebook credentials not configured"] if ENV["FACEBOOK_APP_ID"].empty? || ENV["FACEBOOK_APP_SECRET"].empty?
+  return [404, "Credentials not configured"] if !ENV["FACEBOOK_APP_ID"] || !ENV["FACEBOOK_APP_SECRET"]
 
   @id = id
   @type = @edge = %w[videos photos live].pick(params[:type]) || "posts"
@@ -726,6 +737,7 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
 end
 
 get "/soundcloud" do
+  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
@@ -754,6 +766,8 @@ get "/soundcloud" do
 end
 
 get "/soundcloud/download" do
+  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
+
   url = params[:url]
   url = "https://#{url}" if !url.start_with?("http:", "https:")
   response = Soundcloud.get("/resolve", query: { url: url })
@@ -774,6 +788,8 @@ get "/soundcloud/download" do
 end
 
 get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
+  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
+
   @id = id
 
   response = Soundcloud.get("/users/#{id}/tracks")
@@ -821,6 +837,7 @@ get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
 end
 
 get "/twitch" do
+  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /twitch\.tv\/directory\/game\/(?<game_name>[^\/?#]+)/ =~ params[:q]
@@ -861,6 +878,7 @@ get "/twitch" do
 end
 
 get "/twitch/download" do
+  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:url].empty?
 
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
@@ -915,6 +933,7 @@ get "/twitch/download" do
 end
 
 get "/twitch/watch" do
+  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:url].empty?
 
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
@@ -974,6 +993,8 @@ get "/twitch/watch" do
 end
 
 get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
+  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
+
   @id = id
   @type = "game"
 
@@ -999,6 +1020,8 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
 end
 
 get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
+  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
+
   @title = "#{user} on Twitch"
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
@@ -1013,6 +1036,8 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
 end
 
 get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
+  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
+
   @id = id
   @type = "user"
 
@@ -1189,6 +1214,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
 end
 
 get "/imgur" do
+  return [404, "Credentials not configured"] if !ENV["IMGUR_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /imgur\.com\/user\/(?<username>[a-zA-Z0-9]+)/ =~ params[:q]
@@ -1240,6 +1266,8 @@ get "/imgur" do
 end
 
 get "/imgur/:user_id/:username" do
+  return [404, "Credentials not configured"] if !ENV["IMGUR_CLIENT_ID"]
+
   if params[:user_id] == "r"
     @subreddit = params[:username]
     response = Imgur.get("/gallery/r/#{@subreddit}")
