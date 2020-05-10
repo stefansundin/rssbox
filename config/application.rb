@@ -13,7 +13,7 @@ Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
 # set :environment, :production
 
 configure do
-  use Rack::Deflater
+  use Rack::Deflater, sync: false
   use Rack::SslEnforcer, only_hosts: (ENV["SSL_ENFORCER_HOST"] || /\.herokuapp\.com$/)
   use SecureHeaders::Middleware
   use XRobotsTag
