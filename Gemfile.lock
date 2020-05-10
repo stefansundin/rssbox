@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/stefansundin/prometheus-client.git
+  revision: fc179858e6e00a13a649dbdaa5b7de67fa68b1a5
+  branch: master
+  specs:
+    prometheus-client (2.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -38,7 +45,6 @@ GEM
       nokogiri
     powder (0.4.0)
       thor (>= 0.11.5)
-    prometheus-client (2.0.0)
     pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -96,7 +102,7 @@ DEPENDENCIES
   nokogiri
   opengraph_parser
   powder
-  prometheus-client
+  prometheus-client!
   pry-remote
   puma
   rack
