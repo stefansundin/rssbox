@@ -1,31 +1,10 @@
-# https://caddyserver.com/docs
+# https://caddyserver.com/docs/caddyfile/directives
 
-http://rssbox.localhost {
-  on startup rackup
-  proxy / http://localhost:9292 {
-    transparent
-  }
+http://localhost {
+  reverse_proxy http://localhost:3000
 }
 
-
-# For https:
-# openssl req -new -x509 -sha256 -days 3650 -nodes -newkey rsa:4096 -keyout rssbox.key -out rssbox.crt -subj /CN=rssbox.test
-
-# http://rssbox.test:3000 {
-#   redir / https://{host}{uri}
-# }
-# https://rssbox.test:8443 {
-#   tls rssbox.crt rssbox.key
-#   on startup rackup &
-#   proxy / http://localhost:9292 {
-#     transparent
-#   }
-# }
-
-# For pow:
-# https://rssbox.test:8443 {
-#   tls rssbox.crt rssbox.key
-#   proxy / http://localhost:20559 {
-#     transparent
-#   }
+# https://localhost {
+#   tls internal
+#   reverse_proxy http://localhost:3000
 # }
