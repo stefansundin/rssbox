@@ -163,11 +163,13 @@
         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu dropdown-menu-right">
           <a class="dropdown-item" data-submit-type="highlight">Highlights only</a>
+<% if ENV["TWITCHTOKEN_CLIENT_ID"] %>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" data-vlc="watch">Open in VLC</a>
           <a class="dropdown-item" data-action="watch">Watch in external program</a>
           <a class="dropdown-item" data-download>Get download command</a>
           <a class="dropdown-item" data-irc="irc.chat.twitch.tv:6667">Open chat in IRC</a>
+<% end %>
         </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </div>

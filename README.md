@@ -68,6 +68,8 @@ Go to the [SoundCloud developer website](https://soundcloud.com/you/apps) and cr
 
 Go to your [Twitch settings](https://www.twitch.tv/settings/connections) and create an app. Copy your client id.
 
+To download Twitch videos, you also need to configure a separate client id.
+
 #### Imgur
 
 Go to the [Imgur settings](https://imgur.com/account/settings/apps) and create an app. Copy your client id.

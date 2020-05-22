@@ -14,7 +14,7 @@ end
 class TwitchToken < HTTP
   BASE_URL = "https://api.twitch.tv/api"
   HEADERS = {
-    "Client-ID" => ENV["TWITCH_CLIENT_ID"],
+    "Client-ID" => ENV["TWITCHTOKEN_CLIENT_ID"],
   }
   ERROR_CLASS = TwitchError
 end

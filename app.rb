@@ -878,7 +878,7 @@ get "/twitch" do
 end
 
 get "/twitch/download" do
-  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
+  return [404, "Credentials not configured"] if !ENV["TWITCHTOKEN_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:url].empty?
 
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
@@ -933,7 +933,7 @@ get "/twitch/download" do
 end
 
 get "/twitch/watch" do
-  return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
+  return [404, "Credentials not configured"] if !ENV["TWITCHTOKEN_CLIENT_ID"]
   return [400, "Insufficient parameters"] if params[:url].empty?
 
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
