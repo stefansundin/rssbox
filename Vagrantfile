@@ -69,7 +69,7 @@ chmod -x /etc/cron.weekly/update-notifier-common
 
 apt-get update
 apt-get install -y git curl build-essential redis-server jq
-apt-get install -y libreadline-dev libxml2-dev libxslt1-dev libpq-dev libsqlite3-dev libssl-dev
+apt-get install -y libreadline-dev zlib1g-dev libxml2-dev libxslt1-dev libpq-dev libsqlite3-dev libssl-dev
 
 cat > /etc/systemd/system/puma.service << 'EOF'
 #{$puma_service}
@@ -102,7 +102,6 @@ RUBY_MAJOR=${RUBY_VERSION%.*}.0
 rbenv install $RUBY_VERSION
 rbenv global $RUBY_VERSION
 gem update --system
-# gem install bundler
 
 ln -sf /vagrant/.irbrc /home/vagrant/.irbrc
 ln -sf $RUBY_VERSION /home/vagrant/.rbenv/versions/global
@@ -122,12 +121,12 @@ source ~/rssbox.env
 hash -r
 
 cd /vagrant
-bundle install --retry=3
+bundle install --retry=3 --jobs=4
 SCRIPT
 
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
+  config.vm.box = "debian/buster64"
   config.vm.hostname = "rssbox"
   config.vm.network "forwarded_port", guest: 3000, host: 3000
   config.vm.provision "shell", inline: $root_provision
