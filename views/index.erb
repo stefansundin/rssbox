@@ -28,7 +28,12 @@
   </header>
 
   <div class="container">
-    <noscript>FYI: If you enable JavaScript then you will be able to access additional options in the dropdown menus. The website should still be somewhat usable, but recent versions of Firefox will try to download the RSS feeds.</noscript>
+    <noscript>
+      <div class="alert alert-info" role="alert">
+        <p><strong>FYI:</strong> You have disabled JavaScript so the dropdown menus will not work. The website should still be somewhat usable, but note that recent versions of Firefox will try to download the RSS feeds (there is JavaScript that displays a modal with the feed address).</p>
+        There is Google Analytics tracking present, but you can use an extension to block that.
+      </div>
+    </noscript>
 
     <div class="alert alert-warning" role="alert">
       <p><strong>Important:</strong> The public version of RSS Box is currently receiving more requests than it can handle. Unfortunately, because of a lack of caching, most requests are now failing. You may therefore have trouble subscribing to some feeds, in particular Twitter and Instagram. This will be addressed in a future update. But for now, please consider self hosting this app (<a href="https://github.com/stefansundin/rssbox#roll-your-own">instructions here</a>).</p>
