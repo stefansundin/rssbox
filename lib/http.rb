@@ -63,6 +63,10 @@ class HTTPResponse
     @response.body
   end
 
+  def json?
+    @response["content-type"].start_with?("application/json")
+  end
+
   def json
     @json ||= JSON.parse(@response.body)
   end

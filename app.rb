@@ -642,7 +642,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   response = Instagram.get("/graphql/query/", options)
   return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
   return [response.code, "Instagram user does not exist."] if !response.json["data"]["user"]
-  raise(InstagramError, response) if !response.success? || !response.json
+  raise(InstagramError, response) if !response.success? || !response.json?
 
   @data = response.json["data"]["user"]
   @user = CGI.unescape(username)
