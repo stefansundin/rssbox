@@ -35,9 +35,10 @@ get "/" do
 end
 
 get "/live" do
+  return [404, "Disabled since this experiment is no longer maintained."]
   content_type :html
   SecureHeaders.use_secure_headers_override(request, :live)
-  send_file File.join(settings.public_folder, "live.html")
+  send_file File.join(settings.views, "live.html")
 end
 
 get "/countdown" do
