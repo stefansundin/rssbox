@@ -47,6 +47,8 @@ get "/countdown" do
   send_file File.join(settings.public_folder, "countdown.html")
 end
 
+# This route is useful together with this bookmarklet:
+# javascript:location='https://rssbox.herokuapp.com/go?q='+encodeURIComponent(location.href);
 get "/go" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
