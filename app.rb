@@ -41,10 +41,10 @@ get "/live" do
   send_file File.join(settings.views, "live.html")
 end
 
-get "/countdown" do
+get "/countdown.html" do
   content_type :html
   SecureHeaders.use_secure_headers_override(request, :countdown)
-  send_file File.join(settings.public_folder, "countdown.html")
+  send_file File.join(settings.views, "countdown.html")
 end
 
 # This route is useful together with this bookmarklet:

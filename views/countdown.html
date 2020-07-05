@@ -29,7 +29,7 @@ function pluralize(n) {
 }
 
 function init() {
-  // Parse query string, e.g: /countdown?date=2018-09-27T03:30:00Z
+  // Parse query string, e.g: /countdown.html?date=2018-09-27T03:30:00Z
   var params = {};
   window.location.search.substr(1).split("&").forEach(function(param) {
     param = param.split("=");

@@ -33,7 +33,7 @@
       title += " (scheduled for #{updated.readable(@tz)})"
       content_extra = <<~EOF
         <p>Live broadcast scheduled to start at: #{updated.readable(@tz)}.</p>
-        <iframe width="640" height="50" src="#{request.root_url}/countdown?date=#{updated}" frameborder="0" scrolling="yes" referrerpolicy="no-referrer"></iframe>
+        <iframe width="640" height="50" src="#{request.root_url}/countdown.html?date=#{updated}" frameborder="0" scrolling="yes" referrerpolicy="no-referrer"></iframe>
       EOF
     end
   end
