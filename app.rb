@@ -49,6 +49,7 @@ end
 
 get "/twitch-embed.html" do
   content_type :html
+  cache_control :public, :max_age => 31556926 # cache a long time
   SecureHeaders.use_secure_headers_override(request, :twitch_embed)
   send_file File.join(settings.views, "twitch-embed.html")
 end

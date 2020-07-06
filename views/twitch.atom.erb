@@ -17,7 +17,7 @@
     <author><name><%= video["user_name"].esc %></name></author>
     <content type="html">
 <%= <<~EOF.esc
-  <iframe width="620" height="378" src="#{request.root_url}/twitch-embed.html?video=#{video["id"]}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+  <iframe width="620" height="378" src="#{request.root_url}/twitch-embed.html#video=#{video["id"]}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
 
   <p>
     <a href="https://player.twitch.tv/?parent=twitch.tv&video=#{video["id"]}" rel="noreferrer">Open embed</a> |

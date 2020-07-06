@@ -16,7 +16,7 @@ iframe {
 <noscript>Please enable JavaScript.</noscript>
 
 <script>
-let qs = window.location.search;
+let qs = window.location.hash.substr(1);
 qs += `&parent=${window.location.hostname}`;
 if (document.referrer != "") {
   const referrer = new URL(document.referrer);
@@ -29,7 +29,7 @@ iframe.height = "100%";
 iframe.frameBorder = "0";
 iframe.scrolling = "no";
 iframe.allowFullscreen = true;
-iframe.src = `https://player.twitch.tv/${qs}`;
+iframe.src = `https://player.twitch.tv/?${qs}`;
 document.body.appendChild(iframe);
 </script>
 </body>
