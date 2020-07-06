@@ -93,6 +93,8 @@ SecureHeaders::Configuration.override(:twitch_embed) do |config|
     preserve_schemes: true,
     # directive values: these values will directly translate into source directives
     default_src: %w('none'),
+    style_src: %w('unsafe-inline'),
+    script_src: %w('unsafe-inline'),
     frame_src: %w(https://player.twitch.tv),
   })
 end
