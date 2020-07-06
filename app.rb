@@ -47,6 +47,12 @@ get "/countdown.html" do
   send_file File.join(settings.views, "countdown.html")
 end
 
+get "/twitch-embed.html" do
+  content_type :html
+  SecureHeaders.use_secure_headers_override(request, :twitch_embed)
+  send_file File.join(settings.views, "twitch-embed.html")
+end
+
 # This route is useful together with this bookmarklet:
 # javascript:location='https://rssbox.herokuapp.com/go?q='+encodeURIComponent(location.href);
 get "/go" do

@@ -162,7 +162,7 @@ class String
       # https://www.twitch.tv/gamesdonequick
       # https://www.twitch.tv/gamesdonequick/video/76877760 (legacy url)
       # https://www.twitch.tv/gamesdonequick/v/76877760 (legacy url)
-      url = "https://player.twitch.tv/?"
+      url = "#{request.root_url}/twitch-embed.html?"
       url += vod_id ? "video=#{vod_id}" : "channel=#{channel_name}"
       url += "&time=#{t}" if t
       <<~EOF

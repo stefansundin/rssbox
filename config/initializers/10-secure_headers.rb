@@ -84,3 +84,15 @@ SecureHeaders::Configuration.override(:countdown) do |config|
     script_src: %w('unsafe-inline'),
   })
 end
+
+SecureHeaders::Configuration.override(:twitch_embed) do |config|
+  config.x_frame_options = SecureHeaders::OPT_OUT
+  config.csp.merge!({
+    # "meta" values. these will shape the header, but the values are not included in the header.
+    report_only: false,
+    preserve_schemes: true,
+    # directive values: these values will directly translate into source directives
+    default_src: %w('none'),
+    frame_src: %w(https://player.twitch.tv),
+  })
+end
