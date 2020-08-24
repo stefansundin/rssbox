@@ -1,0 +1,12 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rssbox
+spec:
+  type: NodePort
+  selector:
+    app: rssbox
+  ports:
+  - port: 3000
+    nodePort: 30000

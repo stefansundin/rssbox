@@ -5,7 +5,7 @@ metadata:
   name: rssbox
 spec:
   rules:
-  - host: rssbox.localhost
+  - host: rssbox.example.com   # <-- update hostname
     http:
       paths:
       - path: /

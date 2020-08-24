@@ -8,13 +8,11 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   tls:
-  - hosts:
-    # update this:
-    # - rssbox.example.com
-    secretName: rssbox-tls
+  - secretName: rssbox-tls
+    hosts:
+    - rssbox.example.com       # <-- update hostname
   rules:
-  # update this:
-  # - host: rssbox.example.com
+  - host: rssbox.example.com   # <-- update hostname
     http:
       paths:
       - path: /
