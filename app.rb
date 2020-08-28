@@ -990,9 +990,9 @@ get "/ustream" do
     "http://www.ustream.tv/#{params[:q]}"
   end
   begin
-    doc = Nokogiri::HTML(open(url))
+    doc = Nokogiri::HTML(URI.open(url))
     channel_id = doc.at("meta[name='ustream:channel_id']")["content"].to_i
-    doc = Nokogiri::HTML(open("http://www.ustream.tv/channel/#{channel_id}"))
+    doc = Nokogiri::HTML(URI.open("http://www.ustream.tv/channel/#{channel_id}"))
     channel_title = doc.at("meta[property='og:title']")["content"]
   rescue
     return [404, "Could not find the channel."]
