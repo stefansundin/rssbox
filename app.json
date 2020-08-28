@@ -28,14 +28,6 @@
       "description": "Your Vimeo access token.",
       "required": false
     },
-    "FACEBOOK_APP_ID": {
-      "description": "Your Facebook app id.",
-      "required": false
-    },
-    "FACEBOOK_APP_SECRET": {
-      "description": "Your Facebook app secret.",
-      "required": false
-    },
     "SOUNDCLOUD_CLIENT_ID": {
       "description": "Your SoundCloud client id.",
       "required": false

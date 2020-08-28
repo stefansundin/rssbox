@@ -92,29 +92,6 @@
     </form>
 <% end %>
 
-<% if ENV["FACEBOOK_APP_ID"] && ENV["FACEBOOK_APP_SECRET"] %>
-    <form class="input-group" method="get" action="facebook">
-      <div class="input-group-prepend">
-        <span class="input-group-text"><label for="facebook_q">Facebook</label></span>
-      </div>
-      <input class="form-control" type="search" name="q" id="facebook_q" placeholder="Enter a Facebook page name or its url." required>
-      <div class="input-group-append">
-        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-        <div class="dropdown-menu dropdown-menu-right">
-          <a class="dropdown-item" data-submit-type="">All posts (default)</a>
-          <a class="dropdown-item" data-submit-type="live">Live videos</a>
-          <a class="dropdown-item" data-submit-type="videos">Videos</a>
-          <a class="dropdown-item" data-submit-type="photos">Photos</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" data-download>Open video/photo</a>
-          <a class="dropdown-item" data-download download>Download video/photo</a>
-          <a class="dropdown-item" data-download-filename>Download video/photo with nice filename</a>
-        </div>
-        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </div>
-    </form>
-<% end %>
-
     <form class="input-group" method="get" action="instagram">
       <div class="input-group-prepend">
         <span class="input-group-text"><label for="instagram_q">Instagram</label></span>

@@ -58,11 +58,7 @@ Go to the [Vimeo developer website](https://developer.vimeo.com/apps) and create
 
 #### Facebook
 
-**Note:** This requires an app with the [Page Public Content Access](https://developers.facebook.com/docs/apps/review/feature#reference-PAGES_ACCESS) permission which requires manual approval from Facebook and is quite difficult to get. The official RSSBox website doesn't support Facebook anymore for this reason.
-
-Go to the [Facebook developer website](https://developers.facebook.com/) and create an app. Copy your app id and secret.
-
-Facebook live hax: After a live stream has ended, trying to access the stream via playlist.m3u8 will still give you a list of .ts files, however the domain is `interncache-prn.fbcdn.net` which doesn't resolve. However, if you edit your `/etc/hosts` file and point that domain to the IP of `origincache-prn.fbcdn.net`, you can watch the video again (use `dig origincache-prn.fbcdn.net +short`). This only works for a couple of days after the live event.
+Facebook was supported in the past, but I have been unable to obtain API access since they locked it down in 2018. Maybe we can rebuild it some day, but using scraping techniques or something. [Discuss here.](https://github.com/stefansundin/rssbox/issues/5)
 
 #### SoundCloud
 
