@@ -8,20 +8,6 @@
   <link href="https://www.instagram.com/<%= @user %>" rel="alternate" />
   <updated><%= Time.at(@data["edge_owner_to_timeline_media"]["edges"][0]["node"]["taken_at_timestamp"]) if @data["edge_owner_to_timeline_media"]["edges"][0] %></updated>
 <%-
-if @data["is_private"] && @data["edge_owner_to_timeline_media"]["edges"].empty?
-  reason = params.has_key?(:sessionid) ? "The sessionid token is no longer valid." : "This user is private."
--%>
-
-  <entry>
-    <id>instagram:user:<%= @user %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= reason.esc %></title>
-    <link href="https://www.instagram.com/<%= @user %>/" />
-    <updated></updated>
-    <author><name><%= @data["full_name"] %></name></author>
-    <content type="html"><%= reason.esc %></content>
-  </entry>
-<%- else -%>
-<%-
 @data["edge_owner_to_timeline_media"]["edges"].each do |post|
   has_video = post["nodes"].any? { |n| n["is_video"] }
   text = post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"] if post["node"]["edge_media_to_caption"]["edges"][0]
@@ -36,20 +22,14 @@ if @data["is_private"] && @data["edge_owner_to_timeline_media"]["edges"].empty?
     <content type="html">
 <%=
 if has_video
-  if @data["is_private"]
-    <<~EOF.esc
-      <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos, but can't embed since the post is private.</p>
-    EOF
-  else
-    <<~EOF.esc
-      <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos.</p>
-      <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["node"]["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-    EOF
-  end
+  <<~EOF.esc
+    <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos.</p>
+    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["node"]["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+  EOF
 end
 %>
 <%=
-post["nodes"].select { |n| !n["is_video"] || @data["is_private"] }.map do |n|
+post["nodes"].select { |n| !n["is_video"] }.map do |n|
   <<~EOF.esc
     <img src="#{n["display_url"]}" referrerpolicy="no-referrer">
   EOF
@@ -63,6 +43,5 @@ EOF
 -%>
     </content>
   </entry>
-<%- end -%>
 <%- end -%>
 </feed>
