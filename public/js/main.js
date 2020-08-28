@@ -13,19 +13,19 @@ function sign(n) {
 }
 
 function fmt_filesize(bytes, digits=1) {
-  var units = ['B', 'kiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-  var i = 0;
+  const units = ["B", "kiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+  let i = 0;
   while (bytes > 1024 && i < units.length) {
     bytes = bytes / 1024;
     i++;
   }
   if (i < 2) digits = 0;
-  var size = (i > 0) ? bytes.toFixed(digits) : bytes;
+  const size = (i > 0) ? bytes.toFixed(digits) : bytes;
   return `${size} ${units[i]}`;
 }
 
 function toObject(arr, f=decodeURIComponent) {
-  var obj = {};
+  const obj = {};
   arr.forEach(function(e) {
     obj[e[0]] = f(e[1]);
   });
@@ -42,89 +42,92 @@ $(document).ready(function() {
   window.dirty = 0;
   $(window).on("beforeunload", function(event) {
     if (window.dirty > 0) {
+      event.preventDefault();
       event.returnValue = "There are still files downloading!";
       return event.returnValue;
     }
   });
 
   $(document).on("show.bs.dropdown", function(e) {
-    form = $(e.target).parents("form");
-    q = form.find("input[name=q]").val();
+    const form = $(e.target).parents("form");
+    const q = form.find("input[name=q]").val();
     form.find("[data-download]").each(function() {
-      btn = $(this);
-      url = `${form.attr("action")}/download?url=${q}`;
-      val = btn.attr("data-download");
+      const btn = $(this);
+      const val = btn.attr("data-download");
+      let url = `${form.attr("action")}/download?url=${q}`;
       if (val) {
         url += `&type=${val}`;
       }
       btn.attr("href", url);
     });
     form.find("[data-action]").each(function() {
-      btn = $(this);
+      const btn = $(this);
       btn.attr("href", `${form.attr("action")}/${btn.attr("data-action")}?url=${q}`);
     });
     form.find("[data-vlc]").each(function() {
-      btn = $(this);
+      const btn = $(this);
       btn.attr("href", `vlc://${form[0].action}/${btn.attr("data-vlc")}?url=${q}`);
     });
     form.find("[data-irc]").each(function() {
-      btn = $(this);
-      var m = /(?:https?:\/\/(?:www\.|clips\.)?twitch\.tv\/)?([^/]+)/.exec(q);
+      const btn = $(this);
+      const m = /(?:https?:\/\/(?:www\.|clips\.)?twitch\.tv\/)?([^/]+)/.exec(q);
       if (m == null) {
         return;
       }
-      var channel = m[1];
+      const channel = m[1];
       btn.attr("href", `irc://${btn.attr("data-irc")}/${channel}`);
     });
   });
 
-  $("form[method=get]").submit(function(event) {
-    var form = $(this);
-    var action = form.attr("action");
-    var qs = form.serialize();
+  $("form[method=get]").submit(async function(event) {
+    event.preventDefault();
+
+    const form = $(this);
+    const action = form.attr("action");
+    const qs = form.serialize();
     form.find("[name=type]").detach();
 
-    var submit = form.find("input[type='submit']");
+    const submit = form.find('input[type="submit"]');
     submit.attr("data-original-value", submit.attr("value"));
     submit.attr("value", "Working...");
     form.find("input").prop("disabled", true);
 
-    fetch(`${action}?${qs}`, {
-      headers: { "Accept": "application/json" },
-    }).then(async function(response) {
-      submit.attr("value", submit.attr("data-original-value"));
-      form.find("input").prop("disabled", false);
-      if (!response.ok) {
-        alert(await response.text());
-        return;
-      }
-      var url;
-      if (response.redirected) {
-        url = response.url;
+    const response = await fetch(`${action}?${qs}`, {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    submit.attr("value", submit.attr("data-original-value"));
+    form.find("input").prop("disabled", false);
+    if (!response.ok) {
+      alert(await response.text());
+      return;
+    }
+
+    let url;
+    if (response.redirected) {
+      url = response.url;
+    }
+    else {
+      const data = await response.json();
+      if (data.startsWith("/")) {
+        // local feed
+        let pathname = window.location.pathname;
+        if (pathname.endsWith("/")) {
+          pathname = pathname.substr(0, pathname.length-1);
+        }
+        url = `${window.location.protocol}//${window.location.host}${pathname}${data}`;
+        // initiate a request just to get a head start on resolving urls
+        fetch(url);
       }
       else {
-        var data = await response.json();
-        if (data.startsWith("/")) {
-          // local feed
-          var pathname = window.location.pathname;
-          if (pathname.endsWith("/")) {
-            pathname = pathname.substr(0, pathname.length-1);
-          }
-          url = `${window.location.protocol}//${window.location.host}${pathname}${data}`;
-          // initiate a request just to get a head start on resolving urls
-          fetch(url);
-        }
-        else {
-          // external feed
-          url = data;
-        }
+        // external feed
+        url = data;
       }
-      $("#feed-url").val(url);
-      $("#feed-modal").modal("show");
-      $("#feed-url").select();
-    });
-
-    event.preventDefault();
+    }
+    $("#feed-url").val(url);
+    $("#feed-modal").modal("show");
+    $("#feed-url").select();
   });
 
   $("#copy-button").click(function() {
@@ -133,8 +136,8 @@ $(document).ready(function() {
   });
 
   $("[data-submit-type]").click(function() {
-    var form = $(this).parents("form");
-    var val = $(this).attr("data-submit-type");
+    const form = $(this).parents("form");
+    const val = $(this).attr("data-submit-type");
     $('<input type="hidden" name="type">').val(val).insertAfter(this);
     form.submit();
   });
@@ -227,14 +230,14 @@ $(document).ready(function() {
     $("form[action=youtube]").append($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${pad(Math.abs(tz_offset/60))}:${pad(Math.abs(tz_offset%60))}`));
   }
 
-  var params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
+  const params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
   if (params.q) {
     $('input[type="search"]').val(params.q);
   }
   if (params.download) {
-    var m = /([a-z]+)\.[^./]+\//.exec(params.download);
+    const m = /([a-z]+)\.[^./]+\//.exec(params.download);
     if (m) {
-      var input = $(`#${m[1]}_q`);
+      const input = $(`#${m[1]}_q`);
       if (input) {
         input.val(params.download);
         input.parents("form").find("[data-download-filename]").click();
