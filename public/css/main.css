@@ -37,7 +37,10 @@ input[type="submit"] {
 }
 
 .input-group {
-  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.form-group .input-group {
+  margin: 0;
 }
 .form-inline {
   margin-bottom: 15px;

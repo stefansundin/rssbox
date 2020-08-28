@@ -435,7 +435,7 @@ get "/instagram" do
   end
 
   if user
-    redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}", query_values: params.slice(:type)).normalize.to_s
+    redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}").normalize.to_s
   else
     return [404, "Can't find a user with that name. Sorry."]
   end
@@ -731,20 +731,20 @@ get "/twitch" do
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
     return [404, "Can't find a game with that name."] if data.nil?
-    redirect Addressable::URI.new(path: "/twitch/directory/game/#{data["id"]}/#{game_name}", query_values: params.slice(:type)).normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch/directory/game/#{data["id"]}/#{game_name}").normalize.to_s
   elsif vod_id
     response = Twitch.get("/videos", query: { id: vod_id })
     return [response.code, "Video does not exist."] if response.code == 404
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
-    redirect Addressable::URI.new(path: "/twitch/#{data["user_id"]}/#{data["user_name"]}", query_values: params.slice(:type)).normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch/#{data["user_id"]}/#{data["user_name"]}").normalize.to_s
   else
     response = Twitch.get("/users", query: { login: username })
     return [response.code, "The username contains invalid characters."] if response.code == 400
     raise(TwitchError, response) if !response.success?
     data = response.json["data"][0]
     return [404, "Can't find a user with that name. Sorry."] if data.nil?
-    redirect Addressable::URI.new(path: "/twitch/#{data["id"]}/#{data["display_name"]}", query_values: params.slice(:type)).normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch/#{data["id"]}/#{data["display_name"]}").normalize.to_s
   end
 end
 
@@ -1132,7 +1132,7 @@ get "/imgur" do
   if user_id.nil?
     return [404, "This image was probably uploaded anonymously. Sorry."]
   else
-    redirect Addressable::URI.new(path: "/imgur/#{user_id}/#{username}", query_values: params.slice(:type)).normalize.to_s
+    redirect Addressable::URI.new(path: "/imgur/#{user_id}/#{username}").normalize.to_s
   end
 end
 

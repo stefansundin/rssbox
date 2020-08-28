@@ -53,11 +53,7 @@ $(document).ready(async function() {
     const q = form.find("input[name=q]").val();
     form.find("[data-download]").each(function() {
       const btn = $(this);
-      const val = btn.attr("data-download");
-      let url = `${form.attr("action")}/download?url=${q}`;
-      if (val) {
-        url += `&type=${val}`;
-      }
+      const url = `${form.attr("action")}/download?url=${q}`;
       btn.attr("href", url);
     });
     form.find("[data-action]").each(function() {
@@ -79,16 +75,14 @@ $(document).ready(async function() {
     });
   });
 
-  $("form[method=get]").submit(async function(event) {
+  $("#services form").submit(async function(event) {
     event.preventDefault();
 
     const form = $(this);
     const action = form.attr("action");
     const qs = form.serialize();
-    form.find("[name=type]").detach();
-
     const submit = form.find('input[type="submit"]');
-    submit.attr("data-original-value", submit.attr("value"));
+    const submit_value = submit.attr("value");
     submit.attr("value", "Working...");
     form.find("input").prop("disabled", true);
 
@@ -97,7 +91,7 @@ $(document).ready(async function() {
         "Accept": "application/json",
       },
     });
-    submit.attr("value", submit.attr("data-original-value"));
+    submit.attr("value", submit_value);
     form.find("input").prop("disabled", false);
     if (!response.ok) {
       alert(await response.text());
@@ -125,9 +119,24 @@ $(document).ready(async function() {
         url = data;
       }
     }
-    $("#feed-url").val(url);
-    $("#feed-modal").modal("show");
-    $("#feed-url").select();
+
+    const feed_modal = $("#feed-modal");
+    const feed_url = $("#feed-url");
+    feed_url.val(url);
+    feed_modal.modal("show", this);
+    feed_url.select();
+
+    return false;
+  });
+
+  $("#feed-modal").on("show.bs.modal", function(event) {
+    const modal = $(this);
+    const form = $(event.relatedTarget);
+    const action = form.attr("action");
+    const url = $("#feed-url").val();
+    console.log(url);
+    modal.find("form").hide();
+    modal.find(`#${action}-options`).show().attr("action", url).trigger("change");
   });
 
   $("#copy-button").click(function() {
@@ -135,14 +144,19 @@ $(document).ready(async function() {
     document.execCommand("copy");
   });
 
-  $("[data-submit-type]").click(function() {
-    const form = $(this).parents("form");
-    const val = $(this).attr("data-submit-type");
-    $('<input type="hidden" name="type">').val(val).insertAfter(this);
-    form.submit();
+  $("#feed-modal form").submit(function(event) {
+    event.preventDefault();
+    return false;
   });
-  $(window).bind("pageshow", function() {
-    $("[name=type]").detach(); // remove type inputs which remain when using the back button
+
+  $("#feed-modal form").change(function() {
+    const form = $(this);
+    const qs = $.param(form.serializeArray().filter(input => input.value != ""));
+    let url = form.attr("action");
+    if (qs != "") {
+      url += `?${qs}`;
+    }
+    $("#feed-url").val(url).select();
   });
 
   $("[data-download-filename]").click(async function() {
@@ -159,7 +173,7 @@ $(document).ready(async function() {
       },
     });
     if (!response.ok) {
-      alert(response.text());
+      alert(await response.text());
       return;
     }
     let data = await response.json();
@@ -261,9 +275,11 @@ $(document).ready(async function() {
           return;
         }
         const url = await response.json();
-        $("#feed-url").val(url);
-        $("#feed-modal").modal("show");
-        $("#feed-url").select();
+        const feed_modal = $("#feed-modal");
+        const feed_url = $("#feed-url");
+        feed_url.val(url);
+        feed_modal.modal("show");
+        feed_url.select();
       }
     }
   }
