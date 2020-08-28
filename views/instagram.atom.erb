@@ -18,7 +18,7 @@
     <title><%= "[#{post["nodes"].length}] " if post["nodes"].length > 1 %><%= "Video: " if has_video %><%= text.to_line.esc || "No title" %></title>
     <link href="https://www.instagram.com/p/<%= post["node"]["shortcode"] %>/" />
     <updated><%= Time.at(post["node"]["taken_at_timestamp"]) %></updated>
-    <author><name><%= @data["full_name"].esc %></name></author>
+    <author><name><%= post["node"]["owner"]["username"].esc %></name></author>
     <content type="html">
 <%=
 if has_video
