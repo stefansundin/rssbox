@@ -548,8 +548,9 @@ end
 get "/instagram" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
-  if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:q]
-    # https://www.instagram.com/p/4KaPsKSjni/
+  if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
+    # https://www.instagram.com/p/B-Pv6COFOjV/
+    # https://www.instagram.com/tv/B-Pv6COFOjV/
     response = Instagram.get("/p/#{post_id}/")
     return [response.code, "This post does not exist or is a private post."] if response.code == 404
     raise(InstagramError, response) if !response.success?
@@ -582,8 +583,9 @@ get "/instagram" do
 end
 
 get "/instagram/download" do
-  if /instagram\.com\/p\/(?<post_id>[^\/?#]+)/ =~ params[:url]
-    # https://www.instagram.com/p/4KaPsKSjni/
+  if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:url]
+    # https://www.instagram.com/p/B-Pv6COFOjV/
+    # https://www.instagram.com/tv/B-Pv6COFOjV/
   else
     post_id = params[:url]
   end
