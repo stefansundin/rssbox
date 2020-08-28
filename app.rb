@@ -35,7 +35,7 @@ get "/" do
 end
 
 get "/live" do
-  return [404, "Disabled since this experiment is no longer maintained."]
+  return [410, "Disabled since this experiment is no longer maintained."]
   content_type :html
   SecureHeaders.use_secure_headers_override(request, :live)
   send_file File.join(settings.views, "live.html")
@@ -368,7 +368,7 @@ get "/youtube/:channel_id/:username" do
 end
 
 get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
-  return [404, "RIP Google+ 2011-2019"]
+  return [410, "RIP Google+ 2011-2019"]
 end
 
 get "/vimeo" do
