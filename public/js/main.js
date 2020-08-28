@@ -38,7 +38,7 @@ function basename(url) {
   return url.substr(url.lastIndexOf("/")+1);
 }
 
-$(document).ready(function() {
+$(document).ready(async function() {
   window.dirty = 0;
   $(window).on("beforeunload", function(event) {
     if (window.dirty > 0) {
@@ -234,14 +234,36 @@ $(document).ready(function() {
   if (params.q) {
     $('input[type="search"]').val(params.q);
   }
-  if (params.download) {
-    const m = /([a-z]+)\.[^./]+\//.exec(params.download);
+  const url = params.download || params.go;
+  if (url) {
+    const m = /([a-z0-9]+)\.[^./]+\//.exec(url);
     if (m) {
       const input = $(`#${m[1]}_q`);
-      if (input) {
-        input.val(params.download);
-        input.parents("form").find("[data-download-filename]").click();
+      if (input[0]) {
         input[0].scrollIntoView({ block: "center" });
+        input.val(url);
+        const form = input.parents("form");
+        if (params.download) {
+          form.find("[data-download-filename]").click();
+        }
+        else {
+          form.submit();
+        }
+      }
+      else if (params.go) {
+        const response = await fetch(`go?q=${encodeURIComponent(params.go)}`, {
+          headers: {
+            "Accept": "application/json",
+          },
+        });
+        if (!response.ok) {
+          alert(await response.text());
+          return;
+        }
+        const url = await response.json();
+        $("#feed-url").val(url);
+        $("#feed-modal").modal("show");
+        $("#feed-url").select();
       }
     }
   }

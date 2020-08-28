@@ -56,6 +56,8 @@ end
 
 # This route is useful together with this bookmarklet:
 # javascript:location='https://rssbox.herokuapp.com/go?q='+encodeURIComponent(location.href);
+# Or for Firefox:
+# javascript:location='https://rssbox.herokuapp.com/?go='+encodeURIComponent(location.href);
 get "/go" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
@@ -89,7 +91,11 @@ get "/go" do
     redirect Addressable::URI.parse("https://medium.com/feed/#{user}").normalize.to_s
   elsif /^https?:\/\/(?<name>[a-z0-9\-]+)\.blogspot\./ =~ params[:q]
     redirect Addressable::URI.parse("https://#{name}.blogspot.com/feeds/posts/default").normalize.to_s
-  elsif /^https?:\/\/groups\.google\.com\/forum\/#!(?:[a-z]+)\/(?<name>[^\/?&#]+)/ =~ params[:q]
+  elsif /^https?:\/\/groups\.google\.com\/(?:forum\/[^#]*#!(?:[a-z]+)|g)\/(?<name>[^\/?&#]+)/ =~ params[:q]
+    # https://groups.google.com/forum/?oldui=1#!forum/rabbitmq-users
+    # https://groups.google.com/forum/?oldui=1#!topic/rabbitmq-users/9D4BAuud6PU
+    # https://groups.google.com/g/rabbitmq-users
+    # https://groups.google.com/g/rabbitmq-users/c/9D4BAuud6PU
     redirect Addressable::URI.parse("https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50").normalize.to_s
   elsif /^https?:\/\/www\.deviantart\.com\/(?<user>[^\/]+)/ =~ params[:q]
     redirect "https://backend.deviantart.com/rss.xml" + Addressable::URI.new(query: "type=deviation&q=by:#{user} sort:time").normalize.to_s
