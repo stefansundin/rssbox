@@ -583,20 +583,13 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
 end
 
 get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
-  # The image url expires after 24 hours, so to avoid it being cached by the RSS client and then expire, we just proxy it on demand
+  # The image URL expires after 24 hours, so to avoid the URL from being cached by the RSS client and then expire, we just redirect on demand
   # Interestingly enough, if a request is made before the token expires, it will be cached by their CDN and continue to work even after the token expires
-  # Can't just redirect either since it looks at the referer header, and most web based RSS clients will send that
-  # For whatever reason, the accessVideoPublic endpoint doesn't require a session_id
   response = Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
   cache_control :public, :max_age => 31556926 # cache a long time
   return [response.code, "Image not found."] if response.code == 404
   raise(PeriscopeError, response) if !response.success?
-  if response.json["broadcast"]["image_url"].empty?
-    return [404, "Image not found."]
-  end
-  response = HTTP.get(response.json["broadcast"]["image_url"])
-  content_type response.headers["content-type"][0]
-  response.body
+  redirect response.json["broadcast"]["image_url"]
 end
 
 get "/soundcloud" do
