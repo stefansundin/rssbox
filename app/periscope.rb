@@ -6,7 +6,7 @@ class PeriscopeError < HTTPError; end
 class Periscope < HTTP
   BASE_URL = "https://api.periscope.tv/api/v2"
   HEADERS = {
-    "User-Agent" => "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101 Firefox/68.0",
+    "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0",
   }
   ERROR_CLASS = PeriscopeError
 

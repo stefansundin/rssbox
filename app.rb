@@ -494,15 +494,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{@user_id}\",\"first\":12}"},
   }
   if params[:sessionid]
-    # To subscribe to private feeds, follow these steps in bash:
-    # ua="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101 Firefox/68.0"
-    # u=your_username
-    # p=your_password
-    # your_friends_username=your_friends_username
-    # your_friends_userid=$(curl -s "https://www.instagram.com/$your_friends_username/" -A "$ua" | grep -oE '"id":"([0-9]+)"' | head -1 | cut -d'"' -f4)
-    # csrftoken=$(curl -sI https://www.instagram.com/ -A "$ua" | grep -i 'set-cookie: csrftoken=' | cut -d';' -f1 | cut -d= -f2)
-    # sessionid=$(curl -sv https://www.instagram.com/accounts/login/ajax/ -A "$ua" -H 'referer: https://www.instagram.com/accounts/login/' -b "csrftoken=$csrftoken" -H "x-csrftoken: $csrftoken" --data "username=$u&password=$p" 2>&1 | grep -i 'set-cookie: sessionid=' | cut -d';' -f1 | cut -d= -f2)
-    # echo "https://rssbox.herokuapp.com/instagram/$your_friends_userid/$your_friends_username?sessionid=$sessionid"
+    # To subscribe to private feeds, see https://github.com/stefansundin/rssbox/issues/21#issuecomment-525130553
     # Please host the app yourself if you decide to do this, otherwise you will leak your sessionid to me and the privacy of your friends posts.
     options[:headers] = {"Cookie" => "ig_cb=1; sessionid=#{CGI.escape(params[:sessionid])}"}
   end
