@@ -7,7 +7,7 @@ gem "rake", require: false
 gem "irb"
 gem "rack"
 gem "sinatra"
-gem "puma"
+gem "puma", "~> 4.3"
 gem "dotenv"
 gem "redis"
 gem "redis-namespace"
