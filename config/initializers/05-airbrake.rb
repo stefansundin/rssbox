@@ -22,7 +22,7 @@ if ENV["AIRBRAKE_API_KEY"]
     notice[:errors].each do |e|
       if Object.const_get(e[:type]) <= HTTPError
         throttle_key = "airbrake_throttle:#{e[:type]}"
-        if $redis.exists(throttle_key)
+        if $redis.exists?(throttle_key)
           notice.ignore!
           $redis.incr(throttle_key)
           puts "Throttling reporting #{e[:type]} to Airbrake. Throttle counter: #{$redis.get(throttle_key)}."
