@@ -4,7 +4,7 @@
 store_settings = {}
 if ENV["WEB_CONCURRENCY"]
   require "prometheus/client/data_stores/direct_file_store"
-  app_path = File.expand_path("../../..", __FILE__)
+  app_path = File.expand_path("../..", __dir__)
   Prometheus::Client.config.data_store = Prometheus::Client::DataStores::DirectFileStore.new(dir: "#{app_path}/tmp/prometheus/")
   store_settings[:aggregation] = :most_recent
 

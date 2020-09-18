@@ -6,7 +6,7 @@ ENV["APP_VERSION"] ||= ENV["HEROKU_RELEASE_VERSION"] || "unknown"
 require "bundler/setup"
 Bundler.require(:default, ENV["APP_ENV"])
 
-app_path = File.expand_path("../..", __FILE__)
+app_path = File.expand_path("..", __dir__)
 Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
 
 # uncomment to get production error pages in development
@@ -34,7 +34,7 @@ end
 configure :development do
   if defined?(BetterErrors)
     use BetterErrors::Middleware
-    BetterErrors.application_root = File.expand_path("..")
+    BetterErrors.application_root = File.expand_path("..", __dir__)
   end
 end
 

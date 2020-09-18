@@ -16,7 +16,7 @@ end
 
 preload_app!
 
-app_path = File.expand_path("../..", __FILE__)
+app_path = File.expand_path("..", __dir__)
 pidfile("#{app_path}/tmp/puma.pid")
 bind("unix://#{app_path}/tmp/puma.sock")
 

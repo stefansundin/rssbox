@@ -32,7 +32,7 @@ class URL
     end
 
     threads = []
-    max_concurrency = Integer(ENV["URL_MAX_CONCURRENCY"] || 5)
+    max_concurrency = ENV["URL_MAX_CONCURRENCY"]&.to_i || 5
     num_threads = [max_concurrency, pending.length].min
     while threads.length < num_threads
       thread = Thread.new do

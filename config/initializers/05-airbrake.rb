@@ -27,7 +27,7 @@ if ENV["AIRBRAKE_API_KEY"]
           $redis.incr(throttle_key)
           puts "Throttling reporting #{e[:type]} to Airbrake. Throttle counter: #{$redis.get(throttle_key)}."
         else
-          $redis.setex(throttle_key, ENV["AIRBRAKE_THROTTLE_DURATION"] || 3600, 0)
+          $redis.setex(throttle_key, ENV["AIRBRAKE_THROTTLE_DURATION"]&.to_i || 3600, 0)
         end
       end
     end
