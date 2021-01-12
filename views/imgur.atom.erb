@@ -17,7 +17,7 @@
       <a href="#{link}" rel="noreferrer"><img src="https://i.imgur.com/#{image["cover"]}h.jpg" referrerpolicy="no-referrer"></a>
 
       #{image["description"].linkify.to_paragraphs}
-      <p><a href="http://s.imgur.com/a/#{image["id"]}/zip" rel="noreferrer">Download album</a></p>
+      <p><a href="https://imgur.com/a/#{image["id"]}/zip" rel="noreferrer">Download album</a></p>
       <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]} OR url:#{image["cover"]}").normalize.to_s}">Search for this on Reddit</a></p>
     EOF
   else
