@@ -7,7 +7,7 @@ gem "rake", require: false
 gem "irb"
 gem "rack"
 gem "sinatra"
-gem "puma", "~> 4.3"
+gem "puma"
 gem "dotenv"
 gem "redis"
 gem "addressable"
