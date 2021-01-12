@@ -62,8 +62,6 @@ GEM
     rake (13.0.3)
     rbtree3 (0.6.0)
     redis (4.2.5)
-    redis-namespace (1.8.0)
-      redis (>= 3.0.4)
     reline (0.2.1)
       io-console (~> 0.5)
     ruby2_keywords (0.0.2)
@@ -109,7 +107,6 @@ DEPENDENCIES
   rack-ssl-enforcer
   rake
   redis
-  redis-namespace
   secure_headers
   sinatra
   sinatra-contrib
