@@ -6,6 +6,7 @@ class TwitterError < HTTPError; end
 class Twitter < HTTP
   BASE_URL = "https://api.twitter.com/1.1"
   HEADERS = {
+    "Accept" => "application/json",
     "Authorization" => "Bearer #{ENV["TWITTER_ACCESS_TOKEN"]}",
   }
   ERROR_CLASS = TwitterError

@@ -135,7 +135,7 @@ get "/twitter" do
     query = { user_id: user_id }
   end
 
-  response = Twitter.get("/users/show.json", query: query)
+  response = Twitter.get("/users/show", query: query)
   return [response.code, response.json["errors"][0]["message"]] if response.json.has_key?("errors")
   raise(TwitterError, response) if !response.success?
 
@@ -149,7 +149,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @user_id = id
 
-  response = Twitter.get("/statuses/user_timeline.json", query: {
+  response = Twitter.get("/statuses/user_timeline", query: {
     user_id: id,
     count: 100,
     tweet_mode: "extended",
