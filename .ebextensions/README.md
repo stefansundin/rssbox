@@ -75,3 +75,6 @@ Application files are located at:
 
 Logs on the instances are available at:
 - `/var/log/web.stdout.log`
+
+Elastic Beanstalk deployment logs:
+- `/var/log/eb-engine.log`
