@@ -156,7 +156,7 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
     include_rts: %w[0 1].pick(params[:include_rts]) || "1",
     exclude_replies: %w[0 1].pick(params[:exclude_replies]) || "0",
   })
-  return [response.code, response.body] if response.code == 401
+  return [response.code, "User suspended."] if response.code == 401
   return [response.code, "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing."] if response.code == 404
   raise(TwitterError, response) if !response.success?
 
@@ -380,16 +380,19 @@ get "/vimeo" do
   elsif /vimeo\.com\/ondemand\/(?<user>[^\/?&#]+)/ =~ params[:q]
     # https://vimeo.com/ondemand/thealphaquadrant/
     response = Vimeo.get("/ondemand/pages/#{user}")
+    return [404, "Could not find the user. Sorry."] if response.code == 404
     raise(VimeoError, response) if !response.success?
     user_id = response.json["user"]["uri"][/\d+/]
-  elsif /vimeo\.com\/(?<video_id>\d+)/ =~ params[:q]
+  elsif /vimeo\.com\/(?<video_id>\d+)(\?|#|$)/ =~ params[:q]
     # https://vimeo.com/155672086
     response = Vimeo.get("/videos/#{video_id}")
+    return [404, "Could not find the video. Sorry."] if response.code == 404
     raise(VimeoError, response) if !response.success?
     user_id = response.json["user"]["uri"][/\d+/]
   elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/?&#]+)/ =~ params[:q] || user = params[:q]
     # it's probably a channel name
     response = Vimeo.get("/users", query: { query: user })
+    return [404, "Could not find the channel. Sorry."] if response.code == 404
     raise(VimeoError, response) if !response.success?
     if response.json["data"].length > 0
       user_id = response.json["data"][0]["uri"].gsub("/users/","").to_i
@@ -557,6 +560,7 @@ get "/periscope" do
     "https://www.periscope.tv/#{username}"
   end
   response = Periscope.get(url)
+  return [404, "This user has not created a Periscope account yet."] if response.code == 302
   return [response.code, "That username does not exist."] if response.code == 404
   return [response.code, "That broadcast has expired."] if response.code == 410
   return [response.code, "Please enter a username."] if response.code/100 == 4
