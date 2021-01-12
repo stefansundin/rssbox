@@ -1028,17 +1028,15 @@ get "/dailymotion" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /dailymotion\.com\/video\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q] || /dai\.ly\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q]
-    # http://www.dailymotion.com/video/x3r4xy2_recut-9-cultural-interchange_fun
-    # http://www.dailymotion.com/video/k1ZotianZxwzm6fmny2
-    # http://dai.ly/x4bzwj4?start=60
+    # https://www.dailymotion.com/video/x3r4xy2
+    # https://www.dailymotion.com/video/k1ZotianZxwzm6fmny2
+    # https://dai.ly/x3r3q7b?start=60
   elsif /dailymotion\.com\/playlist\/(?<playlist_id>[a-z0-9]+)/ =~ params[:q]
-    # http://www.dailymotion.com/playlist/x4bnhu_GeneralGrin_fair-use-recuts/1
-  elsif /dailymotion\.com\/(?:(?:followers|subscriptions|playlists\/user|user)\/)?(?<user>[^\/?#]+)/ =~ params[:q]
-    # http://www.dailymotion.com/followers/GeneralGrin/1
-    # http://www.dailymotion.com/subscriptions/GeneralGrin/1
-    # http://www.dailymotion.com/playlists/user/GeneralGrin/1
-    # http://www.dailymotion.com/user/GeneralGrin/1
-    # http://www.dailymotion.com/GeneralGrin
+    # https://www.dailymotion.com/playlist/x52z5h
+  elsif /dailymotion\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
+    # https://www.dailymotion.com/ParodyEdits/playlists
+    # https://www.dailymotion.com/ParodyEdits/videos
+    # https://www.dailymotion.com/ParodyEdits
   else
     # it's probably a username
     user = params[:q]
