@@ -77,8 +77,6 @@ get "/go" do
     redirect Addressable::URI.new(path: "/twitch", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?speedrun\.com/ =~ params[:q]
     redirect Addressable::URI.new(path: "/speedrun", query_values: params).normalize.to_s
-  elsif /^https?:\/\/(?:www\.)?ustream\.tv/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/ustream", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?dailymotion\.com/ =~ params[:q]
     redirect Addressable::URI.new(path: "/dailymotion", query_values: params).normalize.to_s
   elsif /^https?:\/\/(?:www\.)?vimeo\.com/ =~ params[:q]
@@ -969,59 +967,8 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   erb :"speedrun.atom"
 end
 
-get "/ustream" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
-  url = if /^https?:\/\/(www\.)?ustream\.tv\// =~ params[:q]
-    # http://www.ustream.tv/recorded/74562214
-    # http://www.ustream.tv/githubuniverse
-    params[:q]
-  else
-    "http://www.ustream.tv/#{params[:q]}"
-  end
-  begin
-    doc = Nokogiri::HTML(URI.open(url))
-    channel_id = doc.at("meta[name='ustream:channel_id']")["content"].to_i
-    doc = Nokogiri::HTML(URI.open("http://www.ustream.tv/channel/#{channel_id}"))
-    channel_title = doc.at("meta[property='og:title']")["content"]
-  rescue
-    return [404, "Could not find the channel."]
-  end
-
-  redirect Addressable::URI.new(path: "/ustream/#{channel_id}/#{channel_title}").normalize.to_s
-end
-
 get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
-  @id = id
-  @user = CGI.unescape(title)
-
-  response = Ustream.get("/channels/#{id}/videos.json")
-  raise(UstreamError, response) if !response.success?
-  @data = response.json["videos"]
-
-  @data.map do |video|
-    video["description"]
-  end.compact.map(&:grep_urls).flatten.tap { |urls| URL.resolve(urls) }
-
-  erb :"ustream.atom"
-end
-
-get "/ustream/download" do
-  if /ustream\.tv\/recorded\/(?<id>\d+)/ =~ params[:url]
-    # http://www.ustream.tv/recorded/74562214
-  elsif params[:url].numeric?
-    id = params[:url]
-  else
-    return [404, "Please use a link directly to a video."]
-  end
-
-  response = Ustream.get("/videos/#{id}.json")
-  return [response.code, "Video does not exist."] if response.code == 404
-  return [response.code, "#{Ustream::BASE_URL}/videos/#{id}.json returned code #{response.code}."] if response.code == 401
-  raise(UstreamError, response) if !response.success?
-  url = response.json["video"]["media_urls"]["flv"]
-  return [404, "#{Ustream::BASE_URL}/videos/#{id}.json: Video flv url is null. This channel is probably protected or something."] if url.nil?
-  redirect url
+  return [410, "RIP Ustream"]
 end
 
 get "/dailymotion" do

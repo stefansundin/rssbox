@@ -34,7 +34,7 @@ You need to get API keys for the respective services and populate the environmen
 
 A couple of services do not have official APIs, or do not require API keys, so they will work without any keys.
 
-These services do not require API keys: Instagram, Periscope, Mixcloud, Speedrun, Ustream, Dailymotion.
+These services do not require API keys: Instagram, Periscope, Mixcloud, Speedrun, Dailymotion.
 
 #### Twitter
 
