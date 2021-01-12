@@ -74,4 +74,4 @@ Application files are located at:
 - `/var/app/current`
 
 Logs on the instances are available at:
-- `/var/log/puma/puma.log`
+- `/var/log/web.stdout.log`
