@@ -17,7 +17,7 @@ end
 prometheus = Prometheus::Client.registry
 
 $metrics = {
-  ratelimit: prometheus.gauge(:ratelimit, store_settings: store_settings, labels: %i[service], docstring: "Remaining ratelimit for external services."),
+  ratelimit: prometheus.gauge(:ratelimit, store_settings: store_settings, labels: %i[service endpoint], docstring: "Remaining ratelimit for external services."),
   requests: prometheus.counter(:requests, labels: %i[service response_code], docstring: "Number of requests made to external services."),
   urls: prometheus.counter(:urls, docstring: "Number of URLs resolved."),
 }

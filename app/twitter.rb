@@ -14,7 +14,8 @@ class Twitter < HTTP
   def self.get(*args, &block)
     response = super(*args, &block)
     if response.headers.has_key?("x-rate-limit-remaining")
-      $metrics[:ratelimit].set(response.headers["x-rate-limit-remaining"][0].to_i, labels: { service: "twitter" })
+      endpoint = args[0]
+      $metrics[:ratelimit].set(response.headers["x-rate-limit-remaining"][0].to_i, labels: { service: "twitter", endpoint: endpoint })
     end
     return response
   end
