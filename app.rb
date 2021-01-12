@@ -205,6 +205,11 @@ get "/youtube" do
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that slug != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
     user = "#{type}/#{slug}"
+  elsif /youtube\.com\/tv#\/watch\/video\/.*[?&]v=(?<video_id>[^&]+)/ =~ params[:q]
+    # https://www.youtube.com/tv#/zylon-detail-surface?c=UCK5eBtuoj_HkdXKHNmBLAXg&resume
+    # https://www.youtube.com/tv#/watch/video/idle?v=uYMD4elmVIE&resume
+    # https://www.youtube.com/tv#/watch/video/control?v=uYMD4elmVIE&resume
+    # https://www.youtube.com/tv#/watch/video/control?v=u6gsOQ8HZAU&list=PLTU3Sf6dSBnDnhfG6iCy41Pk6de7OHRZh&resume
   elsif /youtube\.com\/.*[?&]v=(?<video_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
