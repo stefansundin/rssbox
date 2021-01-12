@@ -89,6 +89,7 @@ class URL
               https://www.theaustralian.com.au/remote/check_cookie.html
               https://signin.aws.amazon.com/
               https://accounts.google.com/ServiceLogin
+              https://virtual.awsevents.com/user/login
             ].any? { |s| next_url.start_with?(s) }
               throw :done
             end
