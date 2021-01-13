@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>speedrun:runs:<%= @id %></id>
-  <title><%= Speedrun.resolve_id("game", @id) %> on Speedrun.com</title>
+  <title><%= App::Speedrun.resolve_id("game", @id) %> on Speedrun.com</title>
   <icon>https://www.speedrun.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.speedrun.com/<%= @abbr %>" rel="alternate" />

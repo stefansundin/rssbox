@@ -21,7 +21,7 @@ class String
 
   def titelize
     self.gsub("\n", " ").gsub(String::URL_REGEXP) do |url|
-      dest = URL.lookup(url)
+      dest = App::URL.lookup(url)
       "[#{dest.short_host}]"
     end
   end
@@ -110,7 +110,7 @@ class String
       "https://play.spotify.com/#{uri.gsub(":","/")}"
     end
     result.gsub(URL_REGEXP) do |url|
-      dest = URL.lookup(url)
+      dest = App::URL.lookup(url)
       "<a href='#{dest.esc}' title='#{url.esc}' rel='noreferrer'>#{dest.esc}</a>"
     end
   end
@@ -121,13 +121,13 @@ class String
       "https://play.spotify.com/#{uri.gsub(":","/")}"
     end
     result.gsub!(URL_REGEXP) do |url|
-      dest = URL.lookup(url)
+      dest = App::URL.lookup(url)
       html = dest.embed_html(request)
       embeds.push(html) if html && !embeds.include?(html)
       "<a href='#{dest.esc}' title='#{url.esc}' rel='noreferrer'>#{dest.esc}</a>"
     end
     embed_only.scan(URL_REGEXP) do |url|
-      dest = URL.lookup(url)
+      dest = App::URL.lookup(url)
       html = dest.embed_html(request)
       embeds.push(html) if html && !embeds.include?(html)
     end
