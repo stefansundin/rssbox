@@ -493,6 +493,7 @@ end
 
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
+  @user = CGI.unescape(username)
 
   # To find the query_hash, simply use the Instagram website and monitor the network calls.
   # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
@@ -508,10 +509,8 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   response = App::Instagram.get("/graphql/query/", options)
   return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
   raise(App::InstagramError, response) if !response.success? || !response.json?
-  return [response.code, "Instagram user does not exist."] if !response.json["data"]["user"]
-
   @data = response.json["data"]["user"]
-  @user = CGI.unescape(username)
+  return [response.code, "Instagram user does not exist."] if !@data
 
   type = %w[videos photos].pick(params[:type]) || "posts"
   @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
@@ -1037,7 +1036,8 @@ get "/imgur" do
   elsif /(?:^\/?r\/|(?:imgur|reddit)\.com\/r\/)(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
-    redirect Addressable::URI.new(path: "/imgur/r/#{subreddit}", query: params[:type]).normalize.to_s and return
+    redirect Addressable::URI.new(path: "/imgur/r/#{subreddit}", query: params[:type]).normalize.to_s
+    return
   elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] && username != "i"
     # https://thebookofgray.imgur.com/
   elsif /imgur\.com\/(gallery\/)?(?<image_id>[a-zA-Z0-9]+)/ =~ params[:q]
@@ -1126,7 +1126,7 @@ get "/svtplay" do
     # https://www.svtplay.se/veckans-brott
   else
     # it's probably a program name
-    program = params[:q].downcase.gsub(/[:.]/, "").gsub("", "").gsub(" ", "-")
+    program = params[:q].downcase.gsub(/[:.]/, "").gsub(" ", "-")
   end
 
   if program

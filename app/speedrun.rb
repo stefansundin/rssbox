@@ -27,11 +27,11 @@ module App
       end
 
       if type == "game"
-        response = Speedrun.get("/games/#{id}")
+        response = get("/games/#{id}")
         raise(SpeedrunError, response) if !response.success?
         redis_value = value = response.json["data"]["names"]["international"]
       elsif type == "level-subcategories"
-        response = Speedrun.get("/levels/#{id}/variables")
+        response = get("/levels/#{id}/variables")
         raise(SpeedrunError, response) if !response.success?
         value = response.json["data"].select { |var| var["is-subcategory"] }.to_h do |var|
           [

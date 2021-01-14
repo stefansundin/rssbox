@@ -36,7 +36,7 @@ module App
         return @@cache[id]
       end
 
-      response = Instagram.get("/p/#{id}/", opts)
+      response = get("/p/#{id}/", opts)
       raise(InstagramError, response) if !response.success? || !response.json
       post = response.json["graphql"]["shortcode_media"]
 

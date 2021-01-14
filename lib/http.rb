@@ -118,7 +118,7 @@ module App
       @obj = obj
     end
 
-    def request
+    def response
       @obj
     end
 
