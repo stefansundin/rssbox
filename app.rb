@@ -545,11 +545,11 @@ get "/periscope" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /(?:periscope|pscp)\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
-    # https://www.periscope.tv/w/1gqxvBmMZdexB
-    # https://www.pscp.tv/w/1gqxvBmMZdexB
+    # https://www.periscope.tv/w/1MYGNmBPMnNKw
+    # https://www.pscp.tv/w/1MYGNmBPMnNKw
   elsif /(?:periscope|pscp)\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
-    # https://www.periscope.tv/jimmy_dore
-    # https://www.pscp.tv/jimmy_dore
+    # https://www.periscope.tv/nasa
+    # https://www.pscp.tv/nasa
   else
     username = params[:q]
   end
@@ -585,6 +585,9 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
   else
     @username
   end
+
+  # filter out live broadcasts
+  @data.select! { |broadcast| broadcast.has_key?("end") }
 
   erb :"periscope.atom"
 end
