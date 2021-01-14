@@ -11,6 +11,6 @@ module App
 end
 
 error App::MixcloudError do |e|
-  status 503
+  status 422
   "There was a problem talking to Mixcloud. Please try again in a moment."
 end

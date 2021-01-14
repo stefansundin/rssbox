@@ -14,6 +14,6 @@ module App
 end
 
 error App::ImgurError do |e|
-  status 503
+  status 422
   "There was a problem talking to Imgur. Please try again in a moment."
 end

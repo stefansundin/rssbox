@@ -24,6 +24,6 @@ module App
 end
 
 error App::TwitterError do |e|
-  status 503
+  status 422
   "There was a problem talking to Twitter. Please try again in a moment."
 end

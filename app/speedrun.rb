@@ -52,6 +52,6 @@ module App
 end
 
 error App::SpeedrunError do |e|
-  status 503
+  status 422
   "There was a problem talking to speedrun.com. Please try again in a moment."
 end

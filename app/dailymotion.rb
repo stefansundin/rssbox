@@ -11,6 +11,6 @@ module App
 end
 
 error App::DailymotionError do |e|
-  status 503
+  status 422
   "There was a problem talking to Dailymotion. Please try again in a moment."
 end

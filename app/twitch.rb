@@ -22,6 +22,6 @@ module App
 end
 
 error App::TwitchError do |e|
-  status 503
+  status 422
   "There was a problem talking to Twitch. Please try again in a moment."
 end

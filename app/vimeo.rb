@@ -14,6 +14,6 @@ module App
 end
 
 error App::VimeoError do |e|
-  status 503
+  status 422
   "There was a problem talking to Vimeo. Please try again in a moment."
 end

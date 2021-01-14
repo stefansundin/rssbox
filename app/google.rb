@@ -12,7 +12,7 @@ module App
 end
 
 error App::GoogleError do |e|
-  status 503
+  status 422
   if (e.data["error"]["errors"][0]["reason"] == "accessNotConfigured" rescue false)
     "Please enable the appropriate API for this project in the Google Developer Console."
   else
