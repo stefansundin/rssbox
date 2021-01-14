@@ -356,11 +356,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.remove("text-light");
       $(".modal-content").removeClass("bg-dark");
     }
-
-    const launcher = document.getElementById("img-launcher");
-    if (launcher) {
-      launcher.src = `img/launcher-${e.target.checked ? "dark":"light"}.png`;
-    }
   });
 
   const dark_mode = localStorage.getItem("dark-mode");
