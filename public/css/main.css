@@ -71,6 +71,14 @@ a.blue {
   color: #007bff !important;
 }
 
+.bottom-right-fixed {
+  position: fixed;
+  bottom: 1em;
+  right: 1em;
+  user-select: none;
+  z-index: 1100;
+}
+
 .glyphicon.spin {
   animation: spin 2s infinite linear;
 }
