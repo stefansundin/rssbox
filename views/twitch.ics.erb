@@ -16,7 +16,7 @@ X-WR-CALDESC:<%= @alternate_url %>
   end
   dtstart = Time.parse(video["created_at"])
   dtend = dtstart + duration
-  published_at = Time.parse(video["published_at"])
+  published_at = Time.parse(video["published_at"] || video["created_at"])
 
   dtstart = dtstart.strftime("%Y%m%dT%H%M%SZ")
   dtend = dtend.strftime("%Y%m%dT%H%M%SZ")
