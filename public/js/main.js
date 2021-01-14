@@ -39,6 +39,49 @@ function basename(url) {
 }
 
 $(document).ready(async function() {
+  {
+    const links = document.querySelectorAll(".expander");
+    for (let i=0; i < links.length; i++) {
+      const a = links[i];
+      a.style.display = "inline-block";
+      a.addEventListener("click", function() {
+        const id = this.getAttribute("expand");
+        document.getElementById(id).style.display = "block";
+        this.style.display = "none";
+      });
+      const id = a.getAttribute("expand");
+      document.getElementById(id).style.display = "none";
+    }
+  }
+
+  {
+    let links = document.querySelectorAll("a[fubar]");
+    for (let i=0; i < links.length; i++) {
+      const a = links[i];
+      if (a.href != "") {
+        continue;
+      }
+      a.textContent = a.textContent
+        .replace(/[A-Z]{2}/, (c) => (c[0] + "@" + c[1]).toLowerCase())
+        .replace(/[A-Z]/g, (c) => `.${c.toLowerCase()}`);
+      a.href = `mailto:${a.textContent}`;
+    }
+  }
+
+  {
+    const forms = document.querySelectorAll('form[action="https://www.paypal.com/cgi-bin/webscr"]');
+    for (let i=0; i < forms.length; i++) {
+      const form = forms[i];
+      form.addEventListener("submit", function(e) {
+        if (parseInt(this.amount.value) < 1) {
+          e.preventDefault();
+          alert("The minimum donation amount is one dollar. Anything less than one dollar and you're just giving PayPal everything because of their fees.\n\nIf you can't afford one dollar, then please donate to a local charity instead.");
+          return false;
+        }
+      });
+    }
+  }
+
   window.dirty = 0;
   $(window).on("beforeunload", function(event) {
     if (window.dirty > 0) {
