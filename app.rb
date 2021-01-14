@@ -578,10 +578,10 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
 end
 
 get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
+  cache_control :public, :max_age => 31556926 # cache a long time
   # The image URL expires after 24 hours, so to avoid the URL from being cached by the RSS client and then expire, we just redirect on demand
   # Interestingly enough, if a request is made before the token expires, it will be cached by their CDN and continue to work even after the token expires
   response = App::Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
-  cache_control :public, :max_age => 31556926 # cache a long time
   return [response.code, "Image not found."] if response.code == 404
   raise(App::PeriscopeError, response) if !response.success?
   redirect response.json["broadcast"]["image_url"]
@@ -1064,15 +1064,15 @@ get "/imgur" do
   end
 end
 
-get "/imgur/:user_id/:username" do
+get "/imgur/:user_id/:username" do |user_id, username|
   return [404, "Credentials not configured"] if !ENV["IMGUR_CLIENT_ID"]
 
-  if params[:user_id] == "r"
-    @subreddit = params[:username]
+  if user_id == "r"
+    @subreddit = username
     response = App::Imgur.get("/gallery/r/#{@subreddit}")
   else
-    @user_id = params[:user_id]
-    @username = params[:username]
+    @user_id = user_id
+    @username = username
     # can't use user_id in this request unfortunately
     response = App::Imgur.get("/account/#{@username}/submissions")
   end

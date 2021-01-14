@@ -27,7 +27,7 @@ module App
         raise(SpeedrunError, response) if !response.success?
         value = response.json["data"]["names"]["international"]
       else
-        raise "unsupported type"
+        raise("unsupported type")
       end
 
       $redis.set("speedrun:#{type}:#{id}", value)

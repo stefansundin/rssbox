@@ -29,12 +29,13 @@
   if run["platform"]["data"].is_a?(Hash)
     platform = run["platform"]["data"]["name"]
     platform += " (#{run["region"]["data"]["name"]})" if run["system"]["region"]
+    platform += " [emu]" if run["system"]["emulated"]
   end
 -%>
 
   <entry>
     <id>speedrun:run:<%= run["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= run["times"]["primary_t"].round.to_duration %>] <%= players.join(", ").esc %> - <%= category %><%= " [emu]" if run["system"]["emulated"] %></title>
+    <title>[<%= run["times"]["primary_t"].round.to_duration %>] <%= players.join(", ").esc %> - <%= category %></title>
     <link href="<%= "https://www.speedrun.com/run/#{run["id"]}" %>" />
     <updated><%= run["submitted"] || Time.parse(run["date"]) %></updated>
     <author><name><%= players.join(", ").esc %></name></author>
