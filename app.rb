@@ -450,35 +450,35 @@ get "/instagram/download" do
 
   response = App::Instagram.get("/p/#{post_id}/")
   return [404, "Please use a URL directly to a post."] if !response.success?
-  data = response.json["graphql"]["shortcode_media"]
+  post = response.json["graphql"]["shortcode_media"]
 
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
-    created_at = Time.at(data["taken_at_timestamp"])
-    caption = data["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
+    created_at = Time.at(post["taken_at_timestamp"])
+    caption = post["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
 
-    if data.has_key?("edge_sidecar_to_children")
-      return data["edge_sidecar_to_children"]["edges"].map { |edge| edge["node"] }.map.with_index do |node, i|
+    if post.has_key?("edge_sidecar_to_children")
+      return post["edge_sidecar_to_children"]["edges"].map { |edge| edge["node"] }.map.with_index do |node, i|
         url = node["video_url"] || node["display_url"]
         {
           url: url,
-          filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption} - #{i+1}#{url.url_ext}".to_filename
+          filename: "#{created_at.to_date} - #{post["owner"]["username"]} - #{caption} - #{i+1}#{url.url_ext}".to_filename
         }
       end.to_json
     else
-      url = data["video_url"] || data["display_url"]
+      url = post["video_url"] || post["display_url"]
       return [{
         url: url,
-        filename: "#{created_at.to_date} - #{data["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename,
+        filename: "#{created_at.to_date} - #{post["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename,
       }].to_json
     end
   end
 
-  if data.has_key?("edge_sidecar_to_children")
-    node = data["edge_sidecar_to_children"]["edges"][0]["node"]
+  if post.has_key?("edge_sidecar_to_children")
+    node = post["edge_sidecar_to_children"]["edges"][0]["node"]
     url = node["video_url"] || node["display_url"]
   else
-    url = data["video_url"] || data["display_url"]
+    url = post["video_url"] || post["display_url"]
   end
 
   redirect url
