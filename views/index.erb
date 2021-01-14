@@ -21,7 +21,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
   <script src="/js/main.js"></script>
 </head>
-<body ga="<%= ENV["GOOGLE_ANALYTICS_ID"] %>">
+<body>
   <header>
     <img src="/img/icon128.png" width="128" height="128" alt="Icon" itemprop="image">
     <h1 itemprop="name">RSS Box</h1>
@@ -30,8 +30,7 @@
   <div class="container">
     <noscript>
       <div class="alert alert-info" role="alert">
-        <p><strong>FYI:</strong> You have disabled JavaScript so a number of features will not work. The website should still be somewhat usable, but note that Firefox will attempt to download the RSS feed which makes it very difficult to copy the feed URL. The JavaScript displays a modal with the feed URL. For some services, the modal has additional options to customize the feed.</p>
-        There is Google Analytics tracking present, but you can use an extension to block that.
+        <strong>FYI:</strong> You have disabled JavaScript so a number of features will not work. The website should still be somewhat usable, but note that Firefox will attempt to download the RSS feed which makes it very difficult to copy the feed URL. The JavaScript displays a modal with the feed URL. For some services, the modal has additional options to customize the feed.
       </div>
     </noscript>
 
@@ -336,9 +335,6 @@
     </div>
   </div>
 
-  <%- if request.host == "rssbox.herokuapp.com" -%>
-  <script src="https://stefansundin.github.io/js/ga.js"></script>
-  <%- end -%>
   <script src="https://stefansundin.github.io/js/fubar.js"></script>
   <script src="https://stefansundin.github.io/js/main.js"></script>
 </body>
