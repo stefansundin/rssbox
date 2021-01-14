@@ -78,11 +78,3 @@ a.blue {
   user-select: none;
   z-index: 1100;
 }
-
-.glyphicon.spin {
-  animation: spin 2s infinite linear;
-}
-@keyframes spin {
-  from { transform: scale(1) rotate(0deg); }
-  to { transform: scale(1) rotate(360deg); }
-}

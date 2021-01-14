@@ -34,13 +34,6 @@ get "/" do
   erb :index
 end
 
-get "/live" do
-  return [410, "Disabled since this experiment is no longer maintained."]
-  content_type :html
-  SecureHeaders.use_secure_headers_override(request, :live)
-  send_file File.join(settings.views, "live.html")
-end
-
 get "/countdown.html" do
   content_type :html
   SecureHeaders.use_secure_headers_override(request, :countdown)
