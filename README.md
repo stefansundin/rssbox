@@ -56,6 +56,16 @@ Go to the [Google Developer Console](https://console.developers.google.com/), cr
 
 Go to the [Vimeo developer website](https://developer.vimeo.com/apps) and create an app. Then create a personal access token.
 
+#### Instagram
+
+The Instagram support works without a `sessionid`, although it appears that the Instagram rate limits are much higher when one is used.
+
+**I highly recommend that you create a dedicated Instagram account for this. If someone manages to access your sessionid then your account may be compromised!**
+
+Login to [Instagram](https://www.instagram.com/) and then inspect your browser's cookies (this is easiest accomplished via the browser's developer tools) and copy the value of the `sessionid` cookie.
+
+Once you've configured RSS Box, be sure to delete the cookie from the browser to avoid it being accidentally invalidated when you sign out. The `sessionid` should be valid for a long time, but you may have to repeat this procedure if it stops working in the future.
+
 #### Facebook
 
 Facebook was supported in the past, but I have been unable to obtain API access since they locked it down in 2018. Maybe we can rebuild it some day, but using scraping techniques or something. [Discuss here.](https://github.com/stefansundin/rssbox/issues/5)

@@ -497,16 +497,9 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
 
   # To find the query_hash, simply use the Instagram website and monitor the network calls.
   # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
-  options = {
+  response = App::Instagram.get("/graphql/query/", {
     query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{@user_id}\",\"first\":12}"},
-  }
-  if params[:sessionid]
-    # To subscribe to private feeds, see https://github.com/stefansundin/rssbox/issues/21#issuecomment-525130553
-    # Please host the app yourself if you decide to do this, otherwise you will leak your sessionid to me and the privacy of your friends posts.
-    options[:headers] = {"Cookie" => "ig_cb=1; sessionid=#{CGI.escape(params[:sessionid])}"}
-  end
-
-  response = App::Instagram.get("/graphql/query/", options)
+  })
   return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
   raise(App::InstagramError, response) if !response.success? || !response.json?
   @data = response.json["data"]["user"]
@@ -515,7 +508,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   type = %w[videos photos].pick(params[:type]) || "posts"
   @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
     if post["node"]["__typename"] == "GraphSidecar"
-      post["nodes"] = App::Instagram.get_post(post["node"]["shortcode"], options)
+      post["nodes"] = App::Instagram.get_post(post["node"]["shortcode"])
     else
       post["nodes"] = [post["node"]]
     end

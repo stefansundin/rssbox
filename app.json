@@ -28,6 +28,10 @@
       "description": "Your Vimeo access token.",
       "required": false
     },
+    "INSTAGRAM_SESSIONID": {
+      "description": "Your Instagram sessionid.",
+      "required": false
+    },
     "SOUNDCLOUD_CLIENT_ID": {
       "description": "Your SoundCloud client id.",
       "required": false

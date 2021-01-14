@@ -14,11 +14,17 @@ module App
     }
     ERROR_CLASS = InstagramError
 
+    if ENV.has_key?("INSTAGRAM_SESSIONID")
+      sessionid = ENV["INSTAGRAM_SESSIONID"]
+      if sessionid.include?(":")
+        sessionid = CGI.escape(sessionid)
+      end
+      HEADERS["Cookie"] += "; sessionid=#{sessionid}"
+    end
+
     @@cache = {}
 
-    def self.get(url, options={headers: {}})
-      options ||= {}
-      options[:headers] ||= {}
+    def self.get(url, options={})
       response = super(url, options)
       if response.code == 403
         raise(InstagramTokenError, response)
@@ -28,7 +34,7 @@ module App
       response
     end
 
-    def self.get_post(id, opts={})
+    def self.get_post(id)
       return @@cache[id] if @@cache[id]
       value = $redis.get("instagram:#{id}")
       if value
@@ -36,7 +42,7 @@ module App
         return @@cache[id]
       end
 
-      response = get("/p/#{id}/", opts)
+      response = get("/p/#{id}/")
       raise(InstagramError, response) if !response.success? || !response.json
       post = response.json["graphql"]["shortcode_media"]
 
