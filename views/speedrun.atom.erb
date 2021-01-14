@@ -30,11 +30,6 @@
     platform = run["platform"]["data"]["name"]
     platform += " (#{run["region"]["data"]["name"]})" if run["system"]["region"]
   end
-
-  if !run["level"]["data"].empty?
-    level_subcategories = Speedrun.resolve_id("level-subcategories", run["level"]["data"]["id"])
-    category += level_subcategories.select { |id, values| run["values"].has_key?(id) }.map { |id, values| " - " + values[run["values"][id]] }.join
-  end
 -%>
 
   <entry>
