@@ -43,9 +43,8 @@ SecureHeaders::Configuration.override(:index) do |config|
     preserve_schemes: true,
     # directive values: these values will directly translate into source directives
     default_src: %w('none'),
-    style_src: %w('self' *.bootstrapcdn.com),
-    script_src: %w('self' *.bootstrapcdn.com code.jquery.com cdn.jsdelivr.net),
-    font_src: %w(*.bootstrapcdn.com),
+    style_src: %w('self' cdn.jsdelivr.net),
+    script_src: %w('self' cdn.jsdelivr.net code.jquery.com),
     img_src: %w('self'),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com www.svtplay.se stefansundin.com www.paypal.com),
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.sndcdn.com),
