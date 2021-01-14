@@ -20,7 +20,7 @@ if ENV["AIRBRAKE_API_KEY"]
     # The first error is reported, but a redis key is set that prevents further errors from the same service to be reported, until the key has expired.
     # The value in the redis key counts the number of throttled errors, although that information is not persisted anywhere.
     notice[:errors].each do |e|
-      if Object.const_get(e[:type]) <= HTTPError
+      if Object.const_get(e[:type]) <= App::HTTPError
         throttle_key = "airbrake_throttle:#{e[:type]}"
         if $redis.exists?(throttle_key)
           notice.ignore!
