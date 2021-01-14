@@ -114,9 +114,9 @@ get "/twitter" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if params[:q].include?("twitter.com/i/") || params[:q].include?("twitter.com/who_to_follow/")
-    return [404, "Unsupported url. Sorry."]
+    return [404, "Unsupported url."]
   elsif params[:q].include?("twitter.com/hashtag/") || params[:q].start_with?("#")
-    return [404, "This app does not support hashtags. Sorry."]
+    return [404, "This app does not support hashtags."]
   elsif /twitter\.com\/intent\/.+[?&]user_id=(?<user_id>\d+)/ =~ params[:q]
     # https://twitter.com/intent/user?user_id=34313404
     # https://twitter.com/intent/user?user_id=71996998
@@ -259,7 +259,7 @@ get "/youtube" do
   elsif playlist_id
     redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s
   else
-    return [404, "Could not find the channel. Sorry."]
+    return [404, "Could not find the channel."]
   end
 end
 
@@ -380,19 +380,19 @@ get "/vimeo" do
   elsif /vimeo\.com\/ondemand\/(?<user>[^\/?&#]+)/ =~ params[:q]
     # https://vimeo.com/ondemand/thealphaquadrant/
     response = App::Vimeo.get("/ondemand/pages/#{user}")
-    return [404, "Could not find the user. Sorry."] if response.code == 404
+    return [404, "Could not find the user."] if response.code == 404
     raise(App::VimeoError, response) if !response.success?
     user_id = response.json["user"]["uri"][/\d+/]
   elsif /vimeo\.com\/(?<video_id>\d+)(\?|#|$)/ =~ params[:q]
     # https://vimeo.com/155672086
     response = App::Vimeo.get("/videos/#{video_id}")
-    return [404, "Could not find the video. Sorry."] if response.code == 404
+    return [404, "Could not find the video."] if response.code == 404
     raise(App::VimeoError, response) if !response.success?
     user_id = response.json["user"]["uri"][/\d+/]
   elsif /vimeo\.com\/(?:channels\/)?(?<user>[^\/?&#]+)/ =~ params[:q] || user = params[:q]
     # it's probably a channel name
     response = App::Vimeo.get("/users", query: { query: user })
-    return [404, "Could not find the channel. Sorry."] if response.code == 404
+    return [404, "Could not find the channel."] if response.code == 404
     raise(App::VimeoError, response) if !response.success?
     if response.json["data"].length > 0
       user_id = response.json["data"][0]["uri"].gsub("/users/","").to_i
@@ -402,7 +402,7 @@ get "/vimeo" do
   if user_id
     redirect "https://vimeo.com/user#{user_id}/videos/rss"
   else
-    return [404, "Could not find the channel. Sorry."]
+    return [404, "Could not find the channel."]
   end
 end
 
@@ -421,7 +421,7 @@ get "/instagram" do
     raise(App::InstagramError, response) if !response.success?
     user = response.json["graphql"]["shortcode_media"]["owner"]
   elsif params[:q].include?("instagram.com/explore/") || params[:q].start_with?("#")
-    return [404, "This app does not support hashtags. Sorry."]
+    return [404, "This app does not support hashtags."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/infectedmushroom/
   else
@@ -443,7 +443,7 @@ get "/instagram" do
   if user
     redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}").normalize.to_s
   else
-    return [404, "Can't find a user with that name. Sorry."]
+    return [404, "Can't find a user with that name."]
   end
 end
 
@@ -616,11 +616,11 @@ get "/soundcloud" do
     return [404, "Can't identify the user."] if data["kind"] != "user"
   elsif response.code == 404 && username.numeric?
     response = App::Soundcloud.get("/users/#{username}")
-    return [response.code, "Can't find a user with that id. Sorry."] if response.code == 400 || response.code == 404
+    return [response.code, "Can't find a user with that id."] if response.code == 400 || response.code == 404
     raise(App::SoundcloudError, response) if !response.success?
     data = response.json
   elsif response.code == 404
-    return [response.code, "Can't find a user with that name. Sorry."]
+    return [response.code, "Can't find a user with that name."]
   else
     raise(App::SoundcloudError, response)
   end
@@ -680,7 +680,7 @@ get "/mixcloud" do
   end
 
   response = App::Mixcloud.get("/#{username}/")
-  return [response.code, "Can't find a user with that name. Sorry."] if response.code == 404
+  return [response.code, "Can't find a user with that name."] if response.code == 404
   raise(App::MixcloudError, response) if !response.success?
   data = response.json
 
@@ -708,7 +708,7 @@ get "/twitch" do
     game_name = Addressable::URI.unescape(game_name)
   elsif /twitch\.tv\/directory/ =~ params[:q]
     # https://www.twitch.tv/directory/all/tags/7cefbf30-4c3e-4aa7-99cd-70aabb662f27
-    return [404, "Unsupported url. Sorry."]
+    return [404, "Unsupported url."]
   elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
     # https://www.twitch.tv/videos/25133028
   elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
@@ -735,7 +735,7 @@ get "/twitch" do
     return [response.code, "The username contains invalid characters."] if response.code == 400
     raise(App::TwitchError, response) if !response.success?
     data = response.json["data"][0]
-    return [404, "Can't find a user with that name. Sorry."] if data.nil?
+    return [404, "Can't find a user with that name."] if data.nil?
     redirect Addressable::URI.new(path: "/twitch/#{data["id"]}/#{data["display_name"]}").normalize.to_s
   end
 end
@@ -945,7 +945,7 @@ get "/speedrun" do
     game = response.headers["location"][0].split("/")[-1]
     response = App::Speedrun.get("/games/#{game}")
   end
-  return [response.code, "Can't find a game with that name. Sorry."] if response.code == 404
+  return [response.code, "Can't find a game with that name."] if response.code == 404
   raise(App::SpeedrunError, response) if !response.success?
   data = response.json["data"]
 
@@ -1007,7 +1007,7 @@ get "/dailymotion" do
   if response.success?
     redirect Addressable::URI.new(path: "/dailymotion/#{response.json["id"]}/#{response.json["username"]}").normalize.to_s
   else
-    return [404, "Could not find a user with the name #{user}. Sorry."]
+    return [404, "Could not find a user with the name #{user}."]
   end
 end
 
@@ -1041,7 +1041,7 @@ get "/imgur" do
     # https://imgur.com/NdyrgaE
     # https://imgur.com/gallery/NdyrgaE
   elsif params[:q].start_with?("#")
-    return [404, "This app does not support hashtags. Sorry."]
+    return [404, "This app does not support hashtags."]
   else
     # it's probably a username
     username = params[:q]
@@ -1062,14 +1062,14 @@ get "/imgur" do
     username = response.json["data"]["account_url"]
   elsif username
     response = App::Imgur.get("/account/#{username}")
-    return [response.code, "Can't find a user with that name. Sorry. If you want a feed for a subreddit, enter \"r/#{username}\"."] if response.code == 404
+    return [response.code, "Can't find a user with that name. If you want a feed for a subreddit, enter \"r/#{username}\"."] if response.code == 404
     raise(App::ImgurError, response) if !response.success?
     user_id = response.json["data"]["id"]
     username = response.json["data"]["url"]
   end
 
   if user_id.nil?
-    return [404, "This image was probably uploaded anonymously. Sorry."]
+    return [404, "This image was probably uploaded anonymously."]
   else
     redirect Addressable::URI.new(path: "/imgur/#{user_id}/#{username}").normalize.to_s
   end
@@ -1129,7 +1129,7 @@ get "/svtplay" do
   if program
     redirect Addressable::URI.parse("https://www.svtplay.se/#{program}/atom.xml").normalize.to_s
   else
-    return [404, "Could not find the program. Sorry."]
+    return [404, "Could not find the program."]
   end
 end
 
