@@ -8,10 +8,9 @@ X-WR-CALNAME:<%= @title %>
 X-WR-CALDESC:<%= @alternate_url %>
 
 <%-
-@data.each do |video|
-  duration = video["duration"].parse_duration
-  if video["thumbnail_url"] == ""
-    # video is currently live
+@data["videos"].each do |video|
+  duration = video["duration"]
+  if video["is_live"]
     duration += 7200
   end
   dtstart = Time.parse(video["created_at"])

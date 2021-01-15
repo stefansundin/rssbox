@@ -896,24 +896,39 @@ get "/twitch" do
   end
 
   if game_name
-    response = App::Twitch.get("/games", query: { name: game_name })
-    raise(App::TwitchError, response) if !response.success?
-    data = response.json["data"][0]
-    return [404, "Can't find a game with that name."] if data.nil?
-    redirect Addressable::URI.new(path: "/twitch/directory/game/#{data["id"]}/#{game_name}").normalize.to_s
+    path, _ = App::Cache.cache("twitch.game.#{game_name.downcase}", 60*60, 60) do
+      response = App::Twitch.get("/games", query: { name: game_name })
+      raise(App::TwitchError, response) if !response.success?
+      data = response.json["data"][0]
+      next "Error: Can't find a game with that name." if data.nil?
+      "#{data["id"]}/#{game_name}"
+    end
+    return [422, "Something went wrong. Try again later."] if path.nil?
+    return [422, path] if path.start_with?("Error:")
+    redirect Addressable::URI.new(path: "/twitch/directory/game/#{path}").normalize.to_s
   elsif vod_id
-    response = App::Twitch.get("/videos", query: { id: vod_id })
-    return [response.code, "Video does not exist."] if response.code == 404
-    raise(App::TwitchError, response) if !response.success?
-    data = response.json["data"][0]
-    redirect Addressable::URI.new(path: "/twitch/#{data["user_id"]}/#{data["user_name"]}").normalize.to_s
+    path, _ = App::Cache.cache("twitch.vod.#{vod_id}", 60*60, 60) do
+      response = App::Twitch.get("/videos", query: { id: vod_id })
+      next "Error: Video does not exist." if response.code == 404
+      raise(App::TwitchError, response) if !response.success?
+      data = response.json["data"][0]
+      "#{data["user_id"]}/#{data["user_name"]}"
+    end
+    return [422, "Something went wrong. Try again later."] if path.nil?
+    return [422, path] if path.start_with?("Error:")
+    redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s
   else
-    response = App::Twitch.get("/users", query: { login: username })
-    return [response.code, "The username contains invalid characters."] if response.code == 400
-    raise(App::TwitchError, response) if !response.success?
-    data = response.json["data"][0]
-    return [404, "Can't find a user with that name."] if data.nil?
-    redirect Addressable::URI.new(path: "/twitch/#{data["id"]}/#{data["display_name"]}").normalize.to_s
+    path, _ = App::Cache.cache("twitch.user.#{username.downcase}", 60*60, 60) do
+      response = App::Twitch.get("/users", query: { login: username })
+      next "Error: The username contains invalid characters." if response.code == 400
+      raise(App::TwitchError, response) if !response.success?
+      data = response.json["data"][0]
+      next "Error: Can't find a user with that name." if data.nil?
+      "#{data["id"]}/#{data["display_name"]}"
+    end
+    return [422, "Something went wrong. Try again later."] if path.nil?
+    return [422, path] if path.start_with?("Error:")
+    redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s
   end
 end
 
@@ -1039,14 +1054,29 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
   @type = "game"
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
-  response = App::Twitch.get("/videos", query: { game_id: id, type: type })
-  raise(App::TwitchError, response) if !response.success?
+  data, @updated_at = App::Cache.cache("twitch.videos.game.#{id}.#{type}", 60*60, 60) do
+    response = App::Twitch.get("/videos", query: { game_id: id, type: type })
+    raise(App::TwitchError, response) if !response.success?
 
-  @data = response.json["data"]
+    response.json["data"].reject do |video|
+      # live broadcasts show up here too, and the simplest way of filtering them out seems to be to see if thumbnail_url is populated or not
+      video["thumbnail_url"].empty?
+    end.map do |video|
+      {
+        "created_at" => video["created_at"],
+        "description" => video["description"].strip,
+        "duration" => video["duration"].parse_duration,
+        "id" => video["id"],
+        "title" => video["title"].strip,
+        "type" => video["type"],
+        "user_name" => video["user_name"],
+      }
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+
+  @data = JSON.parse(data)
   @alternate_url = Addressable::URI.parse("https://www.twitch.tv/directory/game/#{game_name}").normalize.to_s
-
-  # live broadcasts show up here too, and the simplest way of filtering them out seems to be to see if thumbnail_url is populated or not
-  @data.reject! { |v| v["thumbnail_url"].empty? }
 
   @title = game_name
   @title += " highlights" if type == "highlight"
@@ -1062,14 +1092,36 @@ end
 get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
   return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
 
-  @title = "#{user} on Twitch"
-
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
-  response = App::Twitch.get("/videos", query: { user_id: id, type: type })
-  raise(App::TwitchError, response) if !response.success?
+  data, @updated_at = App::Cache.cache("twitch.videos.user.#{id}.#{type}", 60*60, 60) do
+    response = App::Twitch.get("/videos", query: { user_id: id, type: type })
+    raise(App::TwitchError, response) if !response.success?
 
-  @data = response.json["data"]
-  user = @data[0]["user_name"] || CGI.unescape(user)
+    data = response.json["data"]
+    user_name = data[0]["user_name"] if data.length > 0
+    videos = data.map do |video|
+      {
+        "id" => video["id"],
+        "created_at" => video["created_at"],
+        "published_at" => video["published_at"],
+        "is_live" => !video.has_key?("thumbnail_url"),
+        "type" => video["type"],
+        "title" => video["title"].strip,
+        "description" => video["description"].strip,
+        "duration" => video["duration"].parse_duration,
+      }
+    end
+
+    {
+      "user_name" => user_name,
+      "videos" => videos,
+    }.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+
+  @data = JSON.parse(data)
+  user = @data["user_name"] || CGI.unescape(user)
+  @title = "#{user} on Twitch"
   @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
 
   erb :"twitch.ics"
@@ -1082,21 +1134,42 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @type = "user"
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
-  response = App::Twitch.get("/videos", query: { user_id: id, type: type })
-  raise(App::TwitchError, response) if !response.success?
+  data, @updated_at = App::Cache.cache("twitch.videos.user.#{id}.#{type}", 60*60, 60) do
+    response = App::Twitch.get("/videos", query: { user_id: id, type: type })
+    raise(App::TwitchError, response) if !response.success?
 
-  @data = response.json["data"]
-  user = @data[0]["user_name"] || CGI.unescape(user)
+    data = response.json["data"]
+    user_name = data[0]["user_name"] if data.length > 0
+    videos = data.map do |video|
+      {
+        "id" => video["id"],
+        "created_at" => video["created_at"],
+        "published_at" => video["published_at"],
+        "is_live" => !video.has_key?("thumbnail_url"),
+        "type" => video["type"],
+        "title" => video["title"].strip,
+        "description" => video["description"].strip,
+        "duration" => video["duration"].parse_duration,
+      }
+    end
+
+    {
+      "user_name" => user_name,
+      "videos" => videos,
+    }.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+
+  @data = JSON.parse(data)
+  @user = @data["user_name"] || CGI.unescape(user)
   @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
-
-  # live broadcasts show up here too, and the simplest way of filtering them out seems to be to see if thumbnail_url is populated or not
-  @data.reject! { |v| v["thumbnail_url"].empty? }
+  @data["videos"].reject! { |v| v["is_live"] }
 
   @title = user
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
 
-  @data.map do |video|
+  @data["videos"].map do |video|
     video["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| App::URL.resolve(urls) }
 
