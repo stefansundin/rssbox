@@ -9,8 +9,8 @@ X-WR-CALDESC:https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::
 
 <%-
 @data.each do |video|
-  title = video["snippet"]["title"].to_line
-  published_at = Time.parse(video["snippet"]["publishedAt"])
+  title = video["title"].to_line
+  published_at = Time.parse(video["publishedAt"])
 
   if video.has_key?("liveStreamingDetails")
     dtstart = Time.parse(video["liveStreamingDetails"]["actualStartTime"] || video["liveStreamingDetails"]["scheduledStartTime"])
@@ -27,7 +27,7 @@ X-WR-CALDESC:https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::
     end
   else
     dtstart = published_at
-    dtend = published_at + video["contentDetails"]["duration"].parse_pt
+    dtend = published_at + video["duration"]
   end
 
   dtstart = dtstart.strftime("%Y%m%dT%H%M%SZ")
@@ -43,7 +43,7 @@ CREATED:<%= published_at %>
 LAST-MODIFIED:<%= published_at %>
 SUMMARY:<%= title %>
 LOCATION:https://www.youtube.com/watch?v=<%= video["id"] %>
-DESCRIPTION:<%= video["snippet"]["description"].gsub("\n", "\\n") %>
+DESCRIPTION:<%= video["description"].gsub("\n", "\\n") %>
 END:VEVENT
 
 <%- end -%>

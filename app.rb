@@ -296,31 +296,39 @@ get "/youtube" do
   end
 
   if user
-    response = App::HTTP.get("https://www.youtube.com/#{user}")
-    if response.redirect?
-      # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
-      response = App::HTTP.get(response.redirect_url)
+    channel_id, _ = App::Cache.cache("youtube.user.#{user.downcase}", 60*60, 60) do
+      response = App::HTTP.get("https://www.youtube.com/#{user}")
+      if response.redirect?
+        # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
+        response = App::HTTP.get(response.redirect_url)
+      end
+      next "Error: Could not find the user. Please try with a video url instead." if response.code == 404
+      raise(App::GoogleError, response) if !response.success?
+      doc = Nokogiri::HTML(response.body)
+      doc.at("meta[itemprop='channelId']")["content"]
     end
-    return [response.code, "Could not find the user. Please try with a video url instead."] if response.code == 404
-    raise(App::GoogleError, response) if !response.success?
-    doc = Nokogiri::HTML(response.body)
-    channel_id = doc.at("meta[itemprop='channelId']")["content"]
-  end
-
-  if video_id
-    response = App::Google.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
-    raise(App::GoogleError, response) if !response.success?
-    if response.json["items"].length > 0
-      channel_id = response.json["items"][0]["snippet"]["channelId"]
+  elsif video_id
+    channel_id, _ = App::Cache.cache("youtube.video.#{video_id}", 60*60, 60) do
+      response = App::Google.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
+      raise(App::GoogleError, response) if !response.success?
+      if response.json["items"].length > 0
+        response.json["items"][0]["snippet"]["channelId"]
+      end
     end
   end
+  return [422, "Something went wrong. Try again later."] if channel_id.nil?
+  return [422, channel_id] if channel_id.start_with?("Error:")
 
   if query || params[:type]
-    # it's no longer possible to get usernames using the API
-    # note that the values include " - YouTube" at the end if the User-Agent is a browser
-    og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
-    username = og.url.split("/")[-1]
-    username = og.title if username == channel_id
+    username, _ = App::Cache.cache("youtube.channel.#{channel_id}", 60*60, 60) do
+      # it is no longer possible to get usernames using the API
+      # note that the values include " - YouTube" at the end if the User-Agent is a browser
+      og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
+      username = og.url.split("/")[-1]
+      username = og.title if username == channel_id
+      username
+    end
+    return [422, "Something went wrong. Try again later."] if username.nil?
   end
 
   if query
@@ -342,15 +350,38 @@ get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   @username = username
   @title = "#{username} on YouTube"
 
-  # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
-  response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}")
-  raise(App::GoogleError, response) if !response.success?
-  doc = Nokogiri::XML(response.body)
-  ids = doc.xpath("//yt:videoId").map(&:text)
+  data, _ = App::Cache.cache("youtube.ics.#{channel_id}", 60*60, 60) do
+    # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
+    response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}")
+    next "Error: It seems like this channel no longer exists." if response.code == 404
+    raise(App::GoogleError, response) if !response.success?
+    doc = Nokogiri::XML(response.body)
+    ids = doc.xpath("//yt:videoId").map(&:text)
 
-  response = App::Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
-  raise(App::GoogleError, response) if !response.success?
-  @data = response.json["items"]
+    response = App::Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
+    raise(App::GoogleError, response) if !response.success?
+
+    items = response.json["items"].sort_by! do |video|
+      if video.has_key?("liveStreamingDetails")
+        Time.parse(video["liveStreamingDetails"]["actualStartTime"] || video["liveStreamingDetails"]["scheduledStartTime"])
+      else
+        Time.parse(video["snippet"]["publishedAt"])
+      end
+    end.reverse!.map do |video|
+      {
+        "id" => video["id"],
+        "title" => video["snippet"]["title"],
+        "publishedAt" => video["snippet"]["publishedAt"],
+        "duration" => video["contentDetails"]["duration"].parse_pt,
+        "description" => video["snippet"]["description"],
+        "liveStreamingDetails" => video["liveStreamingDetails"]&.slice("scheduledStartTime", "actualStartTime", "actualEndTime"),
+      }.compact
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
+
+  @data = JSON.parse(data)
 
   if params.has_key?(:eventType)
     eventTypes = params[:eventType].split(",")
@@ -369,16 +400,8 @@ get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   if params.has_key?(:q)
     @query = params[:q]
     q = @query.downcase
-    @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
+    @data.select! { |v| v["title"].downcase.include?(q) }
   end
-
-  @data.sort_by! do |video|
-    if video.has_key?("liveStreamingDetails")
-      Time.parse(video["liveStreamingDetails"]["actualStartTime"] || video["liveStreamingDetails"]["scheduledStartTime"])
-    else
-      Time.parse(video["snippet"]["publishedAt"])
-    end
-  end.reverse!
 
   erb :"youtube.ics"
 end
@@ -397,15 +420,31 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
     end
   end
 
-  # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
-  response = App::Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
-  return [response.code, "It seems like this channel no longer exists."] if response.code == 404
-  raise(App::GoogleError, response) if !response.success?
-  ids = response.json["items"].sort_by { |v| Time.parse(v["snippet"]["publishedAt"]) }.reverse.map { |v| v["snippet"]["resourceId"]["videoId"] }
+  data, @updated_at = App::Cache.cache("youtube.videos.#{channel_id}", 60*60, 60) do
+    # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
+    response = App::Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
+    next "Error: It seems like this channel no longer exists." if response.code == 404
+    raise(App::GoogleError, response) if !response.success?
+    ids = response.json["items"].sort_by { |v| Time.parse(v["snippet"]["publishedAt"]) }.reverse.map { |v| v["snippet"]["resourceId"]["videoId"] }
 
-  response = App::Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
-  raise(App::GoogleError, response) if !response.success?
-  @data = response.json["items"]
+    response = App::Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
+    raise(App::GoogleError, response) if !response.success?
+
+    response.json["items"].map do |video|
+      {
+        "id" => video["id"],
+        "title" => video["snippet"]["title"],
+        "publishedAt" => video["snippet"]["publishedAt"],
+        "duration" => video["contentDetails"]["duration"].parse_pt,
+        "description" => video["snippet"]["description"],
+        "liveStreamingDetails" => video["liveStreamingDetails"]&.slice("scheduledStartTime", "actualStartTime", "actualEndTime"),
+      }.compact
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
+
+  @data = JSON.parse(data)
 
   if params.has_key?(:eventType)
     eventTypes = params[:eventType].split(",")
@@ -427,14 +466,14 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
   if params.has_key?(:q)
     @query = params[:q]
     q = @query.downcase
-    @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
+    @data.select! { |v| v["title"].downcase.include?(q) }
     @title = "\"#{@query}\" from #{username}"
   else
     @title = "#{username} on YouTube"
   end
 
   @data.map do |video|
-    video["snippet"]["description"].grep_urls
+    video["description"].grep_urls
   end.flatten.tap { |urls| App::URL.resolve(urls) }
 
   erb :"youtube.atom"
