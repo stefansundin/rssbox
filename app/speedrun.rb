@@ -11,28 +11,17 @@ module App
     }
     ERROR_CLASS = SpeedrunError
 
-    @@cache = {}
-
     def self.resolve_id(type, id)
-      @@cache[type] ||= {}
-      return @@cache[type][id] if @@cache[type][id]
-      value = $redis.get("speedrun:#{type}:#{id}")
-      if value
-        @@cache[type][id] = value
-        return value
+      value, _ = App::Cache.cache("speedrun.#{type}.#{id}", 24*60*60, 60) do
+        if type == "game"
+          response = Speedrun.get("/games/#{id}")
+          raise(SpeedrunError, response) if !response.success?
+          response.json["data"]["names"]["international"]
+        else
+          raise("unsupported type")
+        end
       end
-
-      if type == "game"
-        response = get("/games/#{id}")
-        raise(SpeedrunError, response) if !response.success?
-        value = response.json["data"]["names"]["international"]
-      else
-        raise("unsupported type")
-      end
-
-      $redis.set("speedrun:#{type}:#{id}", value)
-      @@cache[type][id] = value
-      return value
+      value
     end
   end
 end

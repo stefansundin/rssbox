@@ -6,51 +6,34 @@
   <icon>https://www.speedrun.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.speedrun.com/<%= @abbr %>" rel="alternate" />
-  <updated><%= @data[0]["submitted"] || Time.parse(@data[0]["date"]) if @data[0] %></updated>
+  <updated><%= @updated_at %></updated>
 <%-
 @data.each do |run|
-  players = run["players"]["data"].map { |player| player["name"] || player["names"]["international"] }
-  videos = if run["videos"].has_key?("links")
-    "Videos: " + run["videos"]["links"].map { |link| link["uri"] }.join(" | ")
-  elsif run["videos"].has_key?("text")
-    "Videos: " + run["videos"]["text"]
+  videos = if run["videos"]
+    "Videos: " + run["videos"].join(" | ")
   else
     "No video"
-  end
-
-  if !run["level"]["data"].empty?
-    category_link = "https://www.speedrun.com/#{@abbr}/#{run["level"]["data"]["weblink"].split("/")[-1]}"
-    category = "#{run["category"]["data"]["name"]}: #{run["level"]["data"]["name"]}"
-  else
-    category_link = "https://www.speedrun.com/#{@abbr}##{run["category"]["data"]["weblink"].partition("#")[2]}"
-    category = run["category"]["data"]["name"]
-  end
-
-  if run["platform"]["data"].is_a?(Hash)
-    platform = run["platform"]["data"]["name"]
-    platform += " (#{run["region"]["data"]["name"]})" if run["system"]["region"]
-    platform += " [emu]" if run["system"]["emulated"]
   end
 -%>
 
   <entry>
     <id>speedrun:run:<%= run["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= run["times"]["primary_t"].round.to_duration %>] <%= players.join(", ").esc %> - <%= category %></title>
+    <title>[<%= run["times"].to_duration %>] <%= run["players"].join(", ").esc %> - <%= run["category"] %></title>
     <link href="<%= "https://www.speedrun.com/run/#{run["id"]}" %>" />
     <updated><%= run["submitted"] || Time.parse(run["date"]) %></updated>
-    <author><name><%= players.join(", ").esc %></name></author>
+    <author><name><%= run["players"].join(", ").esc %></name></author>
     <content type="html">
 <%= <<~EOF.esc
   #{videos.linkify_and_embed(request).to_paragraphs}
 
   #{run["comment"].linkify.to_paragraphs}
 
-  <p>Category: <a href="#{category_link}" rel="noreferrer">#{category}</a></p>
-  <p>Runners: #{players.map { |name| "<a href='https://www.speedrun.com/user/#{name}' rel='noreferrer'>#{name}</a>" }.join(", ")}</p>
+  <p>Category: <a href="#{run["category_link"]}" rel="noreferrer">#{run["category"]}</a></p>
+  <p>Runners: #{run["players"].map { |name| "<a href='https://www.speedrun.com/user/#{name}' rel='noreferrer'>#{name}</a>" }.join(", ")}</p>
 EOF
 -%>
-<%= <<~EOF.esc if platform
-  <p>Platform: #{platform}</p>
+<%= <<~EOF.esc if run["platform"]
+  <p>Platform: #{run["platform"]}</p>
 EOF
 -%>
     </content>

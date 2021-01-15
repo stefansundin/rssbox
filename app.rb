@@ -1181,39 +1181,88 @@ get "/speedrun" do
 
   if /speedrun\.com\/run\/(?<run_id>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/run/1zx0qkez
-    response = App::Speedrun.get("/runs/#{run_id}")
-    raise(App::SpeedrunError, response) if !response.success?
-    game = response.json["data"]["game"]
+    game, _ = App::Cache.cache("speedrun.run.#{run_id}", 60*60, 60) do
+      response = App::Speedrun.get("/runs/#{run_id}")
+      raise(App::SpeedrunError, response) if !response.success?
+      response.json["data"]["game"]
+    end
+    return [422, "Something went wrong. Try again later."] if game.nil?
   elsif /speedrun\.com\/(?<game>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/alttp#No_Major_Glitches
   else
     game = params[:q]
   end
 
-  response = App::Speedrun.get("/games/#{game}")
-  if response.redirect?
-    game = response.headers["location"][0].split("/")[-1]
+  path, _ = App::Cache.cache("speedrun.game.#{game.downcase}", 60*60, 60) do
     response = App::Speedrun.get("/games/#{game}")
+    if response.redirect?
+      game = response.headers["location"][0].split("/")[-1]
+      response = App::Speedrun.get("/games/#{game}")
+    end
+    next "Error: Can't find a game with that name." if response.code == 404
+    raise(App::SpeedrunError, response) if !response.success?
+    data = response.json["data"]
+    "#{data["id"]}/#{data["abbreviation"]}"
   end
-  return [response.code, "Can't find a game with that name."] if response.code == 404
-  raise(App::SpeedrunError, response) if !response.success?
-  data = response.json["data"]
+  return [422, "Something went wrong. Try again later."] if path.nil?
+  return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/speedrun/#{data["id"]}/#{data["abbreviation"]}").normalize.to_s
+  redirect Addressable::URI.new(path: "/speedrun/#{path}").normalize.to_s
 end
 
 get "/speedrun/:id/:abbr" do |id, abbr|
   @id = id
   @abbr = abbr
 
-  response = App::Speedrun.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
-  raise(App::SpeedrunError, response) if !response.success?
-  @data = response.json["data"].reject { |run| run["videos"].nil? }
+  data, @updated_at = App::Cache.cache("speedrun.runs.#{id}", 60*60, 60) do
+    response = App::Speedrun.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
+    raise(App::SpeedrunError, response) if !response.success?
+    response.json["data"].reject do |run|
+      run["videos"].nil?
+    end.map do |run|
+      players = run["players"]["data"].map { |player| player["name"] || player["names"]["international"] }
+      videos = if run["videos"].has_key?("links")
+        run["videos"]["links"].map { |link| link["uri"] }
+      elsif run["videos"].has_key?("text")
+        [ run["videos"]["text"] ]
+      end
+
+      if !run["level"]["data"].empty?
+        category_link = "https://www.speedrun.com/#{@abbr}/#{run["level"]["data"]["weblink"].split("/")[-1]}"
+        category = "#{run["category"]["data"]["name"]}: #{run["level"]["data"]["name"]}"
+      else
+        category_link = "https://www.speedrun.com/#{@abbr}##{run["category"]["data"]["weblink"].partition("#")[2]}"
+        category = run["category"]["data"]["name"]
+      end
+
+      if run["platform"]["data"].is_a?(Hash)
+        platform = run["platform"]["data"]["name"]
+        platform += " (#{run["region"]["data"]["name"]})" if run["system"]["region"]
+        platform += " [emu]" if run["system"]["emulated"]
+      end
+
+      {
+        "id" => run["id"],
+        "date" => run["date"],
+        "submitted" => run["submitted"],
+        "comment" => run["comment"],
+        "times" => run["times"]["primary_t"].round,
+        "category_link" => category_link,
+        "category" => category,
+        "platform" => platform,
+        "players" => players,
+        "videos" => videos,
+      }
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
+
+  @data = JSON.parse(data)
 
   @data.map do |run|
     [
-      run["videos"]["links"]&.map { |link| link["uri"] },
-      run["videos"]["text"],
+      run["videos"],
       run["comment"],
     ].flatten.compact.map(&:grep_urls)
   end.flatten.tap { |urls| App::URL.resolve(urls) }
