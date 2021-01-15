@@ -745,23 +745,28 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  response = App::Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
-  if response.code == 200
-    data = response.json
-    data = data["user"] if data.has_key?("user")
-    return [404, "Can't identify the user."] if data["kind"] != "user"
-  elsif response.code == 404 && username.numeric?
-    response = App::Soundcloud.get("/users/#{username}")
-    return [response.code, "Can't find a user with that id."] if response.code == 400 || response.code == 404
-    raise(App::SoundcloudError, response) if !response.success?
-    data = response.json
-  elsif response.code == 404
-    return [response.code, "Can't find a user with that name."]
-  else
-    raise(App::SoundcloudError, response)
+  path, _ = App::Cache.cache("soundcloud.user.#{username.downcase}", 60*60, 60) do
+    response = App::Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
+    if response.code == 200
+      data = response.json
+      data = data["user"] if data.has_key?("user")
+      next "Error: Can't identify the user." if data["kind"] != "user"
+    elsif response.code == 404 && username.numeric?
+      response = App::Soundcloud.get("/users/#{username}")
+      next "Error: Can't find a user with that id." if response.code == 400 || response.code == 404
+      raise(App::SoundcloudError, response) if !response.success?
+      data = response.json
+    elsif response.code == 404
+      next "Error: Can't find a user with that name."
+    else
+      raise(App::SoundcloudError, response)
+    end
+    "#{data["id"]}/#{data["permalink"]}"
   end
+  return [422, "Something went wrong. Try again later."] if path.nil?
+  return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/soundcloud/#{data["id"]}/#{data["permalink"]}").normalize.to_s
+  redirect Addressable::URI.new(path: "/soundcloud/#{path}").normalize.to_s
 end
 
 get "/soundcloud/download" do
@@ -791,11 +796,27 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @id = id
 
-  response = App::Soundcloud.get("/users/#{id}/tracks")
-  return [404, "That user no longer exist."] if response.code == 500 && response.body == '{"error":"Match failed"}'
-  raise(App::SoundcloudError, response) if !response.success?
+  data, @updated_at = App::Cache.cache("soundcloud.tracks.#{id}", 4*60*60, 60) do
+    response = App::Soundcloud.get("/users/#{id}/tracks")
+    next "Error: That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
+    raise(App::SoundcloudError, response) if !response.success?
+    response.json["collection"].map do |track|
+      {
+        "id" => track["id"],
+        "created_at" => track["created_at"],
+        "username" => track["user"]["username"],
+        "title" => track["title"],
+        "description" => track["description"],
+        "duration" => (track["duration"] / 1000),
+        "artwork_url" => track["artwork_url"],
+        "permalink_url" => track["permalink_url"],
+      }
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
 
-  @data = response.json["collection"]
+  @data = JSON.parse(data)
   @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
 
