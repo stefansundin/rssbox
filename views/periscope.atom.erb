@@ -6,17 +6,12 @@
   <icon>https://assets.periscope.tv/images/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.periscope.tv/<%= @username %>" rel="alternate" />
-  <updated><%= Time.parse(@data[0]["created_at"]) if @data[0] %></updated>
-<%-
-@data.each do |broadcast|
-  broadcast_start = Time.parse(broadcast["start"])
-  broadcast_end = Time.parse(broadcast["end"])
-  duration = (broadcast_end - broadcast_start).round
--%>
+  <updated><%= @updated_at %></updated>
+<%- @data.each do |broadcast| -%>
 
   <entry>
     <id>periscope:broadcast:<%= broadcast["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= duration.to_duration %>] <%= broadcast["status"].or("No title").to_line.esc %></title>
+    <title>[<%= broadcast["duration"].to_duration %>] <%= broadcast["status"].or("No title").to_line.esc %></title>
     <link href="https://www.periscope.tv/<%= "#{broadcast["username"]}/#{broadcast["id"]}" %>" />
     <updated><%= Time.parse(broadcast["created_at"]) %></updated>
     <author><name><%= broadcast["user_display_name"].esc %></name></author>

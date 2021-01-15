@@ -662,40 +662,60 @@ get "/periscope" do
     username = params[:q]
   end
 
-  url = if broadcast_id
-    "https://www.periscope.tv/w/#{broadcast_id}"
+  if broadcast_id
+    url = "https://www.periscope.tv/w/#{broadcast_id}"
+    cache_key = "periscope.broadcast.#{broadcast_id}"
   else
-    "https://www.periscope.tv/#{username}"
+    url = "https://www.periscope.tv/#{username}"
+    cache_key = "periscope.user.#{username.downcase}"
   end
-  response = App::Periscope.get(url)
-  return [404, "This user has not created a Periscope account yet."] if response.code == 302
-  return [response.code, "That username does not exist."] if response.code == 404
-  return [response.code, "That broadcast has expired."] if response.code == 410
-  return [response.code, "Please enter a username."] if response.code/100 == 4
-  raise(App::PeriscopeError, response) if !response.success?
-  doc = Nokogiri::HTML(response.body)
-  data = doc.at("div#page-container")["data-store"]
-  json = JSON.parse(data)
-  username, user_id = json["UserCache"]["usernames"].to_a[0]
 
-  redirect Addressable::URI.new(path: "/periscope/#{user_id}/#{username}").normalize.to_s
+  path, _ = App::Cache.cache(cache_key, 60*60, 60) do
+    response = App::Periscope.get(url)
+    next "Error: This user has not created a Periscope account yet." if response.code == 302
+    next "Error: That username does not exist." if response.code == 404
+    next "Error: That broadcast has expired." if response.code == 410
+    next "Error: Please enter a username." if response.code/100 == 4
+    raise(App::PeriscopeError, response) if !response.success?
+    doc = Nokogiri::HTML(response.body)
+    data = doc.at("div#page-container")["data-store"]
+    json = JSON.parse(data)
+    username, user_id = json["UserCache"]["usernames"].to_a[0]
+    "#{user_id}/#{username}"
+  end
+  return [422, "Something went wrong. Try again later."] if path.nil?
+  return [422, path] if path.start_with?("Error:")
+
+  redirect Addressable::URI.new(path: "/periscope/#{path}").normalize.to_s
 end
 
 get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
   @id = id
   @username = CGI.unescape(username)
 
-  response = App::Periscope.get_broadcasts(id)
-  raise(App::PeriscopeError, response) if !response.success?
-  @data = response.json["broadcasts"]
+  data, @updated_at = App::Cache.cache("periscope.broadcasts.#{id}", 4*60*60, 60) do
+    response = App::Periscope.get_broadcasts(id)
+    raise(App::PeriscopeError, response) if !response.success?
+    response.json["broadcasts"].select do |broadcast|
+      # filter out live broadcasts
+      broadcast.has_key?("end")
+    end.map do |broadcast|
+      broadcast_start = Time.parse(broadcast["start"])
+      broadcast_end = Time.parse(broadcast["end"])
+      duration = (broadcast_end - broadcast_start).round
+      broadcast.slice("id", "status", "username", "created_at", "user_display_name", "city").merge({
+        "duration" => duration,
+      })
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+
+  @data = JSON.parse(data)
   @user = if @data.length > 0
     @data[0]["user_display_name"]
   else
     @username
   end
-
-  # filter out live broadcasts
-  @data.select! { |broadcast| broadcast.has_key?("end") }
 
   erb :"periscope.atom"
 end
@@ -704,10 +724,15 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   cache_control :public, :max_age => 31556926 # cache a long time
   # The image URL expires after 24 hours, so to avoid the URL from being cached by the RSS client and then expire, we just redirect on demand
   # Interestingly enough, if a request is made before the token expires, it will be cached by their CDN and continue to work even after the token expires
-  response = App::Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
-  return [response.code, "Image not found."] if response.code == 404
-  raise(App::PeriscopeError, response) if !response.success?
-  redirect response.json["broadcast"]["image_url"]
+  image_url, _ = App::Cache.cache("periscope.image.#{id}", 4*60*60, 60) do
+    response = App::Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
+    next "Error: Broadcast not found." if response.code == 404
+    raise(App::PeriscopeError, response) if !response.success?
+    response.json["broadcast"]["image_url"]
+  end
+  return [422, "Something went wrong. Try again later."] if image_url.nil?
+  return [422, image_url] if image_url.start_with?("Error:")
+  redirect image_url
 end
 
 get "/soundcloud" do
