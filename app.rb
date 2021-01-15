@@ -1365,31 +1365,37 @@ get "/imgur" do
   end
 
   if image_id
-    response = App::Imgur.get("/gallery/image/#{image_id}")
-    response = App::Imgur.get("/image/#{image_id}") if !response.success?
-    return [404, "Can't identify #{image_id} as an image or gallery."] if !response.success?
-    raise(App::ImgurError, response) if !response.success?
-    user_id = response.json["data"]["account_id"]
-    username = response.json["data"]["account_url"]
+    path, _ = App::Cache.cache("imgur.image.#{image_id}", 60*60, 60) do
+      response = App::Imgur.get("/gallery/album/#{image_id}")
+      response = App::Imgur.get("/gallery/image/#{image_id}") if !response.success?
+      response = App::Imgur.get("/image/#{image_id}") if !response.success?
+      next "Error: Can't identify #{image_id} as an image or gallery." if response.code == 404
+      raise(App::ImgurError, response) if !response.success?
+      data = response.json["data"]
+      next "Error: This image was uploaded anonymously." if data["account_id"].nil?
+      "#{data["account_id"]}/#{data["account_url"]}"
+    end
   elsif album_id
-    response = App::Imgur.get("/album/#{album_id}")
-    return [response.code, "Can't identify #{album_id} as an album."] if response.code == 404
-    raise(App::ImgurError, response) if !response.success?
-    user_id = response.json["data"]["account_id"]
-    username = response.json["data"]["account_url"]
+    path, _ = App::Cache.cache("imgur.album.#{album_id}", 60*60, 60) do
+      response = App::Imgur.get("/album/#{album_id}")
+      next "Error: Can't identify #{album_id} as an album." if response.code == 404
+      raise(App::ImgurError, response) if !response.success?
+      data = response.json["data"]
+      "#{data["account_id"]}/#{data["account_url"]}"
+    end
   elsif username
-    response = App::Imgur.get("/account/#{username}")
-    return [response.code, "Can't find a user with that name. If you want a feed for a subreddit, enter \"r/#{username}\"."] if response.code == 404
-    raise(App::ImgurError, response) if !response.success?
-    user_id = response.json["data"]["id"]
-    username = response.json["data"]["url"]
+    path, _ = App::Cache.cache("imgur.account.#{username}", 60*60, 60) do
+      response = App::Imgur.get("/account/#{username}")
+      next "Error: Can't find a user with that name. If you want a feed for a subreddit, enter \"r/#{username}\"." if response.code == 404
+      raise(App::ImgurError, response) if !response.success?
+      data = response.json["data"]
+      "#{data["id"]}/#{data["url"]}"
+    end
   end
+  return [422, "Something went wrong. Try again later."] if path.nil?
+  return [422, path] if path.start_with?("Error:")
 
-  if user_id.nil?
-    return [404, "This image was probably uploaded anonymously."]
-  else
-    redirect Addressable::URI.new(path: "/imgur/#{user_id}/#{username}").normalize.to_s
-  end
+  redirect Addressable::URI.new(path: "/imgur/#{path}").normalize.to_s
 end
 
 get "/imgur/:user_id/:username" do |user_id, username|
@@ -1397,15 +1403,28 @@ get "/imgur/:user_id/:username" do |user_id, username|
 
   if user_id == "r"
     @subreddit = username
-    response = App::Imgur.get("/gallery/r/#{@subreddit}")
+    data, @updated_at = App::Cache.cache("imgur.r.#{@subreddit.downcase}", 60*60, 60) do
+      response = App::Imgur.get("/gallery/r/#{@subreddit}")
+      raise(App::ImgurError, response) if !response.success? || response.body.empty?
+      response.json["data"].map do |image|
+        image.slice("animated", "cover", "datetime", "description", "gifv", "height", "id", "images_count", "is_album", "nsfw", "score", "size", "title", "type", "width")
+      end.to_json
+    end
   else
     @user_id = user_id
     @username = username
-    # can't use user_id in this request unfortunately
-    response = App::Imgur.get("/account/#{@username}/submissions")
+    data, @updated_at = App::Cache.cache("imgur.user.#{@username.downcase}", 60*60, 60) do
+      # can't use user_id in this request unfortunately
+      response = App::Imgur.get("/account/#{@username}/submissions")
+      raise(App::ImgurError, response) if !response.success? || response.body.empty?
+      response.json["data"].map do |image|
+        image.slice("animated", "cover", "datetime", "description", "gifv", "height", "id", "images_count", "is_album", "nsfw", "score", "size", "title", "type", "width")
+      end.to_json
+    end
   end
-  raise(App::ImgurError, response) if !response.success? || response.body.empty?
-  @data = response.json["data"]
+  return [422, "Something went wrong. Try again later."] if data.nil?
+
+  @data = JSON.parse(data)
 
   if params[:animated]
     value = params[:animated] == "true"
