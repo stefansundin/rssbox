@@ -22,8 +22,6 @@ module App
       HEADERS["Cookie"] += "; sessionid=#{sessionid}"
     end
 
-    @@cache = {}
-
     def self.get(url, options={})
       response = super(url, options)
       if response.code == 403
@@ -35,28 +33,29 @@ module App
     end
 
     def self.get_post(id)
-      return @@cache[id] if @@cache[id]
-      value = $redis.get("instagram:#{id}")
-      if value
-        @@cache[id] = JSON.parse(value)
-        return @@cache[id]
-      end
+      data, _ = Cache.cache("instagram.post.#{id}", 7*24*60*60, 60*60) do
+        response = get("/p/#{id}/")
+        raise(InstagramError, response) if !response.success? || !response.json
+        post = response.json["graphql"]["shortcode_media"]
 
-      response = get("/p/#{id}/")
-      raise(InstagramError, response) if !response.success? || !response.json
-      post = response.json["graphql"]["shortcode_media"]
-
-      @@cache[id] = if post["__typename"] == "GraphSidecar"
-        post["edge_sidecar_to_children"]["edges"].map do |edge|
-          edge["node"].slice("is_video", "display_url", "video_url")
+        if post.has_key?("edge_sidecar_to_children")
+          nodes = post["edge_sidecar_to_children"]["edges"].map do |edge|
+            edge["node"].slice("is_video", "display_url", "video_url")
+          end
+        else
+          nodes = [ post.slice("is_video", "display_url", "video_url") ]
         end
-      else
-        # This isn't really used
-        post.slice("is_video", "display_url", "video_url")
-      end
+        text = post["edge_media_to_caption"]["edges"][0]["node"]["text"] if post["edge_media_to_caption"]["edges"][0]
 
-      $redis.set("instagram:#{id}", @@cache[id].to_json)
-      return @@cache[id]
+        {
+          "owner" => post["owner"].slice("id", "username"),
+          "taken_at_timestamp" => post["taken_at_timestamp"],
+          "text" => text,
+          "nodes" => nodes,
+        }.to_json
+      end
+      return nil if data.nil?
+      return JSON.parse(data)
     end
   end
 end

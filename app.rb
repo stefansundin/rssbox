@@ -527,10 +527,6 @@ get "/instagram" do
   if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
-    response = App::Instagram.get("/p/#{post_id}/")
-    return [response.code, "This post does not exist or is a private post."] if response.code == 404
-    raise(App::InstagramError, response) if !response.success?
-    user = response.json["graphql"]["shortcode_media"]["owner"]
   elsif params[:q].include?("instagram.com/explore/") || params[:q].start_with?("#")
     return [404, "This app does not support hashtags."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
@@ -539,23 +535,27 @@ get "/instagram" do
     name = params[:q][/[^\/?#]+/]
   end
 
-  if name
-    response = App::Instagram.get("/#{name}/")
-    if response.success?
-      user = response.json["graphql"]["user"]
-    else
-      # https://www.instagram.com/web/search/topsearch/?query=infected
-      response = App::Instagram.get("/web/search/topsearch/", query: { query: name })
-      raise(App::InstagramError, response) if !response.success?
-      user = response.json["users"][0]["user"]
-    end
-  end
-
-  if user
-    redirect Addressable::URI.new(path: "/instagram/#{user["id"] || user["pk"]}/#{user["username"]}").normalize.to_s
+  if post_id
+    post = App::Instagram.get_post(post_id)
+    return [422, "Something went wrong. Try again later."] if post.nil?
+    user = post["owner"]
+    path = "#{user["id"]}/#{user["username"]}"
   else
-    return [404, "Can't find a user with that name."]
+    path, _ = App::Cache.cache("instagram.user.#{name.downcase}", 24*60*60, 60*60) do
+      response = App::Instagram.get("/#{name}/")
+      if response.success?
+        user = response.json["graphql"]["user"]
+      else
+        # https://www.instagram.com/web/search/topsearch/?query=infected
+        response = App::Instagram.get("/web/search/topsearch/", query: { query: name })
+        raise(App::InstagramError, response) if !response.success?
+        user = response.json["users"][0]["user"]
+      end
+      "#{user["id"] || user["pk"]}/#{user["username"]}"
+    end
+    return [422, "Something went wrong. Try again later."] if path.nil?
   end
+  redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s
 end
 
 get "/instagram/download" do
@@ -566,39 +566,29 @@ get "/instagram/download" do
     post_id = params[:url]
   end
 
-  response = App::Instagram.get("/p/#{post_id}/")
-  return [404, "Please use a URL directly to a post."] if !response.success?
-  post = response.json["graphql"]["shortcode_media"]
+  post = App::Instagram.get_post(post_id)
+  return [422, "Something went wrong. Try again later."] if post.nil?
 
   if env["HTTP_ACCEPT"] == "application/json"
     content_type :json
     created_at = Time.at(post["taken_at_timestamp"])
-    caption = post["edge_media_to_caption"]["edges"][0]["node"]["text"] rescue post_id
+    caption = post["text"] rescue post_id
 
-    if post.has_key?("edge_sidecar_to_children")
-      return post["edge_sidecar_to_children"]["edges"].map { |edge| edge["node"] }.map.with_index do |node, i|
-        url = node["video_url"] || node["display_url"]
-        {
-          url: url,
-          filename: "#{created_at.to_date} - #{post["owner"]["username"]} - #{caption} - #{i+1}#{url.url_ext}".to_filename
-        }
-      end.to_json
-    else
-      url = post["video_url"] || post["display_url"]
-      return [{
+    return post["nodes"].map.with_index do |node, i|
+      url = node["video_url"] || node["display_url"]
+      filename = "#{created_at.to_date} - #{post["owner"]["username"]} - #{caption}"
+      filename += " - #{i+1}" if post["nodes"].length > 1
+      filename += "#{url.url_ext}"
+      {
         url: url,
-        filename: "#{created_at.to_date} - #{post["owner"]["username"]} - #{caption}#{url.url_ext}".to_filename,
-      }].to_json
-    end
+        filename: filename.to_filename,
+      }
+    end.to_json
   end
 
-  if post.has_key?("edge_sidecar_to_children")
-    node = post["edge_sidecar_to_children"]["edges"][0]["node"]
-    url = node["video_url"] || node["display_url"]
-  else
-    url = post["video_url"] || post["display_url"]
-  end
-
+  node = post["nodes"][0]
+  url = node["video_url"] || node["display_url"]
+  return [422, "Something went wrong. Try again later."] if !url
   redirect url
 end
 
@@ -606,39 +596,54 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
   @user = CGI.unescape(username)
 
-  # To find the query_hash, simply use the Instagram website and monitor the network calls.
-  # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
-  response = App::Instagram.get("/graphql/query/", {
-    query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{@user_id}\",\"first\":12}"},
-  })
-  return [401, "The sessionid expired!"] if params.has_key?(:sessionid) && response.code == 302
-  raise(App::InstagramError, response) if !response.success? || !response.json?
-  @data = response.json["data"]["user"]
-  return [response.code, "Instagram user does not exist."] if !@data
+  data, @updated_at = App::Cache.cache("instagram.posts.#{user_id}", 4*60*60, 60*60) do
+    # To find the query_hash, simply use the Instagram website and monitor the network calls.
+    # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
+    response = App::Instagram.get("/graphql/query/", {
+      query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{user_id}\",\"first\":12}"},
+    })
+    raise(App::InstagramError, response) if !response.success? || !response.json?
+    user = response.json["data"]["user"]
+    next "Error: Instagram user does not exist." if !user
+
+    user["edge_owner_to_timeline_media"]["edges"].map do |post|
+      if post["node"]["__typename"] == "GraphSidecar"
+        nodes = App::Instagram.get_post(post["node"]["shortcode"])["nodes"]
+      else
+        nodes = [ post["node"].slice("is_video", "display_url", "video_url") ]
+      end
+      text = post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"] if post["node"]["edge_media_to_caption"]["edges"][0]
+
+      {
+        "id" => post["node"]["id"],
+        "shortcode" => post["node"]["shortcode"],
+        "taken_at_timestamp" => post["node"]["taken_at_timestamp"],
+        "username" => post["node"]["owner"]["username"],
+        "text" => text,
+        "nodes" => nodes,
+      }
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
+
+  @data = JSON.parse(data)
 
   type = %w[videos photos].pick(params[:type]) || "posts"
-  @data["edge_owner_to_timeline_media"]["edges"].map! do |post|
-    if post["node"]["__typename"] == "GraphSidecar"
-      post["nodes"] = App::Instagram.get_post(post["node"]["shortcode"])
-    else
-      post["nodes"] = [post["node"]]
-    end
-    post
-  end
   if type == "videos"
-    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| post["nodes"].any? { |node| node["is_video"] } }
+    @data.select! { |post| post["nodes"].any? { |node| node["is_video"] } }
   elsif type == "photos"
-    @data["edge_owner_to_timeline_media"]["edges"].select! { |post| !post["nodes"].any? { |node| node["is_video"] } }
+    @data.select! { |post| !post["nodes"].any? { |node| node["is_video"] } }
   end
 
   @title = @user
   @title += "'s #{type}" if type != "posts"
   @title += " on Instagram"
 
-  @data["edge_owner_to_timeline_media"]["edges"].select do |post|
-    post["node"]["edge_media_to_caption"]["edges"][0]
+  @data.select do |post|
+    post["text"]
   end.map do |post|
-    post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"].grep_urls
+    post["text"].grep_urls
   end.flatten.tap { |urls| App::URL.resolve(urls) }
 
   erb :"instagram.atom"
