@@ -836,20 +836,40 @@ get "/mixcloud" do
     username = params[:q]
   end
 
-  response = App::Mixcloud.get("/#{username}/")
-  return [response.code, "Can't find a user with that name."] if response.code == 404
-  raise(App::MixcloudError, response) if !response.success?
-  data = response.json
+  path, _ = App::Cache.cache("mixcloud.user.#{username.downcase}", 24*60*60, 60) do
+    response = App::Mixcloud.get("/#{username}/")
+    next "Error: Can't find a user with that name." if response.code == 404
+    raise(App::MixcloudError, response) if !response.success?
+    data = response.json
+    "#{data["username"]}/#{data["name"]}"
+  end
+  return [422, "Something went wrong. Try again later."] if path.nil?
+  return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/mixcloud/#{data["username"]}/#{data["name"]}").normalize.to_s
+  redirect Addressable::URI.new(path: "/mixcloud/#{path}").normalize.to_s
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
-  response = App::Mixcloud.get("/#{username}/cloudcasts/")
-  return [response.code, "That username no longer exist."] if response.code == 404
-  raise(App::MixcloudError, response) if !response.success?
+  data, @updated_at = App::Cache.cache("mixcloud.tracks.#{username.downcase}", 4*60*60, 60) do
+    response = App::Mixcloud.get("/#{username}/cloudcasts/")
+    next "Error: That username no longer exist." if response.code == 404
+    raise(App::MixcloudError, response) if !response.success?
+    response.json["data"].map do |track|
+      {
+        "audio_length" => track["audio_length"],
+        "created_time" => track["created_time"],
+        "name" => track["name"],
+        "pictures" => track["pictures"].slice("extra_large", "medium"),
+        "slug" => track["slug"],
+        "url" => track["url"],
+        "user" => track["user"].slice("username", "name"),
+      }
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
 
-  @data = response.json["data"]
+  @data = JSON.parse(data)
   @username = @data[0]["user"]["username"] rescue CGI.unescape(username)
   @user = @data[0]["user"]["name"] rescue CGI.unescape(user)
 

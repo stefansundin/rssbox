@@ -6,7 +6,7 @@
   <icon>https://www.mixcloud.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.mixcloud.com/<%= @username %>/" rel="alternate" />
-  <updated><%= Time.parse(@data[0]["created_time"]) if @data[0] %></updated>
+  <updated><%= @updated_at %></updated>
 <%- @data.each do |track| -%>
 
   <entry>
