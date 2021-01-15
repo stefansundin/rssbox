@@ -33,18 +33,11 @@
       </div>
     </noscript>
 
-    <div class="alert alert-success" role="alert">
-      <p><strong>Please read:</strong> I am trying to raise money to implement a caching system and solve the problem described below. Please  consider helping out if you can.</p>
-      <a href="https://github.com/stefansundin/rssbox/issues/43">To learn more, visit the GitHub issue.</a>
-    </div>
-
+    <%- if ENV["WEBSITE_NOTICE"] -%>
     <div class="alert alert-warning" role="alert">
-      <p><strong>Important:</strong> The public version of RSS Box is currently receiving more requests than it can handle. Unfortunately, because of a lack of caching, most requests are now failing. You may therefore have trouble subscribing to some feeds, in particular Twitter and Instagram. This will be addressed in a future update. But for now, please consider self hosting this app (<a href="https://github.com/stefansundin/rssbox#roll-your-own">instructions here</a>).</p>
-
-      <p>Please do not overload this service. Do not make more requests than you need. If you require RSS feeds that are updated very frequently, then please host the app on your own infrastructure. The hosting for this free offering has very limited resources. If you use the service in a way that degrades the experience for others, then I will start blocking your requests. Please be responsible so that as many people as possible can enjoy this free service.</p>
-
-      If you are already subscribed to a lot of feeds on this public instance, then please move them to your own instance.
+      <%= ENV["WEBSITE_NOTICE"] %>
     </div>
+    <%- end -%>
 
     <div id="services">
       <%- if ENV["TWITTER_ACCESS_TOKEN"] -%>
