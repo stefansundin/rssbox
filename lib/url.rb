@@ -2,9 +2,13 @@
 
 module App
   class URL
+    URL_RESOLUTION_DISABLED = (ENV["URL_RESOLUTION_DISABLED"] == "true")
+
     @@cache = {}
 
     def self.lookup(url)
+      return url if URL_RESOLUTION_DISABLED
+
       url = Addressable::URI.parse(url).normalize.to_s rescue url
       dest = @@cache[url]
       if dest
@@ -18,6 +22,8 @@ module App
     end
 
     def self.resolve(urls, force=false)
+      return nil if URL_RESOLUTION_DISABLED
+
       pending = urls.map do |url|
         Addressable::URI.parse(url).normalize.to_s rescue url
       end.uniq.select do |url|
@@ -46,6 +52,8 @@ module App
       threads.map(&:join)
       return nil
     end
+
+    private
 
     def self.resolve_url(url)
       dest = url
