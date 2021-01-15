@@ -10,7 +10,7 @@ configure :production do
       # If this function is called from Sinatra, then we want to return a partial backtrace in order to print fewer lines to stdout
       if caller_locations(1,1)[0].path.end_with?("/lib/sinatra/base.rb")
         # For some errors, we don't care about the stack trace at all
-        if exception.is_a?(InstagramRatelimitError)
+        if exception.is_a?(App::InstagramRatelimitError)
           return []
         end
         # Otherwise, remove all lines from files in the bundle directory
