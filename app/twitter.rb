@@ -12,10 +12,35 @@ module App
     }
     ERROR_CLASS = TwitterError
 
+    # https://developer.twitter.com/en/docs/twitter-api/v1/rate-limits
+    @@ratelimit = {
+      "/users/show" => {
+        limit: 300,
+      },
+      "/statuses/user_timeline" => {
+        limit: 1500,
+      },
+    }
+
+    def self.ratelimit(endpoint)
+      raise("fill in @@ratelimit information") if @@ratelimit[endpoint].nil?
+
+      if @@ratelimit[endpoint][:reset].nil? || Time.now > Time.at(@@ratelimit[endpoint][:reset]+5)
+        return @@ratelimit[endpoint][:limit], nil
+      end
+
+      return @@ratelimit[endpoint][:remaining], @@ratelimit[endpoint][:reset]
+    end
+
     def self.get(*args, &block)
       response = super(*args, &block)
-      if response.headers.has_key?("x-rate-limit-remaining")
+      if response.headers.has_key?("x-rate-limit-limit") \
+        && response.headers.has_key?("x-rate-limit-remaining") \
+        && response.headers.has_key?("x-rate-limit-reset")
         endpoint = args[0]
+        @@ratelimit[endpoint][:limit] = response.headers["x-rate-limit-limit"][0].to_i
+        @@ratelimit[endpoint][:remaining] = response.headers["x-rate-limit-remaining"][0].to_i
+        @@ratelimit[endpoint][:reset] = response.headers["x-rate-limit-reset"][0].to_i
         $metrics[:ratelimit].set(response.headers["x-rate-limit-remaining"][0].to_i, labels: { service: "twitter", endpoint: endpoint })
       end
       return response

@@ -124,56 +124,135 @@ get "/twitter" do
 
   if user
     query = { screen_name: user }
+    cache_key = "twitter.screen_name-#{user.downcase}"
   elsif user_id
     query = { user_id: user_id }
+    cache_key = "twitter.user_id-#{user_id}"
   end
 
-  response = App::Twitter.get("/users/show", query: query)
-  return [response.code, response.json["errors"][0]["message"]] if response.json.has_key?("errors")
-  raise(App::TwitterError, response) if !response.success?
+  path, _ = App::Cache.cache(cache_key, 60*60, 60) do |cached_data, stat|
+    endpoint = "/users/show"
+    ratelimit_remaining, ratelimit_reset = App::Twitter.ratelimit(endpoint)
+    if cached_data && ratelimit_remaining < 100
+      break cached_data, stat.mtime
+    end
+    if ratelimit_remaining < 10
+      return [429, "Too many requests. Please try again in #{((ratelimit_reset-Time.now.to_i)/60)+1} minutes."]
+    end
 
-  user_id = response.json["id_str"]
-  screen_name = response.json["screen_name"].or(response.json["name"])
-  redirect Addressable::URI.new(path: "/twitter/#{user_id}/#{screen_name}", query: params[:type]).normalize.to_s
+    response = App::Twitter.get(endpoint, query: query)
+    next "Error: #{response.json["errors"][0]["message"]}" if response.json.has_key?("errors")
+    raise(App::TwitterError, response) if !response.success?
+
+    user_id = response.json["id_str"]
+    screen_name = response.json["screen_name"].or(response.json["name"])
+    "#{user_id}/#{screen_name}"
+  end
+  return [422, "Something went wrong. Try again later."] if path.nil?
+  return [422, path] if path.start_with?("Error:")
+
+  redirect Addressable::URI.new(path: "/twitter/#{path}").normalize.to_s
 end
 
 get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   return [404, "Credentials not configured"] if !ENV["TWITTER_ACCESS_TOKEN"]
 
   @user_id = id
+  @username = CGI.unescape(username)
+  include_rts = %w[0 1].pick(params[:include_rts]) || "1"
+  exclude_replies = %w[0 1].pick(params[:exclude_replies]) || "0"
+  cache_key = "twitter.user_timeline.#{id}.#{include_rts}.#{exclude_replies}"
 
-  response = App::Twitter.get("/statuses/user_timeline", query: {
-    user_id: id,
-    count: 100,
-    tweet_mode: "extended",
-    include_rts: %w[0 1].pick(params[:include_rts]) || "1",
-    exclude_replies: %w[0 1].pick(params[:exclude_replies]) || "0",
-  })
-  return [response.code, "User suspended."] if response.code == 401
-  return [response.code, "This user id no longer exists. The user was likely deleted or recreated. Try resubscribing."] if response.code == 404
-  raise(App::TwitterError, response) if !response.success?
-
-  @data = response.json
-  if @data[0] && !@data[0]["user"]["screen_name"].empty?
-    @username = @data[0]["user"]["screen_name"]
-  else
-    @username = CGI.unescape(username)
-  end
-
-  if params[:with_media] == "video"
-    @data.select! { |t| t["extended_entities"] && t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
-  elsif params[:with_media] == "picture"
-    @data.select! { |t| t["extended_entities"] && !t["extended_entities"]["media"].any? { |m| m.has_key?("video_info") } }
-  elsif params[:with_media]
-    @data.select! { |t| t["extended_entities"] }
-  end
-
-  @data.map do |t|
-    t = t["retweeted_status"] if t.has_key?("retweeted_status")
-    t["entities"]["urls"].each do |entity|
-      t["full_text"].gsub!(entity["url"], entity["expanded_url"])
+  data, @updated_at = App::Cache.cache(cache_key, 60*60, 60) do |cached_data, stat|
+    endpoint = "/statuses/user_timeline"
+    ratelimit_remaining, ratelimit_reset = App::Twitter.ratelimit(endpoint)
+    if cached_data && ratelimit_remaining < 100
+      break cached_data, stat.mtime
     end
-    t["full_text"].grep_urls
+    if ratelimit_remaining < 10
+      return [429, "Too many requests. Please try again in #{((ratelimit_reset-Time.now.to_i)/60)+1} minutes."]
+    end
+
+    response = App::Twitter.get(endpoint, query: {
+      user_id: id,
+      count: 100,
+      tweet_mode: "extended",
+      include_rts: include_rts,
+      exclude_replies: exclude_replies,
+    })
+    next "Error: User has been suspended." if response.code == 401
+    next "Error: This user id no longer exists. The user was likely deleted or recreated. Try resubscribing." if response.code == 404
+    raise(App::TwitterError, response) if !response.success?
+
+    timeline = response.json
+    screen_name = timeline[0]["user"]["screen_name"] if timeline.length > 0
+    tweets = timeline.map do |tweet|
+      if tweet.has_key?("retweeted_status")
+        t = tweet["retweeted_status"]
+        text = "RT #{t["user"]["screen_name"]}: #{CGI.unescapeHTML(t["full_text"])}"
+      else
+        t = tweet
+        text = CGI.unescapeHTML(t["full_text"])
+      end
+
+      t["entities"]["urls"].each do |entity|
+        text = text.gsub(entity["url"], entity["expanded_url"])
+      end
+
+      media = []
+      if t.has_key?("extended_entities")
+        t["extended_entities"]["media"].each do |entity|
+          if entity["video_info"]
+            video = entity["video_info"]["variants"].sort do |a,b|
+              if a["content_type"].start_with?("video/") && b["content_type"].start_with?("video/")
+                b["bitrate"] - a["bitrate"]
+              else
+                b["content_type"].start_with?("video/") <=> a["content_type"].start_with?("video/")
+              end
+            end[0]
+            if /\/\d+x\d+\// =~ video["url"]
+              # there is dimension information in the URL (i.e. /ext_tw_video/)
+              text += " #{video["url"]}"
+            else
+              # no dimension information in the URL, so add some (i.e. /tweet_video/)
+              text += " #{video["url"]}#w=#{entity["sizes"]["large"]["w"]}&h=#{entity["sizes"]["large"]["h"]}"
+            end
+            media.push("video")
+          else
+            text += " #{entity["media_url_https"]}:large"
+            media.push("picture")
+          end
+        end
+      end
+
+      {
+        "id" => tweet["id_str"],
+        "created_at" => tweet["created_at"],
+        "text" => text,
+        "media" => media.uniq,
+      }
+    end
+
+    {
+      "screen_name" => screen_name,
+      "tweets" => tweets,
+    }.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
+
+  @data = JSON.parse(data)
+  @username = @data["screen_name"] if @data["screen_name"]
+  if params[:with_media] == "video"
+    @data["tweets"].select! { |t| t["media"].include?("video") }
+  elsif params[:with_media] == "picture"
+    @data["tweets"].select! { |t| t["media"].include?("picture") }
+  elsif params[:with_media]
+    @data["tweets"].select! { |t| !t["media"].empty? }
+  end
+
+  @data["tweets"].map do |tweet|
+    tweet["text"].grep_urls
   end.flatten.tap { |urls| App::URL.resolve(urls) }
 
   erb :"twitter.atom"
