@@ -1333,6 +1333,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
     end.to_json
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
 
   @data = JSON.parse(data)
 
