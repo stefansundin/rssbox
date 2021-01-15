@@ -1293,20 +1293,30 @@ get "/dailymotion" do
   end
 
   if video_id
-    response = App::Dailymotion.get("/video/#{video_id}")
-    raise(App::DailymotionError, response) if !response.success?
-    user = response.json["owner"]
+    user, _ = App::Cache.cache("dailymotion.video.#{video_id}", 60*60, 60) do
+      response = App::Dailymotion.get("/video/#{video_id}")
+      raise(App::DailymotionError, response) if !response.success?
+      response.json["owner"]
+    end
   elsif playlist_id
-    response = App::Dailymotion.get("/playlist/#{playlist_id}")
-    raise(App::DailymotionError, response) if !response.success?
-    user = response.json["owner"]
+    user, _ = App::Cache.cache("dailymotion.playlist.#{playlist_id}", 60*60, 60) do
+      response = App::Dailymotion.get("/playlist/#{playlist_id}")
+      raise(App::DailymotionError, response) if !response.success?
+      response.json["owner"]
+    end
   end
+  return [422, "Something went wrong. Try again later."] if user.nil?
 
-  response = App::Dailymotion.get("/user/#{user}", query: { fields: "id,username" })
-  if response.success?
-    redirect Addressable::URI.new(path: "/dailymotion/#{response.json["id"]}/#{response.json["username"]}").normalize.to_s
+  path, _ = App::Cache.cache("dailymotion.user.#{user.downcase}", 60*60, 60) do
+    response = App::Dailymotion.get("/user/#{user}", query: { fields: "id,username" })
+    raise(App::DailymotionError, response) if !response.success?
+    data = response.json
+    "#{data["id"]}/#{data["username"]}"
+  end
+  if path
+    redirect Addressable::URI.new(path: "/dailymotion/#{path}").normalize.to_s
   else
-    return [404, "Could not find a user with the name #{user}."]
+    return [404, "Could not find a user with that name."]
   end
 end
 
@@ -1314,10 +1324,17 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   @user_id = user_id
   @username = CGI.unescape(username)
 
-  response = App::Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
-  return [response.code, "That user no longer exist."] if response.code == 404
-  raise(App::DailymotionError, response) if !response.success?
-  @data = response.json["list"]
+  data, @updated_at = App::Cache.cache("dailymotion.videos.#{user_id}", 60*60, 60) do
+    response = App::Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
+    next "Error: That user no longer exist." if response.code == 404
+    raise(App::DailymotionError, response) if !response.success?
+    response.json["list"].map do |video|
+      video.slice("id", "title", "created_time", "duration", "title", "description")
+    end.to_json
+  end
+  return [422, "Something went wrong. Try again later."] if data.nil?
+
+  @data = JSON.parse(data)
 
   erb :"dailymotion.atom"
 end
