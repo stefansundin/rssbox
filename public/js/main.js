@@ -136,7 +136,11 @@ $(document).ready(async function() {
     });
     submit.attr("value", submit_value);
     form.find("input").prop("disabled", false);
-    if (!response.ok) {
+    if (response.status == 503) {
+      // This is usually just HTML garbage from Heroku when a 30 second timeout has been reached, so print a better error
+      alert("Something went wrong. Try again later.");
+    }
+    else if (!response.ok) {
       alert(await response.text());
       return;
     }
