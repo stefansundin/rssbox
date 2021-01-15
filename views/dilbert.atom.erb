@@ -2,11 +2,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>dilbert</id>
-  <title><%= @feed.title %></title>
+  <title>Dilbert Daily Strip</title>
   <icon>https://dilbert.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://dilbert.com/" rel="alternate" />
-  <updated><%= Time.parse(@entries[0]["id"]) if @entries[0] %></updated>
+  <updated><%= @updated_at %></updated>
 <%- @entries.each do |entry| -%>
 
   <entry>

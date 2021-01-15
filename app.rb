@@ -1470,26 +1470,25 @@ get "/svtplay" do
 end
 
 get "/dilbert" do
-  @feed = Feedjira.parse(App::HTTP.get("http://feeds.dilbert.com/DilbertDailyStrip").body)
-  @entries = @feed.entries.map do |entry|
-    data = $redis.get("dilbert:#{entry.id}")
-    if data
+  data, @updated_at = App::Cache.cache("dilbert", 4*60*60, 60*60) do
+    feed = Feedjira.parse(App::HTTP.get("http://feeds.dilbert.com/DilbertDailyStrip").body)
+    entries = feed.entries.map do |entry|
+      data, _ = App::Cache.cache("dilbert.#{entry.id}", 30*24*60*60, 60*60) do
+        og = OpenGraph.new("https://dilbert.com/strip/#{entry.id}")
+        {
+          "image" => og.images.first,
+          "title" => og.title,
+          "description" => og.description,
+        }.to_json
+      end
       data = JSON.parse(data)
-    else
-      og = OpenGraph.new("https://dilbert.com/strip/#{entry.id}")
-      data = {
-        "image" => og.images.first,
-        "title" => og.title,
-        "description" => og.description,
-      }
-      $redis.setex("dilbert:#{entry.id}", 60*60*24*30, data.to_json)
-    end
-    data.merge({
-      "id" => entry.id
-    })
+      data["id"] = entry.id
+      data
+    end.to_json
   end
+  @entries = JSON.parse(data)
 
-  erb :dilbert
+  erb :"dilbert.atom"
 end
 
 get "/favicon.ico" do
