@@ -256,15 +256,15 @@ get "/youtube" do
   end
 end
 
-get "/youtube/:channel_id/:username.ics" do
+get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
 
-  @channel_id = params[:channel_id]
-  @username = params[:username]
-  @title = "#{@username} on YouTube"
+  @channel_id = channel_id
+  @username = username
+  @title = "#{username} on YouTube"
 
   # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
-  response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{@channel_id}")
+  response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}")
   raise(App::GoogleError, response) if !response.success?
   doc = Nokogiri::XML(response.body)
   ids = doc.xpath("//yt:videoId").map(&:text)
@@ -304,12 +304,12 @@ get "/youtube/:channel_id/:username.ics" do
   erb :"youtube.ics"
 end
 
-get "/youtube/:channel_id/:username" do
+get "/youtube/:channel_id/:username" do |channel_id, username|
   return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
 
-  @channel_id = params[:channel_id]
-  playlist_id = "UU" + @channel_id[2..]
-  @username = params[:username]
+  @channel_id = channel_id
+  playlist_id = "UU" + channel_id[2..]
+  @username = username
   if params.has_key?(:tz)
     if params[:tz].tz_offset?
       @tz = params[:tz]
@@ -349,9 +349,9 @@ get "/youtube/:channel_id/:username" do
     @query = params[:q]
     q = @query.downcase
     @data.select! { |v| v["snippet"]["title"].downcase.include?(q) }
-    @title = "\"#{@query}\" from #{@username}"
+    @title = "\"#{@query}\" from #{username}"
   else
-    @title = "#{@username} on YouTube"
+    @title = "#{username} on YouTube"
   end
 
   @data.map do |video|
