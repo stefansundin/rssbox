@@ -33,7 +33,9 @@ module App
       negative_cache_duration_jitter = rand(10)
 
       if File.file?(fn)
+        # There is cached data
         stat = File.stat(fn)
+
         if stat.size > 0
           # There is cached data with contents
           cached_data = File.read(fn)
@@ -42,12 +44,13 @@ module App
           end
         else
           if Time.now < stat.mtime+negative_cache_duration+negative_cache_duration_jitter
-            # There is a negative cache in place
+            # A negative cache is in place and it is still active
             return nil, stat.mtime
           end
         end
+
+        # The cached data has expired
         begin
-          # We have cached data that has expired, yield
           data = yield(cached_data, stat)
         rescue
           if cached_data
@@ -59,6 +62,7 @@ module App
           FileUtils.touch(fn)
           raise
         end
+
         if data == cached_data
           # The new data is exactly the same as the previously cached data, so just update the file mtime
           FileUtils.touch(fn, mtime: Time.now)
@@ -66,17 +70,19 @@ module App
           # Write new data
           File.write(fn, data)
         end
-      else
-        begin
-          # There is no cached data, yield
-          data = yield
-        rescue
-          # Trigger negative cache and re-raise the exception
-          FileUtils.touch(fn)
-          raise
-        end
-        File.write(fn, data)
+
+        return data, Time.now
       end
+
+      # There is no cached data
+      begin
+        data = yield
+      rescue
+        # Trigger negative cache and re-raise the exception
+        FileUtils.touch(fn)
+        raise
+      end
+      File.write(fn, data)
 
       return data, Time.now
     end
