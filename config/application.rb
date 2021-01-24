@@ -5,6 +5,7 @@ ENV["APP_VERSION"] ||= ENV["HEROKU_RELEASE_VERSION"] || "unknown"
 
 require "bundler/setup"
 Bundler.require(:default, ENV["APP_ENV"])
+Dotenv.overload
 
 app_path = File.expand_path("..", __dir__)
 Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
