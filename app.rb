@@ -198,6 +198,9 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
       t["entities"]["urls"].each do |entity|
         text = text.gsub(entity["url"], entity["expanded_url"])
       end
+      t["entities"]["media"]&.each do |entity|
+        text = text.gsub(entity["url"], entity["expanded_url"])
+      end
 
       media = []
       if t.has_key?("extended_entities")
