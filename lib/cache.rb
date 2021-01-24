@@ -59,7 +59,13 @@ module App
           FileUtils.touch(fn)
           raise
         end
-        File.write(fn, data)
+        if data == cached_data
+          # The new data is exactly the same as the previously cached data, so just update the file mtime
+          FileUtils.touch(fn, mtime: Time.now)
+        else
+          # Write new data
+          File.write(fn, data)
+        end
       else
         begin
           # There is no cached data, yield
