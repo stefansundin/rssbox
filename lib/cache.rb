@@ -28,20 +28,20 @@ module App
       # Try to make the cache key safer in case it contains user input
       cache_key = cache_key.gsub("/", "-").gsub(":", "-")
       fn = "#{DIR}/#{cache_key}.rssbox-cache"
-      # Add some jitter to the cache durations
-      cache_duration += rand(5*60)
-      negative_cache_duration += rand(10)
+      # Generate some jitter to use when checking the cache durations
+      cache_duration_jitter = rand(5*60)
+      negative_cache_duration_jitter = rand(10)
 
       if File.file?(fn)
         stat = File.stat(fn)
         if stat.size > 0
           # There is cached data with contents
           cached_data = File.read(fn)
-          if Time.now < stat.mtime+cache_duration
+          if Time.now < stat.mtime+cache_duration+cache_duration_jitter
             return cached_data, stat.mtime
           end
         else
-          if Time.now < stat.mtime+negative_cache_duration
+          if Time.now < stat.mtime+negative_cache_duration+negative_cache_duration_jitter
             # There is a negative cache in place
             return nil, stat.mtime
           end
