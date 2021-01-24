@@ -24,10 +24,10 @@ module App
       end
     end
 
-    def self.cache(cache_key, cache_duration, negative_cache_duration, &block)
+    def self.cache(cache_key_prefix, cache_key, cache_duration, negative_cache_duration, &block)
       # Try to make the cache key safer in case it contains user input
       cache_key = cache_key.gsub("/", "-").gsub(":", "-")
-      fn = "#{DIR}/#{cache_key}.rssbox-cache"
+      fn = "#{DIR}/#{cache_key_prefix}.#{cache_key}.rssbox-cache"
       # Generate some jitter to use when checking the cache durations
       cache_duration_jitter = rand(5*60)
       negative_cache_duration_jitter = rand(10)

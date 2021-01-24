@@ -124,13 +124,15 @@ get "/twitter" do
 
   if user
     query = { screen_name: user }
-    cache_key = "twitter.screen_name-#{user.downcase}"
+    cache_key_prefix = "twitter.screen_name"
+    cache_key = user.downcase
   elsif user_id
     query = { user_id: user_id }
-    cache_key = "twitter.user_id-#{user_id}"
+    cache_key_prefix = "twitter.user_id"
+    cache_key = user_id
   end
 
-  path, _ = App::Cache.cache(cache_key, 60*60, 60) do |cached_data, stat|
+  path, _ = App::Cache.cache(cache_key_prefix, cache_key, 60*60, 60) do |cached_data, stat|
     endpoint = "/users/show"
     ratelimit_remaining, ratelimit_reset = App::Twitter.ratelimit(endpoint)
     if cached_data && ratelimit_remaining < 100
@@ -161,9 +163,8 @@ get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
   @username = CGI.unescape(username)
   include_rts = %w[0 1].pick(params[:include_rts]) || "1"
   exclude_replies = %w[0 1].pick(params[:exclude_replies]) || "0"
-  cache_key = "twitter.user_timeline.#{id}.#{include_rts}.#{exclude_replies}"
 
-  data, @updated_at = App::Cache.cache(cache_key, 60*60, 60) do |cached_data, stat|
+  data, @updated_at = App::Cache.cache("twitter.user_timeline", "#{id}.#{include_rts}.#{exclude_replies}", 60*60, 60) do |cached_data, stat|
     endpoint = "/statuses/user_timeline"
     ratelimit_remaining, ratelimit_reset = App::Twitter.ratelimit(endpoint)
     if cached_data && ratelimit_remaining < 100
@@ -299,7 +300,7 @@ get "/youtube" do
   end
 
   if user
-    channel_id, _ = App::Cache.cache("youtube.user.#{user.downcase}", 60*60, 60) do
+    channel_id, _ = App::Cache.cache("youtube.user", user.downcase, 60*60, 60) do
       response = App::HTTP.get("https://www.youtube.com/#{user}")
       if response.redirect?
         # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
@@ -311,7 +312,7 @@ get "/youtube" do
       doc.at("meta[itemprop='channelId']")["content"]
     end
   elsif video_id
-    channel_id, _ = App::Cache.cache("youtube.video.#{video_id}", 60*60, 60) do
+    channel_id, _ = App::Cache.cache("youtube.video", video_id, 60*60, 60) do
       response = App::Google.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
       raise(App::GoogleError, response) if !response.success?
       if response.json["items"].length > 0
@@ -323,7 +324,7 @@ get "/youtube" do
   return [422, channel_id] if channel_id.start_with?("Error:")
 
   if query || params[:type]
-    username, _ = App::Cache.cache("youtube.channel.#{channel_id}", 60*60, 60) do
+    username, _ = App::Cache.cache("youtube.channel", channel_id, 60*60, 60) do
       # it is no longer possible to get usernames using the API
       # note that the values include " - YouTube" at the end if the User-Agent is a browser
       og = OpenGraph.new("https://www.youtube.com/channel/#{channel_id}")
@@ -353,7 +354,7 @@ get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   @username = username
   @title = "#{username} on YouTube"
 
-  data, _ = App::Cache.cache("youtube.ics.#{channel_id}", 60*60, 60) do
+  data, _ = App::Cache.cache("youtube.ics", channel_id, 60*60, 60) do
     # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
     response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}")
     next "Error: It seems like this channel no longer exists." if response.code == 404
@@ -423,7 +424,7 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
     end
   end
 
-  data, @updated_at = App::Cache.cache("youtube.videos.#{channel_id}", 60*60, 60) do
+  data, @updated_at = App::Cache.cache("youtube.videos", channel_id, 60*60, 60) do
     # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
     response = App::Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
     next "Error: It seems like this channel no longer exists." if response.code == 404
@@ -544,7 +545,7 @@ get "/instagram" do
     user = post["owner"]
     path = "#{user["id"]}/#{user["username"]}"
   else
-    path, _ = App::Cache.cache("instagram.user.#{name.downcase}", 24*60*60, 60*60) do
+    path, _ = App::Cache.cache("instagram.user", name.downcase, 24*60*60, 60*60) do
       response = App::Instagram.get("/#{name}/")
       if response.success?
         user = response.json["graphql"]["user"]
@@ -599,7 +600,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
   @user = CGI.unescape(username)
 
-  data, @updated_at = App::Cache.cache("instagram.posts.#{user_id}", 4*60*60, 60*60) do
+  data, @updated_at = App::Cache.cache("instagram.posts", user_id, 4*60*60, 60*60) do
     # To find the query_hash, simply use the Instagram website and monitor the network calls.
     # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
     response = App::Instagram.get("/graphql/query/", {
@@ -667,13 +668,15 @@ get "/periscope" do
 
   if broadcast_id
     url = "https://www.periscope.tv/w/#{broadcast_id}"
-    cache_key = "periscope.broadcast.#{broadcast_id}"
+    cache_key_prefix = "periscope.broadcast"
+    cache_key = broadcast_id
   else
     url = "https://www.periscope.tv/#{username}"
-    cache_key = "periscope.user.#{username.downcase}"
+    cache_key_prefix = "periscope.user"
+    cache_key = username.downcase
   end
 
-  path, _ = App::Cache.cache(cache_key, 60*60, 60) do
+  path, _ = App::Cache.cache(cache_key_prefix, cache_key, 60*60, 60) do
     response = App::Periscope.get(url)
     next "Error: This user has not created a Periscope account yet." if response.code == 302
     next "Error: That username does not exist." if response.code == 404
@@ -696,7 +699,7 @@ get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
   @id = id
   @username = CGI.unescape(username)
 
-  data, @updated_at = App::Cache.cache("periscope.broadcasts.#{id}", 4*60*60, 60) do
+  data, @updated_at = App::Cache.cache("periscope.broadcasts", id, 4*60*60, 60) do
     response = App::Periscope.get_broadcasts(id)
     raise(App::PeriscopeError, response) if !response.success?
     response.json["broadcasts"].select do |broadcast|
@@ -727,7 +730,7 @@ get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
   cache_control :public, :max_age => 31556926 # cache a long time
   # The image URL expires after 24 hours, so to avoid the URL from being cached by the RSS client and then expire, we just redirect on demand
   # Interestingly enough, if a request is made before the token expires, it will be cached by their CDN and continue to work even after the token expires
-  image_url, _ = App::Cache.cache("periscope.image.#{id}", 4*60*60, 60) do
+  image_url, _ = App::Cache.cache("periscope.image", id, 4*60*60, 60) do
     response = App::Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
     next "Error: Broadcast not found." if response.code == 404
     raise(App::PeriscopeError, response) if !response.success?
@@ -748,7 +751,7 @@ get "/soundcloud" do
     username = params[:q]
   end
 
-  path, _ = App::Cache.cache("soundcloud.user.#{username.downcase}", 60*60, 60) do
+  path, _ = App::Cache.cache("soundcloud.user", username.downcase, 60*60, 60) do
     response = App::Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
     if response.code == 200
       data = response.json
@@ -799,7 +802,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @id = id
 
-  data, @updated_at = App::Cache.cache("soundcloud.tracks.#{id}", 4*60*60, 60) do
+  data, @updated_at = App::Cache.cache("soundcloud.tracks", id, 4*60*60, 60) do
     response = App::Soundcloud.get("/users/#{id}/tracks")
     next "Error: That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
     raise(App::SoundcloudError, response) if !response.success?
@@ -839,7 +842,7 @@ get "/mixcloud" do
     username = params[:q]
   end
 
-  path, _ = App::Cache.cache("mixcloud.user.#{username.downcase}", 24*60*60, 60) do
+  path, _ = App::Cache.cache("mixcloud.user", username.downcase, 24*60*60, 60) do
     response = App::Mixcloud.get("/#{username}/")
     next "Error: Can't find a user with that name." if response.code == 404
     raise(App::MixcloudError, response) if !response.success?
@@ -853,7 +856,7 @@ get "/mixcloud" do
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
-  data, @updated_at = App::Cache.cache("mixcloud.tracks.#{username.downcase}", 4*60*60, 60) do
+  data, @updated_at = App::Cache.cache("mixcloud.tracks", username.downcase, 4*60*60, 60) do
     response = App::Mixcloud.get("/#{username}/cloudcasts/")
     next "Error: That username no longer exist." if response.code == 404
     raise(App::MixcloudError, response) if !response.success?
@@ -899,7 +902,7 @@ get "/twitch" do
   end
 
   if game_name
-    path, _ = App::Cache.cache("twitch.game.#{game_name.downcase}", 60*60, 60) do
+    path, _ = App::Cache.cache("twitch.game", game_name.downcase, 60*60, 60) do
       response = App::Twitch.get("/games", query: { name: game_name })
       raise(App::TwitchError, response) if !response.success?
       data = response.json["data"][0]
@@ -910,7 +913,7 @@ get "/twitch" do
     return [422, path] if path.start_with?("Error:")
     redirect Addressable::URI.new(path: "/twitch/directory/game/#{path}").normalize.to_s
   elsif vod_id
-    path, _ = App::Cache.cache("twitch.vod.#{vod_id}", 60*60, 60) do
+    path, _ = App::Cache.cache("twitch.vod", vod_id, 60*60, 60) do
       response = App::Twitch.get("/videos", query: { id: vod_id })
       next "Error: Video does not exist." if response.code == 404
       raise(App::TwitchError, response) if !response.success?
@@ -921,7 +924,7 @@ get "/twitch" do
     return [422, path] if path.start_with?("Error:")
     redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s
   else
-    path, _ = App::Cache.cache("twitch.user.#{username.downcase}", 60*60, 60) do
+    path, _ = App::Cache.cache("twitch.user", username.downcase, 60*60, 60) do
       response = App::Twitch.get("/users", query: { login: username })
       next "Error: The username contains invalid characters." if response.code == 400
       raise(App::TwitchError, response) if !response.success?
@@ -1055,9 +1058,9 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
 
   @id = id
   @type = "game"
-
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
-  data, @updated_at = App::Cache.cache("twitch.videos.game.#{id}.#{type}", 60*60, 60) do
+
+  data, @updated_at = App::Cache.cache("twitch.videos.game", "#{id}.#{type}", 60*60, 60) do
     response = App::Twitch.get("/videos", query: { game_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
@@ -1096,7 +1099,8 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
   return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
-  data, @updated_at = App::Cache.cache("twitch.videos.user.#{id}.#{type}", 60*60, 60) do
+
+  data, @updated_at = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60) do
     response = App::Twitch.get("/videos", query: { user_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
@@ -1137,7 +1141,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @type = "user"
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
-  data, @updated_at = App::Cache.cache("twitch.videos.user.#{id}.#{type}", 60*60, 60) do
+  data, @updated_at = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60) do
     response = App::Twitch.get("/videos", query: { user_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
@@ -1184,7 +1188,7 @@ get "/speedrun" do
 
   if /speedrun\.com\/run\/(?<run_id>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/run/1zx0qkez
-    game, _ = App::Cache.cache("speedrun.run.#{run_id}", 60*60, 60) do
+    game, _ = App::Cache.cache("speedrun.run", run_id, 60*60, 60) do
       response = App::Speedrun.get("/runs/#{run_id}")
       raise(App::SpeedrunError, response) if !response.success?
       response.json["data"]["game"]
@@ -1196,7 +1200,7 @@ get "/speedrun" do
     game = params[:q]
   end
 
-  path, _ = App::Cache.cache("speedrun.game.#{game.downcase}", 60*60, 60) do
+  path, _ = App::Cache.cache("speedrun.game", game.downcase, 60*60, 60) do
     response = App::Speedrun.get("/games/#{game}")
     if response.redirect?
       game = response.headers["location"][0].split("/")[-1]
@@ -1217,7 +1221,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   @id = id
   @abbr = abbr
 
-  data, @updated_at = App::Cache.cache("speedrun.runs.#{id}", 60*60, 60) do
+  data, @updated_at = App::Cache.cache("speedrun.runs", id, 60*60, 60) do
     response = App::Speedrun.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
     raise(App::SpeedrunError, response) if !response.success?
     response.json["data"].reject do |run|
@@ -1296,13 +1300,13 @@ get "/dailymotion" do
   end
 
   if video_id
-    user, _ = App::Cache.cache("dailymotion.video.#{video_id}", 60*60, 60) do
+    user, _ = App::Cache.cache("dailymotion.video", video_id, 60*60, 60) do
       response = App::Dailymotion.get("/video/#{video_id}")
       raise(App::DailymotionError, response) if !response.success?
       response.json["owner"]
     end
   elsif playlist_id
-    user, _ = App::Cache.cache("dailymotion.playlist.#{playlist_id}", 60*60, 60) do
+    user, _ = App::Cache.cache("dailymotion.playlist", playlist_id, 60*60, 60) do
       response = App::Dailymotion.get("/playlist/#{playlist_id}")
       raise(App::DailymotionError, response) if !response.success?
       response.json["owner"]
@@ -1310,7 +1314,7 @@ get "/dailymotion" do
   end
   return [422, "Something went wrong. Try again later."] if user.nil?
 
-  path, _ = App::Cache.cache("dailymotion.user.#{user.downcase}", 60*60, 60) do
+  path, _ = App::Cache.cache("dailymotion.user", user.downcase, 60*60, 60) do
     response = App::Dailymotion.get("/user/#{user}", query: { fields: "id,username" })
     raise(App::DailymotionError, response) if !response.success?
     data = response.json
@@ -1327,7 +1331,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   @user_id = user_id
   @username = CGI.unescape(username)
 
-  data, @updated_at = App::Cache.cache("dailymotion.videos.#{user_id}", 60*60, 60) do
+  data, @updated_at = App::Cache.cache("dailymotion.videos", user_id, 60*60, 60) do
     response = App::Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
     next "Error: That user no longer exist." if response.code == 404
     raise(App::DailymotionError, response) if !response.success?
@@ -1369,7 +1373,7 @@ get "/imgur" do
   end
 
   if image_id
-    path, _ = App::Cache.cache("imgur.image.#{image_id}", 60*60, 60) do
+    path, _ = App::Cache.cache("imgur.image", image_id, 60*60, 60) do
       response = App::Imgur.get("/gallery/album/#{image_id}")
       response = App::Imgur.get("/gallery/image/#{image_id}") if !response.success?
       response = App::Imgur.get("/image/#{image_id}") if !response.success?
@@ -1380,7 +1384,7 @@ get "/imgur" do
       "#{data["account_id"]}/#{data["account_url"]}"
     end
   elsif album_id
-    path, _ = App::Cache.cache("imgur.album.#{album_id}", 60*60, 60) do
+    path, _ = App::Cache.cache("imgur.album", album_id, 60*60, 60) do
       response = App::Imgur.get("/album/#{album_id}")
       next "Error: Can't identify #{album_id} as an album." if response.code == 404
       raise(App::ImgurError, response) if !response.success?
@@ -1388,7 +1392,7 @@ get "/imgur" do
       "#{data["account_id"]}/#{data["account_url"]}"
     end
   elsif username
-    path, _ = App::Cache.cache("imgur.account.#{username}", 60*60, 60) do
+    path, _ = App::Cache.cache("imgur.account", username.downcase, 60*60, 60) do
       response = App::Imgur.get("/account/#{username}")
       next "Error: Can't find a user with that name. If you want a feed for a subreddit, enter \"r/#{username}\"." if response.code == 404
       raise(App::ImgurError, response) if !response.success?
@@ -1407,7 +1411,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
 
   if user_id == "r"
     @subreddit = username
-    data, @updated_at = App::Cache.cache("imgur.r.#{@subreddit.downcase}", 60*60, 60) do
+    data, @updated_at = App::Cache.cache("imgur.r", @subreddit.downcase, 60*60, 60) do
       response = App::Imgur.get("/gallery/r/#{@subreddit}")
       raise(App::ImgurError, response) if !response.success? || response.body.empty?
       response.json["data"].map do |image|
@@ -1417,7 +1421,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
   else
     @user_id = user_id
     @username = username
-    data, @updated_at = App::Cache.cache("imgur.user.#{@username.downcase}", 60*60, 60) do
+    data, @updated_at = App::Cache.cache("imgur.user", @username.downcase, 60*60, 60) do
       # can't use user_id in this request unfortunately
       response = App::Imgur.get("/account/#{@username}/submissions")
       raise(App::ImgurError, response) if !response.success? || response.body.empty?
@@ -1474,10 +1478,10 @@ get "/svtplay" do
 end
 
 get "/dilbert" do
-  data, @updated_at = App::Cache.cache("dilbert", 4*60*60, 60*60) do
+  data, @updated_at = App::Cache.cache("dilbert", "feed", 10, 60*60) do
     feed = Feedjira.parse(App::HTTP.get("http://feeds.dilbert.com/DilbertDailyStrip").body)
     entries = feed.entries.map do |entry|
-      data, _ = App::Cache.cache("dilbert.#{entry.id}", 30*24*60*60, 60*60) do
+      data, _ = App::Cache.cache("dilbert.entry", entry.id, 30*24*60*60, 60*60) do
         og = OpenGraph.new("https://dilbert.com/strip/#{entry.id}")
         {
           "image" => og.images.first,

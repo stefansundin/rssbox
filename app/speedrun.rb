@@ -12,7 +12,7 @@ module App
     ERROR_CLASS = SpeedrunError
 
     def self.resolve_id(type, id)
-      value, _ = App::Cache.cache("speedrun.#{type}.#{id}", 24*60*60, 60) do
+      value, _ = App::Cache.cache("speedrun.#{type}", id, 24*60*60, 60) do
         if type == "game"
           response = Speedrun.get("/games/#{id}")
           raise(SpeedrunError, response) if !response.success?

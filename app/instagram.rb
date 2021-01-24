@@ -33,7 +33,7 @@ module App
     end
 
     def self.get_post(id)
-      data, _ = Cache.cache("instagram.post.#{id}", 7*24*60*60, 60*60) do
+      data, _ = Cache.cache("instagram.post", id, 7*24*60*60, 60*60) do
         response = get("/p/#{id}/")
         raise(InstagramError, response) if !response.success? || !response.json
         post = response.json["graphql"]["shortcode_media"]
