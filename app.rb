@@ -1424,6 +1424,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
     data, @updated_at = App::Cache.cache("imgur.user", @username.downcase, 60*60, 60) do
       # can't use user_id in this request unfortunately
       response = App::Imgur.get("/account/#{@username}/submissions")
+      next "Error: It seems like this user no longer exists." if response.code == 404
       raise(App::ImgurError, response) if !response.success? || response.body.empty?
       response.json["data"].map do |image|
         image.slice("animated", "cover", "datetime", "description", "gifv", "height", "id", "images_count", "is_album", "nsfw", "score", "size", "title", "type", "width")
@@ -1431,6 +1432,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
     end
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
+  return [422, data] if data.start_with?("Error:")
 
   @data = JSON.parse(data)
 
