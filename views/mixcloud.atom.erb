@@ -11,7 +11,7 @@
 
   <entry>
     <id>mixcloud:track:<%= track["slug"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= track["audio_length"].to_duration if track.has_key?("audio_length") %>] <%= track["name"].to_line.esc %></title>
+    <title>[<%= track["audio_length"]&.to_duration || "?" %>] <%= track["name"].to_line.esc %></title>
     <link href="<%= track["url"].esc %>" />
     <updated><%= Time.parse(track["created_time"]) %></updated>
     <author><name><%= track["user"]["username"].esc %></name></author>
