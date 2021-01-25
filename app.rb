@@ -1064,7 +1064,7 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
     response = App::Twitch.get("/videos", query: { game_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
-    response.json["data"].reject do |video|
+    videos = response.json["data"].reject do |video|
       # live broadcasts show up here too, and the simplest way of filtering them out seems to be to see if thumbnail_url is populated or not
       video["thumbnail_url"].empty?
     end.map do |video|
@@ -1077,7 +1077,11 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
         "type" => video["type"],
         "user_name" => video["user_name"],
       }
-    end.to_json
+    end
+
+    {
+      "videos" => videos,
+    }.to_json
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
 
@@ -1088,7 +1092,7 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
   @title += " highlights" if type == "highlight"
   @title += " on Twitch"
 
-  @data.map do |video|
+  @data["videos"].map do |video|
     video["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| App::URL.resolve(urls) }
 
