@@ -20,4 +20,15 @@ $metrics = {
   ratelimit: prometheus.gauge(:ratelimit, store_settings: store_settings, labels: %i[service endpoint], docstring: "Remaining ratelimit for external services."),
   requests: prometheus.counter(:requests, labels: %i[service response_code], docstring: "Number of requests made to external services."),
   urls: prometheus.counter(:urls, docstring: "Number of URLs resolved."),
+
+  # Cache:
+  cache_keys: prometheus.counter(:cache_keys, labels: %i[prefix], docstring: "Number of keys in the cache."),
+  cache_hits: prometheus.histogram(:cache_hits, labels: %i[prefix], buckets: Prometheus::Client::Histogram.exponential_buckets(start: 60, count: 10), docstring: "Cache hits, bucketed by cache age in seconds."),
+  cache_hits_negative: prometheus.counter(:cache_hits_negative, labels: %i[prefix], docstring: "Number of negative cache hits."),
+  cache_misses: prometheus.counter(:cache_misses, labels: %i[prefix], docstring: "Number of cache misses."),
+  cache_errors: prometheus.counter(:cache_errors, labels: %i[prefix], docstring: "Number of cache content retrieval errors."),
+  cache_updates_changed: prometheus.counter(:cache_updates_changed, labels: %i[prefix], docstring: "Number of cache updates where data changed."),
+  cache_updates_unchanged: prometheus.counter(:cache_updates_unchanged, labels: %i[prefix], docstring: "Number of cache updates where data did not change."),
+  cache_bytes_written: prometheus.counter(:cache_bytes_written, labels: %i[prefix], docstring: "Number of bytes of cache data written."),
+  cache_bytes_read: prometheus.counter(:cache_bytes_read, labels: %i[prefix], docstring: "Number of bytes of cache data read."),
 }

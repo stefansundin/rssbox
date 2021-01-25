@@ -39,23 +39,29 @@ module App
         if stat.size > 0
           # There is cached data with contents
           cached_data = File.read(fn)
+          $metrics[:cache_bytes_read].increment(by: cached_data.bytesize, labels: { prefix: cache_key_prefix })
           if Time.now < stat.mtime+cache_duration+cache_duration_jitter
+            $metrics[:cache_hits].observe(Time.now-stat.mtime, labels: { prefix: cache_key_prefix })
             return cached_data, stat.mtime
           end
         else
           if Time.now < stat.mtime+negative_cache_duration+negative_cache_duration_jitter
             # A negative cache is in place and it is still active
+            $metrics[:cache_hits_negative].increment(labels: { prefix: cache_key_prefix })
             return nil, stat.mtime
           end
         end
 
         # The cached data has expired
         begin
+          $metrics[:cache_misses].increment(labels: { prefix: cache_key_prefix })
           data = yield(cached_data, stat)
         rescue
+          $metrics[:cache_errors].increment(labels: { prefix: cache_key_prefix })
           if cached_data
             # Update mtime so a yield is not attempted for negative_cache_duration
             FileUtils.touch(fn, mtime: Time.now-cache_duration+negative_cache_duration)
+            $metrics[:cache_hits].observe(Time.now-stat.mtime, labels: { prefix: cache_key_prefix })
             return cached_data, stat.mtime
           end
           # Trigger negative cache and re-raise the exception
@@ -66,23 +72,31 @@ module App
         if data == cached_data
           # The new data is exactly the same as the previously cached data, so just update the file mtime
           FileUtils.touch(fn, mtime: Time.now)
+          $metrics[:cache_updates_unchanged].increment(labels: { prefix: cache_key_prefix })
         else
           # Write new data
           File.write(fn, data)
+          $metrics[:cache_bytes_written].increment(by: data.bytesize, labels: { prefix: cache_key_prefix })
+          $metrics[:cache_updates_changed].increment(labels: { prefix: cache_key_prefix })
         end
 
         return data, Time.now
       end
 
       # There is no cached data
+      $metrics[:cache_misses].increment(labels: { prefix: cache_key_prefix })
       begin
         data = yield
       rescue
         # Trigger negative cache and re-raise the exception
         FileUtils.touch(fn)
+        $metrics[:cache_errors].increment(labels: { prefix: cache_key_prefix })
+        $metrics[:cache_keys].increment(labels: { prefix: cache_key_prefix })
         raise
       end
       File.write(fn, data)
+      $metrics[:cache_bytes_written].increment(by: data.bytesize, labels: { prefix: cache_key_prefix })
+      $metrics[:cache_keys].increment(labels: { prefix: cache_key_prefix })
 
       return data, Time.now
     end
