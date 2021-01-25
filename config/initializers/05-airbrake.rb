@@ -19,6 +19,12 @@ if ENV["AIRBRAKE_API_KEY"]
       next
     end
 
+    # Ignore SIGTERM which is sent on deploy and restart
+    if notice[:errors].any? { |e| e[:type] == "SignalException" && e[:message] == "SIGTERM" }
+      notice.ignore!
+      next
+    end
+
     # Throttle errors from external services. My free plan runs out of quota a lot, often because of Instagram issues.
     # The first error is reported, but a redis key is set that prevents further errors from the same service to be reported, until the key has expired.
     # The value in the redis key counts the number of throttled errors, although that information is not persisted anywhere.
