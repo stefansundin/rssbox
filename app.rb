@@ -1489,11 +1489,13 @@ get "/dilbert" do
           "description" => og.description,
         }.to_json
       end
+      return [422, "Something went wrong. Try again later."] if data.nil?
       data = JSON.parse(data)
       data["id"] = entry.id
       data
     end.to_json
   end
+  return [422, "Something went wrong. Try again later."] if data.nil?
   @entries = JSON.parse(data)
 
   erb :"dilbert.atom"
