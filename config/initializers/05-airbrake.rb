@@ -14,7 +14,7 @@ if ENV["AIRBRAKE_API_KEY"]
 
   Airbrake.add_filter do |notice|
     # Bots gonna bot
-    notice.ignore! if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" } && (/\/wp-(?:admin|includes|content|login)/ =~ notice[:context][:url] || /\/facebook\/\d+\/?$/ =~ notice[:context][:url])
+    notice.ignore! if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" } && (/\/wp-(?:admin|includes|content|login)/ =~ notice[:context][:url] || /\/facebook\/\d+\/?$/ =~ notice[:context][:url] || /\/twitter\/\d+\/?$/ =~ notice[:context][:url])
 
     # Throttle errors from external services. My free plan runs out of quota a lot, often because of Instagram issues.
     # The first error is reported, but a redis key is set that prevents further errors from the same service to be reported, until the key has expired.
