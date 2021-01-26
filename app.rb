@@ -973,14 +973,14 @@ get "/twitch/download" do
     raise(App::TwitchError, response) if !response.success?
     data = response.json["data"][0]
 
-    response = TwitchToken.get("/vods/#{vod_id}/access_token")
+    response = App::TwitchToken.get("/vods/#{vod_id}/access_token")
     raise(App::TwitchError, response) if !response.success?
     vod_data = response.json
 
     url = "http://usher.twitch.tv" + Addressable::URI.new(path: "/vod/#{vod_id}", query: "nauthsig=#{vod_data["sig"]}&nauth=#{vod_data["token"]}").normalize.to_s
     fn = "#{Date.parse(data["created_at"])} - #{data["user_name"]} - #{data["title"]}.mp4".to_filename
   elsif channel_name
-    response = TwitchToken.get("/channels/#{channel_name}/access_token")
+    response = App::TwitchToken.get("/channels/#{channel_name}/access_token")
     return [response.code, "Channel does not seem to exist."] if response.code == 404
     raise(App::TwitchError, response) if !response.success?
 
@@ -1021,7 +1021,7 @@ get "/twitch/watch" do
     streams = response.json["quality_options"].map { |s| s["source"] }
     return [404, "Can't find clip."] if streams.empty?
   elsif vod_id
-    response = TwitchToken.get("/vods/#{vod_id}/access_token")
+    response = App::TwitchToken.get("/vods/#{vod_id}/access_token")
     return [response.code, "Video does not exist."] if response.code == 404
     raise(App::TwitchError, response) if !response.success?
     data = response.json
@@ -1032,7 +1032,7 @@ get "/twitch/watch" do
     raise(App::TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
-    response = TwitchToken.get("/channels/#{channel_name}/access_token")
+    response = App::TwitchToken.get("/channels/#{channel_name}/access_token")
     return [response.code, "Channel does not seem to exist."] if response.code == 404
     raise(App::TwitchError, response) if !response.success?
 
