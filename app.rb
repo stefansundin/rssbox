@@ -556,8 +556,11 @@ get "/instagram" do
         user = response.json["users"][0]["user"]
       end
       "#{user["id"] || user["pk"]}/#{user["username"]}"
+    rescue App::InstagramRatelimitError
+      "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
+    return [422, path] if path.start_with?("Error:")
   end
   redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s
 end
@@ -604,7 +607,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
     # To find the query_hash, simply use the Instagram website and monitor the network calls.
     # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
     response = App::Instagram.get("/graphql/query/", {
-      query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{user_id}\",\"first\":12}"},
+      query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{user_id}\",\"first\":12}" },
     })
     raise(App::InstagramError, response) if !response.success? || !response.json?
     user = response.json["data"]["user"]
@@ -627,6 +630,8 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
         "nodes" => nodes,
       }
     end.to_json
+  rescue App::InstagramRatelimitError
+    "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")

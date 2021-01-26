@@ -26,7 +26,7 @@ module App
       response = super(url, options)
       if response.code == 403
         raise(InstagramTokenError, response)
-      elsif response.code == 429
+      elsif response.code == 429 || response.code == 302
         raise(InstagramRatelimitError, response)
       end
       response
