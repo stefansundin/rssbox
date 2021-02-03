@@ -566,6 +566,8 @@ get "/instagram" do
 end
 
 get "/instagram/download" do
+  return [400, "Insufficient parameters"] if params[:url].empty?
+
   if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:url]
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
