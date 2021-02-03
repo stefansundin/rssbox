@@ -13,7 +13,7 @@ $env = <<SCRIPT
 PATH=/home/vagrant/.rbenv/bin:/home/vagrant/.rbenv/versions/global/bin:/home/vagrant/.rbenv/versions/global/lib/ruby/gems/version/bin:$PATH
 
 APP_ENV=production
-LOG_ENABLED=1
+LOGFILE=1
 
 REDIS_URL=redis://localhost:6379/3
 #TWITTER_ACCESS_TOKEN=

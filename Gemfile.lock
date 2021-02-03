@@ -14,6 +14,8 @@ GEM
       airbrake-ruby (~> 5.1)
     airbrake-ruby (5.2.0)
       rbtree3 (~> 0.5)
+    clogger (2.3.0)
+      rack (>= 1.0, < 3.0)
     coderay (1.1.3)
     concurrent-ruby (1.1.8)
     crass (1.0.6)
@@ -91,6 +93,7 @@ PLATFORMS
 DEPENDENCIES
   addressable
   airbrake
+  clogger
   dotenv
   feedjira
   github-release-party

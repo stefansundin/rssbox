@@ -18,7 +18,7 @@ if ENV["PORT"]
   port(ENV["PORT"])
 end
 
-if ENV["LOG_ENABLED"]
+if ENV.has_key?("LOGFILE")
   stdout_redirect("#{app_path}/log/puma-stdout.log", "#{app_path}/log/puma-stderr.log", true)
 end
 
