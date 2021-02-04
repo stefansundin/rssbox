@@ -55,48 +55,48 @@ get "/go" do
   return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
-    redirect Addressable::URI.new(path: "/twitter", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/twitter", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.|gaming\.)?youtu(?:\.be|be\.com)/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/youtube", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/youtube", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?instagram\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/instagram", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/instagram", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?(?:periscope|pscp)\.tv/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/periscope", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/periscope", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?soundcloud\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/soundcloud", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/soundcloud", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?mixcloud\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/mixcloud", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/mixcloud", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.|go\.)?twitch\.tv/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/twitch", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?speedrun\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/speedrun", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/speedrun", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?dailymotion\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/dailymotion", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/dailymotion", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?vimeo\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/vimeo", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/vimeo", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:[a-z0-9]+\.)?imgur\.com/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/imgur", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/imgur", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/medium\.com\/(?<user>@?[^\/?&#]+)/ =~ params[:q]
-    redirect Addressable::URI.parse("https://medium.com/feed/#{user}").normalize.to_s
+    redirect Addressable::URI.parse("https://medium.com/feed/#{user}").normalize.to_s, 301
   elsif /^https?:\/\/(?<name>[a-z0-9\-]+)\.blogspot\./ =~ params[:q]
-    redirect Addressable::URI.parse("https://#{name}.blogspot.com/feeds/posts/default").normalize.to_s
+    redirect Addressable::URI.parse("https://#{name}.blogspot.com/feeds/posts/default").normalize.to_s, 301
   elsif /^https?:\/\/groups\.google\.com\/(?:forum\/[^#]*#!(?:[a-z]+)|g)\/(?<name>[^\/?&#]+)/ =~ params[:q]
     # https://groups.google.com/forum/?oldui=1#!forum/rabbitmq-users
     # https://groups.google.com/forum/?oldui=1#!topic/rabbitmq-users/9D4BAuud6PU
     # https://groups.google.com/g/rabbitmq-users
     # https://groups.google.com/g/rabbitmq-users/c/9D4BAuud6PU
-    redirect Addressable::URI.parse("https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50").normalize.to_s
+    redirect Addressable::URI.parse("https://groups.google.com/forum/feed/#{name}/msgs/atom.xml?num=50").normalize.to_s, 301
   elsif /^https?:\/\/www\.deviantart\.com\/(?<user>[^\/]+)/ =~ params[:q]
-    redirect "https://backend.deviantart.com/rss.xml" + Addressable::URI.new(query: "type=deviation&q=by:#{user} sort:time").normalize.to_s
+    redirect "https://backend.deviantart.com/rss.xml" + Addressable::URI.new(query: "type=deviation&q=by:#{user} sort:time").normalize.to_s, 301
   elsif /^(?<baseurl>https?:\/\/[a-zA-Z0-9\-]+\.tumblr\.com)/ =~ params[:q]
-    redirect "#{baseurl}/rss"
+    redirect "#{baseurl}/rss", 301
   elsif /^https?:\/\/(?:itunes|podcasts)\.apple\.com\/.+\/id(?<id>\d+)/ =~ params[:q]
     # https://podcasts.apple.com/us/podcast/the-bernie-sanders-show/id1223800705
     response = App::HTTP.get("https://itunes.apple.com/lookup?id=#{id}")
     raise(App::HTTPError, response) if !response.success?
-    redirect response.json["results"][0]["feedUrl"]
+    redirect response.json["results"][0]["feedUrl"], 301
   elsif /^https?:\/\/(?:www\.)?svtplay\.se/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/svtplay", query_values: params).normalize.to_s
+    redirect Addressable::URI.new(path: "/svtplay", query_values: params).normalize.to_s, 301
   else
     return [404, "Unknown service"]
   end
@@ -153,7 +153,7 @@ get "/twitter" do
   return [422, "Something went wrong. Try again later."] if path.nil?
   return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/twitter/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/twitter/#{path}").normalize.to_s, 301
 end
 
 get %r{/twitter/(?<id>\d+)/(?<username>.+)} do |id, username|
@@ -337,11 +337,11 @@ get "/youtube" do
 
   if query
     query = CGI.unescape(query) # youtube uses + here instead of %20
-    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }.merge(params.slice(:tz))).normalize.to_s
+    redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }.merge(params.slice(:tz))).normalize.to_s, 301
   elsif channel_id
-    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s
+    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s, 301
   elsif playlist_id
-    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s
+    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s, 301
   else
     return [404, "Could not find the channel."]
   end
@@ -515,7 +515,7 @@ get "/vimeo" do
   end
 
   if user_id
-    redirect "https://vimeo.com/user#{user_id}/videos/rss"
+    redirect "https://vimeo.com/user#{user_id}/videos/rss", 301
   else
     return [404, "Could not find the channel."]
   end
@@ -562,7 +562,7 @@ get "/instagram" do
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
   end
-  redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s, 301
 end
 
 get "/instagram/download" do
@@ -699,7 +699,7 @@ get "/periscope" do
   return [422, "Something went wrong. Try again later."] if path.nil?
   return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/periscope/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/periscope/#{path}").normalize.to_s, 301
 end
 
 get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
@@ -779,7 +779,7 @@ get "/soundcloud" do
   return [422, "Something went wrong. Try again later."] if path.nil?
   return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/soundcloud/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/soundcloud/#{path}").normalize.to_s, 301
 end
 
 get "/soundcloud/download" do
@@ -859,7 +859,7 @@ get "/mixcloud" do
   return [422, "Something went wrong. Try again later."] if path.nil?
   return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/mixcloud/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/mixcloud/#{path}").normalize.to_s, 301
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
@@ -918,7 +918,7 @@ get "/twitch" do
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
-    redirect Addressable::URI.new(path: "/twitch/directory/game/#{path}").normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch/directory/game/#{path}").normalize.to_s, 301
   elsif vod_id
     path, _ = App::Cache.cache("twitch.vod", vod_id, 60*60, 60) do
       response = App::Twitch.get("/videos", query: { id: vod_id })
@@ -929,7 +929,7 @@ get "/twitch" do
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
-    redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s, 301
   else
     path, _ = App::Cache.cache("twitch.user", username.downcase, 60*60, 60) do
       response = App::Twitch.get("/users", query: { login: username })
@@ -941,7 +941,7 @@ get "/twitch" do
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
-    redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s
+    redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s, 301
   end
 end
 
@@ -1225,7 +1225,7 @@ get "/speedrun" do
   return [422, "Something went wrong. Try again later."] if path.nil?
   return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/speedrun/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/speedrun/#{path}").normalize.to_s, 301
 end
 
 get "/speedrun/:id/:abbr" do |id, abbr|
@@ -1332,7 +1332,7 @@ get "/dailymotion" do
     "#{data["id"]}/#{data["username"]}"
   end
   if path
-    redirect Addressable::URI.new(path: "/dailymotion/#{path}").normalize.to_s
+    redirect Addressable::URI.new(path: "/dailymotion/#{path}").normalize.to_s, 301
   else
     return [404, "Could not find a user with that name."]
   end
@@ -1369,7 +1369,7 @@ get "/imgur" do
   elsif /(?:^\/?r\/|(?:imgur|reddit)\.com\/r\/)(?<subreddit>[a-zA-Z0-9_]+)/ =~ params[:q]
     # https://imgur.com/r/aww
     # https://www.reddit.com/r/aww
-    redirect Addressable::URI.new(path: "/imgur/r/#{subreddit}", query: params[:type]).normalize.to_s
+    redirect Addressable::URI.new(path: "/imgur/r/#{subreddit}", query: params[:type]).normalize.to_s, 301
     return
   elsif /(?<username>[a-zA-Z0-9]+)\.imgur\.com/ =~ params[:q] && username != "i"
     # https://thebookofgray.imgur.com/
@@ -1414,7 +1414,7 @@ get "/imgur" do
   return [422, "Something went wrong. Try again later."] if path.nil?
   return [422, path] if path.start_with?("Error:")
 
-  redirect Addressable::URI.new(path: "/imgur/#{path}").normalize.to_s
+  redirect Addressable::URI.new(path: "/imgur/#{path}").normalize.to_s, 301
 end
 
 get "/imgur/:user_id/:username" do |user_id, username|
@@ -1484,7 +1484,7 @@ get "/svtplay" do
   end
 
   if program
-    redirect Addressable::URI.parse("https://www.svtplay.se/#{program}/atom.xml").normalize.to_s
+    redirect Addressable::URI.parse("https://www.svtplay.se/#{program}/atom.xml").normalize.to_s, 301
   else
     return [404, "Could not find the program."]
   end
@@ -1515,11 +1515,11 @@ get "/dilbert" do
 end
 
 get "/favicon.ico" do
-  redirect "/img/icon32.png"
+  redirect "/img/icon32.png", 301
 end
 
 get %r{/apple-touch-icon.*} do
-  redirect "/img/icon128.png"
+  redirect "/img/icon128.png", 301
 end
 
 get "/opensearch.xml" do
