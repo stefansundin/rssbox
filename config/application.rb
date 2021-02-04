@@ -14,6 +14,24 @@ Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
 # set :environment, :production
 
 configure do
+  # https://yhbt.net/clogger/
+  # The default format below is similar to "Combined", but without $time_local and $http_user_agent (and using $ip instead of $remote_addr). Removing time and user-agent saves ~50% on log filesize.
+  # The purpose of ~ is to allow for easier grepping with -E '^~' (i.e. filtering out exceptions and other crap)
+  # Combined: $remote_addr - $remote_user [$time_local] $request" $status $response_length "$http_referer" "$http_user_agent"
+  if ENV.has_key?("CLOGGER")
+    disable :logging # Disable Sinatra's logger
+    opts = {
+      reentrant: true,
+      format: ENV["CLOGGER_FORMAT"] || '~ $ip "$request" $status $response_length "$http_referer"',
+    }
+    if ENV.has_key?("CLOGGER_FILE")
+      opts[:path] = ENV["CLOGGER_FILE"]
+    else
+      opts[:logger] = $stdout
+    end
+    use Clogger, opts
+  end
+
   use Rack::Deflater, sync: false
   use Rack::SslEnforcer, only_hosts: (ENV["SSL_ENFORCER_HOST"] || /\.herokuapp\.com$/)
   use SecureHeaders::Middleware
