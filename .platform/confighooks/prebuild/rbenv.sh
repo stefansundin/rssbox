@@ -1,0 +1,1 @@
+../../hooks/prebuild/rbenv.sh
