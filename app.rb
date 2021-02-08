@@ -9,6 +9,11 @@ before do
   content_type :text
 end
 
+before %r{/(?:go|twitter|youtube|vimeo|instagram|periscope|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
+  halt [403, "This endpoint requires a web browser."] if !request.user_agent.include?("Mozilla/")
+  halt [400, "Insufficient parameters."] if params[:q].empty?
+end
+
 after do
   if env["HTTP_ACCEPT"] == "application/json" && @response.redirect?
     content_type :json
@@ -52,8 +57,6 @@ end
 # Or for Firefox:
 # javascript:location='https://rssbox.herokuapp.com/?go='+encodeURIComponent(location.href);
 get "/go" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
     redirect Addressable::URI.new(path: "/twitter", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.|gaming\.)?youtu(?:\.be|be\.com)/ =~ params[:q]
@@ -104,7 +107,6 @@ end
 
 get "/twitter" do
   return [404, "Credentials not configured"] if !ENV["TWITTER_ACCESS_TOKEN"]
-  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if params[:q].include?("twitter.com/i/") || params[:q].include?("twitter.com/who_to_follow/")
     return [404, "Unsupported url."]
@@ -264,7 +266,6 @@ end
 
 get "/youtube" do
   return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
-  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /youtube\.com\/channel\/(?<channel_id>(UC|S)[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
@@ -488,8 +489,6 @@ get %r{/googleplus/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/vimeo" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /vimeo\.com\/user(?<user_id>\d+)/ =~ params[:q]
     # https://vimeo.com/user7103699
   elsif /vimeo\.com\/ondemand\/(?<user>[^\/?&#]+)/ =~ params[:q]
@@ -526,8 +525,6 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/instagram" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
@@ -661,8 +658,6 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
 end
 
 get "/periscope" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /(?:periscope|pscp)\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
     # https://www.periscope.tv/w/1MYGNmBPMnNKw
     # https://www.pscp.tv/w/1MYGNmBPMnNKw
@@ -750,7 +745,6 @@ end
 
 get "/soundcloud" do
   return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
-  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
@@ -852,8 +846,6 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/mixcloud" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /mixcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.mixcloud.com/infected-live/infected-mushroom-liveedc-las-vegas-21-5-2014/
   else
@@ -902,7 +894,6 @@ end
 
 get "/twitch" do
   return [404, "Credentials not configured"] if !ENV["TWITCH_CLIENT_ID"]
-  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /twitch\.tv\/directory\/game\/(?<game_name>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/directory/game/Perfect%20Dark
@@ -1206,8 +1197,6 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
 end
 
 get "/speedrun" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /speedrun\.com\/run\/(?<run_id>[^\/?#]+)/ =~ params[:q]
     # https://www.speedrun.com/run/1zx0qkez
     game, _ = App::Cache.cache("speedrun.run", run_id, 60*60, 60) do
@@ -1304,8 +1293,6 @@ get %r{/ustream/(?<id>\d+)/(?<title>.+)} do |id, title|
 end
 
 get "/dailymotion" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /dailymotion\.com\/video\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q] || /dai\.ly\/(?<video_id>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://www.dailymotion.com/video/x3r4xy2
     # https://www.dailymotion.com/video/k1ZotianZxwzm6fmny2
@@ -1371,7 +1358,6 @@ end
 
 get "/imgur" do
   return [404, "Credentials not configured"] if !ENV["IMGUR_CLIENT_ID"]
-  return [400, "Insufficient parameters"] if params[:q].empty?
 
   if /imgur\.com\/user\/(?<username>[a-zA-Z0-9]+)/ =~ params[:q]
     # https://imgur.com/user/thebookofgray
@@ -1483,8 +1469,6 @@ get "/imgur/:user_id/:username" do |user_id, username|
 end
 
 get "/svtplay" do
-  return [400, "Insufficient parameters"] if params[:q].empty?
-
   if /https?:\/\/(?:www\.)?svtplay\.se\/video\/\d+\/(?<program>[^\/]+)/ =~ params[:q]
     # https://www.svtplay.se/video/7181623/veckans-brott/veckans-brott-sasong-12-avsnitt-10
   elsif /https?:\/\/(www\.)?svtplay\.se\/(?<program>[^\/]+)/ =~ params[:q]
