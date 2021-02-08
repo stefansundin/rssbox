@@ -813,27 +813,38 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
     response = App::Soundcloud.get("/users/#{id}/tracks")
     next "Error: That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
     raise(App::SoundcloudError, response) if !response.success?
-    response.json["collection"].map do |track|
+
+    data = response.json["collection"]
+    if data.length > 0
+      user = data[0]["user"]["username"]
+      user_permalink = data[0]["user"]["permalink"]
+    end
+    tracks = data.map do |track|
       {
         "id" => track["id"],
         "created_at" => track["created_at"],
-        "username" => track["user"]["username"],
         "title" => track["title"],
         "description" => track["description"],
         "duration" => (track["duration"] / 1000),
         "artwork_url" => track["artwork_url"],
         "permalink_url" => track["permalink_url"],
       }
-    end.to_json
+    end
+
+    {
+      "user" => user,
+      "username" => user_permalink,
+      "tracks" => tracks,
+    }.to_json
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
   @data = JSON.parse(data)
-  @username = @data[0]["user"]["permalink"] rescue CGI.unescape(username)
-  @user = @data[0]["user"]["username"] rescue CGI.unescape(username)
+  @user = @data["user"] || CGI.unescape(username)
+  @username = @data["username"] || CGI.unescape(username)
 
-  @data.map do |track|
+  @data["tracks"].map do |track|
     track["description"]
   end.compact.map(&:grep_urls).flatten.tap { |urls| App::URL.resolve(urls) }
 

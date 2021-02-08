@@ -2,19 +2,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>soundcloud:<%= @id %></id>
-  <title><%= @user %> on SoundCloud</title>
+  <title><%= @user.esc %> on SoundCloud</title>
   <icon>https://soundcloud.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://soundcloud.com/<%= @username %>" rel="alternate" />
   <updated><%= @updated_at %></updated>
-<%- @data.each do |track| -%>
+<%- @data["tracks"].each do |track| -%>
 
   <entry>
     <id>soundcloud:track:<%= track["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
     <title>[<%= track["duration"].to_duration %>] <%= track["title"].to_line.esc %></title>
     <link href="<%= track["permalink_url"].esc %>" />
     <updated><%= Time.parse(track["created_at"]) %></updated>
-    <author><name><%= track["username"].esc %></name></author>
+    <author><name><%= @user.esc %></name></author>
     <content type="html">
 &lt;iframe width="100%" height="185" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/<%= track["id"] %>" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer">&lt;/iframe>
 
