@@ -35,6 +35,7 @@ module App
     def self.get_post(id)
       data, _ = Cache.cache("instagram.post", id, 7*24*60*60, 60*60) do
         response = get("/p/#{id}/")
+        next if response.code == 404
         raise(InstagramError, response) if !response.success? || !response.json
         post = response.json["graphql"]["shortcode_media"]
 
