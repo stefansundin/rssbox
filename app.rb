@@ -313,7 +313,7 @@ get "/youtube" do
       next "Error: Could not find the user. Please try with a video url instead." if response.code == 404
       raise(App::GoogleError, response) if !response.success?
       doc = Nokogiri::HTML(response.body)
-      doc.at("meta[itemprop='channelId']")["content"] || "Error: Could not find the user. Please try with a video url instead."
+      doc.at("meta[itemprop='channelId']")&.[]("content") || "Error: Could not find the user. Please try with a video url instead."
     end
   elsif video_id
     channel_id, _ = App::Cache.cache("youtube.video", video_id, 60*60, 60) do

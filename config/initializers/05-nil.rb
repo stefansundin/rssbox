@@ -32,8 +32,4 @@ class NilClass
   def embed_html(request=nil)
     nil
   end
-
-  def [](key)
-    false
-  end
 end
