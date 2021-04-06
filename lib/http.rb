@@ -37,7 +37,7 @@ module App
         headers.merge!(self::HEADERS) if defined?(self::HEADERS) && relative_url
         headers.merge!(options[:headers]) if options.has_key?(:headers)
         response = http.request_get(uri.request_uri, headers)
-        $metrics[:requests].increment(labels: { service: self.to_s.split("::").last.downcase, response_code: response.code })
+        $metrics[:requests_total].increment(labels: { service: self.to_s.split("::").last.downcase, response_code: response.code })
         return HTTPResponse.new(response, uri.to_s)
       end
     rescue => e

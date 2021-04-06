@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# https://prometheus.io/docs/practices/naming/
 
 # Use DirectFileStore if we run multiple processes
 store_settings_most_recent = {}
@@ -20,18 +21,18 @@ prometheus = Prometheus::Client.registry
 
 $metrics = {
   ratelimit: prometheus.gauge(:ratelimit, store_settings: store_settings_most_recent, labels: %i[service endpoint], docstring: "Remaining ratelimit for external services."),
-  requests: prometheus.counter(:requests, labels: %i[service response_code], docstring: "Number of requests made to external services."),
-  urls: prometheus.counter(:urls, docstring: "Number of URLs resolved."),
+  requests_total: prometheus.counter(:requests_total, labels: %i[service response_code], docstring: "Number of requests made to external services."),
+  urls_resolved_total: prometheus.counter(:urls_resolved_total, docstring: "Number of URLs resolved."),
 
   # Cache:
-  cache_keys: prometheus.counter(:cache_keys, labels: %i[prefix], docstring: "Number of keys in the cache."),
-  cache_hits: prometheus.histogram(:cache_hits, labels: %i[prefix], buckets: Prometheus::Client::Histogram.exponential_buckets(start: 60, count: 10), docstring: "Cache hits, bucketed by cache age in seconds."),
-  cache_hits_negative: prometheus.counter(:cache_hits_negative, labels: %i[prefix], docstring: "Number of negative cache hits."),
-  cache_misses: prometheus.counter(:cache_misses, labels: %i[prefix], docstring: "Number of cache misses."),
-  cache_errors: prometheus.counter(:cache_errors, labels: %i[prefix], docstring: "Number of cache content retrieval errors."),
-  cache_updates_changed: prometheus.counter(:cache_updates_changed, labels: %i[prefix], docstring: "Number of cache updates where data changed."),
-  cache_updates_unchanged: prometheus.counter(:cache_updates_unchanged, labels: %i[prefix], docstring: "Number of cache updates where data did not change."),
-  cache_bytes: prometheus.gauge(:cache_bytes, store_settings: store_settings_sum, labels: %i[prefix], docstring: "Number of bytes of cached data."),
-  cache_bytes_written: prometheus.counter(:cache_bytes_written, labels: %i[prefix], docstring: "Number of bytes of cache data written."),
-  cache_bytes_read: prometheus.counter(:cache_bytes_read, labels: %i[prefix], docstring: "Number of bytes of cache data read."),
+  cache_keys_total: prometheus.counter(:cache_keys_total, labels: %i[prefix], docstring: "Number of keys in the cache."),
+  cache_hits_duration_seconds: prometheus.histogram(:cache_hits_duration_seconds, labels: %i[prefix], buckets: Prometheus::Client::Histogram.exponential_buckets(start: 60, count: 10), docstring: "Cache hits, bucketed by cache age in seconds."),
+  cache_hits_negative_total: prometheus.counter(:cache_hits_negative_total, labels: %i[prefix], docstring: "Number of negative cache hits."),
+  cache_misses_total: prometheus.counter(:cache_misses_total, labels: %i[prefix], docstring: "Number of cache misses."),
+  cache_errors_total: prometheus.counter(:cache_errors_total, labels: %i[prefix], docstring: "Number of cache content retrieval errors."),
+  cache_updates_changed_total: prometheus.counter(:cache_updates_changed_total, labels: %i[prefix], docstring: "Number of cache updates where data changed."),
+  cache_updates_unchanged_total: prometheus.counter(:cache_updates_unchanged_total, labels: %i[prefix], docstring: "Number of cache updates where data did not change."),
+  cache_size_bytes: prometheus.gauge(:cache_size_bytes, store_settings: store_settings_sum, labels: %i[prefix], docstring: "Number of bytes of cached data."),
+  cache_written_bytes: prometheus.counter(:cache_written_bytes, labels: %i[prefix], docstring: "Number of bytes of cache data written."),
+  cache_read_bytes: prometheus.counter(:cache_read_bytes, labels: %i[prefix], docstring: "Number of bytes of cache data read."),
 }

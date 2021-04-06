@@ -143,7 +143,7 @@ module App
       @@cache[url] = dest
       $redis.set("url:#{url}", dest)
 
-      $metrics[:urls].increment
+      $metrics[:urls_resolved_total].increment
     end
   end
 end
