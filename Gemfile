@@ -2,7 +2,6 @@ source "https://rubygems.org"
 
 ruby ">= 2.7.0"
 
-gem "yajl-ruby", require: "yajl/json_gem"
 gem "rake", require: false
 gem "irb"
 gem "rack"

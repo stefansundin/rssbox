@@ -85,7 +85,6 @@ GEM
     tilt (2.0.10)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    yajl-ruby (1.4.1)
 
 PLATFORMS
   ruby
@@ -114,7 +113,6 @@ DEPENDENCIES
   sinatra
   sinatra-contrib
   tzinfo
-  yajl-ruby
 
 RUBY VERSION
    ruby 2.7.1p83
