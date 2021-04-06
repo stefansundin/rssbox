@@ -858,6 +858,7 @@ get "/mixcloud" do
   path, _ = App::Cache.cache("mixcloud.user", username.downcase, 24*60*60, 60) do
     response = App::Mixcloud.get("/#{username}/")
     next "Error: Can't find a user with that name." if response.code == 404
+    next "Error: Please enter a valid username." if response.code == 400
     raise(App::MixcloudError, response) if !response.success?
     data = response.json
     "#{data["username"]}/#{data["name"]}"
