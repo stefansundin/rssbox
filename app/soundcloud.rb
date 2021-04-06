@@ -14,13 +14,13 @@ module App
       uri = Addressable::URI.parse(url)
       return nil if uri.path.empty?
 
-      urn, _ = App::Cache.cache("soundcloud.resolve", uri.path.downcase, 7*24*60*60, 60) do
+      api_uri, _ = App::Cache.cache("soundcloud.resolve", uri.path.downcase, 7*24*60*60, 60) do
         response = App::Soundcloud.get("/resolve", query: { url: "https://soundcloud.com#{uri.path}" })
         next if response.code != 200
-        response.json["urn"]
+        response.json["uri"]
       end
 
-      return urn
+      return api_uri
     end
   end
 end
