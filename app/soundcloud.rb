@@ -8,6 +8,20 @@ module App
     BASE_URL = "https://api-v2.soundcloud.com"
     PARAMS = "client_id=#{ENV["SOUNDCLOUD_CLIENT_ID"]}"
     ERROR_CLASS = SoundcloudError
+
+    def self.resolve(url)
+      return nil if !url.start_with?("https://soundcloud.com/")
+      uri = Addressable::URI.parse(url)
+      return nil if uri.path.empty?
+
+      urn, _ = App::Cache.cache("soundcloud.resolve", uri.path.downcase, 7*24*60*60, 60) do
+        response = App::Soundcloud.get("/resolve", query: { url: "https://soundcloud.com#{uri.path}" })
+        next if response.code != 200
+        response.json["urn"]
+      end
+
+      return urn
+    end
   end
 end
 

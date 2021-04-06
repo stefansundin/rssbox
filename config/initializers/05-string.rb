@@ -172,8 +172,12 @@ class String
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self
       # https://soundcloud.com/infectedmushroom/liquid-smoke
       # https://soundcloud.com/infectedmushroom/sets/fields-of-grey-remixes
-      height = set ? 450 : 166
-      "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{self}&show_comments=false' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
+      urn = App::Soundcloud.resolve(self)
+      if urn
+        url = "https://api.soundcloud.com/" + urn.split(":")[1..].join("/")
+        height = set ? 450 : 166
+        "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{url}&show_comments=false&hide_related=true' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
+      end
     elsif %r{^https?://(?:open|play)\.spotify\.com/(?<path>[^?#]+)} =~ self
       "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://sverigesradio\.se/artikel/(?<id>\d+)} =~ self
