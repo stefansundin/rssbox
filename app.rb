@@ -100,6 +100,9 @@ get "/go" do
     redirect response.json["results"][0]["feedUrl"], 301
   elsif /^https?:\/\/(?:www\.)?svtplay\.se/ =~ params[:q]
     redirect Addressable::URI.new(path: "/svtplay", query_values: params).normalize.to_s, 301
+  elsif /^https?:\/\/(?:www\.)?odysee\.com\/@(?<channelClaim>[^\/?#]+)/ =~ params[:q]
+    # https://odysee.com/@eevblog:7
+    redirect Addressable::URI.parse("https://lbryfeed.melroy.org/channel/odysee/#{channelClaim}/atom").normalize.to_s, 301
   else
     return [404, "Unknown service"]
   end
