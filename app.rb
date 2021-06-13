@@ -752,7 +752,8 @@ get "/soundcloud" do
   if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
   else
-    username = params[:q]
+    username = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if username.empty?
   end
 
   path, _ = App::Cache.cache("soundcloud.user", username.downcase, 60*60, 60) do
@@ -852,7 +853,8 @@ get "/mixcloud" do
   if /mixcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.mixcloud.com/infected-live/infected-mushroom-liveedc-las-vegas-21-5-2014/
   else
-    username = params[:q]
+    username = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if username.empty?
   end
 
   path, _ = App::Cache.cache("mixcloud.user", username.downcase, 24*60*60, 60) do
@@ -911,7 +913,8 @@ get "/twitch" do
     # https://www.twitch.tv/majinphil
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
   else
-    username = params[:q]
+    username = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if username.empty?
   end
 
   if game_name
@@ -969,7 +972,8 @@ get "/twitch/download" do
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
-    channel_name = params[:url]
+    channel_name = params[:url][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if channel_name.empty?
   end
 
   if clip_slug
@@ -1024,7 +1028,8 @@ get "/twitch/watch" do
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
-    channel_name = params[:url]
+    channel_name = params[:url][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if channel_name.empty?
   end
 
   if clip_slug
@@ -1309,7 +1314,8 @@ get "/dailymotion" do
     # https://www.dailymotion.com/ParodyEdits
   else
     # it's probably a username
-    user = params[:q]
+    user = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if user.empty?
   end
 
   if video_id
