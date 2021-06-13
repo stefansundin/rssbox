@@ -1047,6 +1047,7 @@ get "/twitch/watch" do
 
     response = App::HTTP.get(playlist_url)
     return [response.code, "Video does not exist."] if response.code == 404
+    return [response.code, "This video is restricted to subscribers."] if response.code == 403 && response.json[0]["error_code"] == "vod_manifest_restricted"
     raise(App::TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
