@@ -2,7 +2,7 @@
 
 First of all, make sure you are running the latest version of the eb cli:
 ```
-pip3 install -U --user awscli awsebcli
+pip3 install -U --user awsebcli
 ```
 
 Use a t2.micro instance if you are using the AWS free tier. Otherwise, use t3.nano or t3a.nano with spot to get the lowest price.
