@@ -136,7 +136,9 @@ class String
 
   def embed_html(request=nil)
     root_url = request ? request.root_url : ""
-    if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self || %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
+    if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self || %r{^https?://www\.facebook\.com/(?:watch/?v|video/embed\?video_id)=(?<id>\d+)} =~ self
+      # https://www.facebook.com/infectedmushroom/videos/454943357902682/
+      # https://www.facebook.com/watch/?v=454943357902682
       <<~EOF
         <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
         <a href="https://www.facebook.com/video/embed?video_id=#{id}" rel="noreferrer">Open embed</a>
