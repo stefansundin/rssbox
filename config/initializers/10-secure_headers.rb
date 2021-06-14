@@ -36,7 +36,7 @@ end
 
 # Index page
 SecureHeaders::Configuration.override(:index) do |config|
-  config.referrer_policy = "origin-when-cross-origin"
+  config.referrer_policy = "strict-origin-when-cross-origin"
   config.csp.merge!({
     # "meta" values. these will shape the header, but the values are not included in the header.
     report_only: false,
