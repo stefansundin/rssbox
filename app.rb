@@ -294,8 +294,10 @@ get "/youtube" do
     # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
   elsif /youtube\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
-  elsif /youtu\.be\/(?<video_id>[^?#]+)/ =~ params[:q]
+  elsif /(?:youtu\.be|youtube\.com\/(?:embed|v))\/(?<video_id>[^?#]+)/ =~ params[:q]
     # https://youtu.be/vVXbgbMp0oY?t=1s
+    # https://www.youtube.com/embed/vVXbgbMp0oY
+    # https://www.youtube.com/v/vVXbgbMp0oY
   elsif /\b(?<channel_id>(?:UC[^\/?#]{22,}|S[^\/?#]{12,}))/ =~ params[:q]
     # it's a channel id
   else
