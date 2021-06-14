@@ -179,8 +179,10 @@ class String
         height = set ? 450 : 166
         "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{url}&show_comments=false&hide_related=true' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
       end
-    elsif %r{^https?://(?:open|play)\.spotify\.com/(?<path>[^?#]+)} =~ self
-      "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
+    elsif %r{^https?://(?:open|play)\.spotify\.com/(?:embed\/)?(?<path>[^?#]+)} =~ self
+      # https://open.spotify.com/artist/6S2tas4z6DyIklBajDqJxI
+      # https://open.spotify.com/show/1VXcH8QHkjRcTCEd88U3ti
+      "<iframe width='800' height='380' src='https://open.spotify.com/embed/#{path}' frameborder='0' scrolling='no' referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://sverigesradio\.se/artikel/(?<id>\d+)} =~ self
       "<iframe width='853' height='155' src='https://sverigesradio.se/sida/embed/publication/#{id}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://gfycat\.com/(?:gifs/detail/)?(?<id>[^@\/?#]+)} =~ self
