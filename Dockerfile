@@ -11,8 +11,9 @@
 # docker build --squash -t stefansundin/rssbox .
 # docker push stefansundin/rssbox
 
-FROM stefansundin/ruby:2.7
-LABEL maintainer="stefansundin https://github.com/stefansundin/rssbox"
+FROM stefansundin/ruby:3.0
+LABEL org.opencontainers.image.authors="Stefan Sundin"
+LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
 
 # install gem dependencies
 RUN \
