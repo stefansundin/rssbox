@@ -1,7 +1,3 @@
-# Notice
-
-I am trying to raise money to implement a caching system to RSS Box. To learn more, please go to this issue: https://github.com/stefansundin/rssbox/issues/43
-
 # RSS Box
 
 This app uses the API of other websites and gives you an RSS feed in return. Quick and simple.
