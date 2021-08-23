@@ -14,13 +14,20 @@ if ENV["AIRBRAKE_API_KEY"]
 
   Airbrake.add_filter do |notice|
     # Bots gonna bot
-    if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" } && (
-      /\/wp-(?:admin|includes|content|login)/ =~ notice[:context][:url] ||
-      /\/facebook\/\d+\/?$/ =~ notice[:context][:url] ||
-      /\/twitter\/\d+\/?$/ =~ notice[:context][:url] ||
-      notice[:context][:httpMethod] == "OPTIONS")
-      notice.ignore!
-      next
+    if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" }
+      if notice[:context][:httpMethod] == "OPTIONS" || !ENV.has_key?("AIRBRAKE_REPORT_404")
+        notice.ignore!
+        next
+      elsif ENV["AIRBRAKE_REPORT_404"] == "true"
+        next
+      end
+
+      # Set the variable to a regexp to ignore certain spammy paths
+      re = Regexp.new(ENV["AIRBRAKE_REPORT_404"], Regexp::IGNORECASE)
+      if re =~ notice[:context][:url]
+        notice.ignore!
+        next
+      end
     end
 
     # Ignore SIGTERM which is sent on deploy and restart
