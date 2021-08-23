@@ -8,8 +8,17 @@
 # docker run --rm --network=rssbox --name=rssbox --env-file=.dockerenv -i -t -p 3000:3000 stefansundin/rssbox
 # docker run --rm --network=rssbox -t redis redis-cli -h redis monitor
 
-# docker build --squash -t stefansundin/rssbox .
+# docker build --pull --squash -t stefansundin/rssbox .
 # docker push stefansundin/rssbox
+
+# Multi-arch:
+# docker buildx create --use --name multiarch
+# docker buildx build --pull -t stefansundin/rssbox --platform linux/amd64,linux/arm64,linux/arm/v7 --push .
+
+# Push to public ECR:
+# export AWS_PROFILE=stefansundin
+# docker tag stefansundin/rssbox public.ecr.aws/stefansundin/rssbox
+# docker push public.ecr.aws/stefansundin/rssbox
 
 FROM stefansundin/ruby:3.0
 LABEL org.opencontainers.image.authors="Stefan Sundin"
