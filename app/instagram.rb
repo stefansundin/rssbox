@@ -68,5 +68,5 @@ end
 
 error App::InstagramRatelimitError do |e|
   status 429
-  "There are too many requests going to Instagram right now. Someone is probably abusing this service. PLEASE SLOW DOWN!"
+  "Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
 end

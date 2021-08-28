@@ -559,10 +559,11 @@ get "/instagram" do
       end
       "#{user["id"] || user["pk"]}/#{user["username"]}"
     rescue App::InstagramRatelimitError
-      "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
+      "ratelimited"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
+    return [429, "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"] if path == "ratelimited"
   end
   redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s, 301
 end
@@ -635,10 +636,20 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
       }
     end.to_json
   rescue App::InstagramRatelimitError
-    "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
+    "ratelimited"
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
+
+  if data == "ratelimited"
+    if Time.now < @updated_at+300
+      # To make it easier to subscribe to Instagram feeds, there is a grace period for 5 minutes where an empty feed is returned.
+      # Note that you have to manually construct the feed URL yourself.
+      data = "[]"
+    else
+      return [429, "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"]
+    end
+  end
 
   @data = JSON.parse(data)
 
