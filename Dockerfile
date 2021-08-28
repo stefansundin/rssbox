@@ -12,13 +12,11 @@
 # docker push stefansundin/rssbox
 
 # Multi-arch:
-# docker buildx create --use --name multiarch
-# docker buildx build --pull -t stefansundin/rssbox --platform linux/amd64,linux/arm64,linux/arm/v7 --push .
-
+# docker buildx create --use --name multiarch --node multiarch0
+# docker buildx build --pull --push --platform linux/amd64,linux/arm64,linux/arm/v7 -t stefansundin/rssbox .
 # Push to public ECR:
 # export AWS_PROFILE=stefansundin
-# docker tag stefansundin/rssbox public.ecr.aws/stefansundin/rssbox
-# docker push public.ecr.aws/stefansundin/rssbox
+# docker buildx build --push --platform linux/amd64,linux/arm64,linux/arm/v7 -t public.ecr.aws/stefansundin/rssbox .
 
 FROM stefansundin/ruby:3.0
 LABEL org.opencontainers.image.authors="Stefan Sundin"
