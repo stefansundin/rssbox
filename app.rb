@@ -305,6 +305,11 @@ get "/youtube" do
     user = params[:q]
   end
 
+  if playlist_id
+    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s, 301
+    return
+  end
+
   if user
     channel_id, _ = App::Cache.cache("youtube.user", user.downcase, 60*60, 60) do
       response = App::HTTP.get("https://www.youtube.com/#{user}")
@@ -346,8 +351,6 @@ get "/youtube" do
     redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }.merge(params.slice(:tz))).normalize.to_s, 301
   elsif channel_id
     redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s, 301
-  elsif playlist_id
-    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s, 301
   else
     return [404, "Could not find the channel."]
   end
