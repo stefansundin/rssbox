@@ -187,8 +187,9 @@ $(document).ready(async function() {
   });
 
   $("#copy-button").click(function() {
-    $("#feed-url").select();
-    document.execCommand("copy");
+    const feed_url = $("#feed-url");
+    feed_url.select();
+    navigator.clipboard.writeText(feed_url.val());
   });
 
   $("#feed-modal form").submit(function(event) {
