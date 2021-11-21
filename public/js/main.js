@@ -169,7 +169,7 @@ $(document).ready(async function() {
 
     const feed_modal = $("#feed-modal");
     const feed_url = $("#feed-url");
-    feed_url.val(url);
+    feed_url.val(url).trigger("input");
     feed_modal.modal("show", this);
     feed_url.select();
 
@@ -190,6 +190,11 @@ $(document).ready(async function() {
     const feed_url = $("#feed-url");
     feed_url.select();
     navigator.clipboard.writeText(feed_url.val());
+    this.textContent = "Copied";
+  });
+
+  $("#feed-url").on("input", function() {
+    $("#copy-button").text("Copy");
   });
 
   $("#feed-modal form").submit(function(event) {
@@ -204,7 +209,7 @@ $(document).ready(async function() {
     if (qs != "") {
       url += `?${qs}`;
     }
-    $("#feed-url").val(url).select();
+    $("#feed-url").val(url).trigger("input").select();
   });
 
   $("[data-download-filename]").click(async function() {
