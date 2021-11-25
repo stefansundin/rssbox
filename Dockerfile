@@ -32,7 +32,9 @@ RUN \
 
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --retry=3 --jobs=4 --without=development:test --path=.bundle/gems
+RUN bundle config set --local path .bundle/gems
+RUN bundle config set --local without development:test
+RUN bundle install --retry=3 --jobs=4
 COPY . .
 
 # Run the container as an unprivileged user
