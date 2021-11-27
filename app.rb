@@ -10,7 +10,7 @@ before do
 end
 
 before %r{/(?:go|twitter|youtube|vimeo|instagram|periscope|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
-  halt [403, "This endpoint requires a web browser."] if !request.user_agent.include?("Mozilla/")
+  halt [403, "This endpoint requires a web browser."] if !request.user_agent&.include?("Mozilla/")
   halt [400, "Insufficient parameters."] if params[:q].empty?
 end
 
@@ -1080,7 +1080,7 @@ get "/twitch/watch" do
     raise(App::TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
   end
-  if request.user_agent["Mozilla/"]
+  if request.user_agent&.include?("Mozilla/")
     redirect "vlc://#{streams[0]}" if params.has_key?("open")
     "Open this url in VLC and it will automatically open the top stream.\nTo open vlc:// links, see: https://github.com/stefansundin/vlc-protocol\n\n#{streams.join("\n")}"
   else
