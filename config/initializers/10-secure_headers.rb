@@ -48,6 +48,7 @@ SecureHeaders::Configuration.override(:index) do |config|
     img_src: %w('self'),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com www.svtplay.se stefansundin.com www.paypal.com),
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.sndcdn.com),
+    frame_ancestors: %w('none'),
   })
 
   # Allow unsafe-inline for better_errors in development mode
