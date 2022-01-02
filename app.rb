@@ -283,6 +283,11 @@ get "/youtube" do
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that slug != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
     user = "#{type}/#{slug}"
+  elsif /(?:youtu\.be|youtube\.com\/(?:embed|v|shorts))\/(?<video_id>[^?#]+)/ =~ params[:q]
+    # https://youtu.be/vVXbgbMp0oY?t=1s
+    # https://www.youtube.com/embed/vVXbgbMp0oY
+    # https://www.youtube.com/v/vVXbgbMp0oY
+    # https://www.youtube.com/shorts/QHEG3OB14GA
   elsif /youtube\.com\/tv#\/watch\/video\/.*[?&]v=(?<video_id>[^&]+)/ =~ params[:q]
     # https://www.youtube.com/tv#/zylon-detail-surface?c=UCK5eBtuoj_HkdXKHNmBLAXg&resume
     # https://www.youtube.com/tv#/watch/video/idle?v=uYMD4elmVIE&resume
@@ -294,10 +299,6 @@ get "/youtube" do
     # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
   elsif /youtube\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
-  elsif /(?:youtu\.be|youtube\.com\/(?:embed|v))\/(?<video_id>[^?#]+)/ =~ params[:q]
-    # https://youtu.be/vVXbgbMp0oY?t=1s
-    # https://www.youtube.com/embed/vVXbgbMp0oY
-    # https://www.youtube.com/v/vVXbgbMp0oY
   elsif /\b(?<channel_id>(?:UC[^\/?#]{22,}|S[^\/?#]{12,}))/ =~ params[:q]
     # it's a channel id
   else
