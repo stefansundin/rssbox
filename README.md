@@ -14,7 +14,7 @@ To deploy to Elastic Beanstalk, see [.ebextensions/README.md](.ebextensions/READ
 
 To deploy to Kubernetes, see [kubernetes/README.md](kubernetes/README.md).
 
-A Docker image is available on [Docker Hub](https://hub.docker.com/r/stefansundin/rssbox).
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/stefansundin/rssbox) and [Amazon ECR](https://gallery.ecr.aws/stefansundin/rssbox).
 
 #### Heroku
 
