@@ -10,7 +10,9 @@ before do
 end
 
 before %r{/(?:go|twitter|youtube|vimeo|instagram|periscope|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
-  halt [403, "This endpoint requires a web browser."] if !request.user_agent&.include?("Mozilla/")
+  if !request.user_agent&.include?("Mozilla/") || !request.referer&.start_with?("#{request.base_url}/")
+    halt [403, "This endpoint should not be used by a robot. RSS Box is open source so you should instead reimplement the thing you need in your own application."]
+  end
   halt [400, "Insufficient parameters."] if params[:q].empty?
 end
 
