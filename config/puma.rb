@@ -14,8 +14,11 @@ app_path = File.expand_path("..", __dir__)
 pidfile("#{app_path}/tmp/puma.pid")
 bind("unix://#{app_path}/tmp/puma.sock")
 
+# ENV["HOST"] = "[::]" # Use this to bind to IPv6
+ENV["HOST"] ||= "0.0.0.0"
+
 if ENV["PORT"]
-  port(ENV["PORT"])
+  port(ENV["PORT"], ENV["HOST"])
 end
 
 if ENV.has_key?("LOGFILE")
