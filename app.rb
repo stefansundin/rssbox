@@ -486,6 +486,15 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
     @title = "#{username} on YouTube"
   end
 
+  if params.has_key?(:shorts)
+    remove_shorts = (params[:shorts] == "0")
+    @data.select! { |v| v["title"].downcase.include?("#shorts") != remove_shorts }
+  end
+
+  if params.has_key?(:min_length) && min_length = params[:min_length].parse_duration
+    @data.select! { |v| v["duration"] >= min_length }
+  end
+
   @data.map do |video|
     video["description"].grep_urls
   end.flatten.tap { |urls| App::URL.resolve(urls) }

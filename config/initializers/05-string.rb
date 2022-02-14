@@ -62,7 +62,7 @@ class String
   end
 
   def parse_duration
-    if /^(?:(?<h>\d+)h)?(?:(?<m>\d+)m)?(?:(?<s>\d+)s)?$/ =~ self
+    if /^(?:(?<h>\d+)h)?(?:(?<m>\d+)m)?(?:(?<s>\d+)s?)?$/ =~ self
       result = 0
       result += 3600 * h.to_i if h
       result += 60 * m.to_i if m
