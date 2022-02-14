@@ -18,7 +18,7 @@
 # export AWS_PROFILE=stefansundin
 # docker buildx build --push --platform linux/amd64,linux/arm64,linux/arm/v7 -t public.ecr.aws/stefansundin/rssbox .
 
-FROM stefansundin/ruby:3.0
+FROM stefansundin/ruby:3.1
 LABEL org.opencontainers.image.authors="Stefan Sundin"
 LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
 
