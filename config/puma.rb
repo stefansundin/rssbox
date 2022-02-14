@@ -21,6 +21,15 @@ if ENV["PORT"]
   port(ENV["PORT"], ENV["HOST"])
 end
 
+keyfile = Dir.glob("#{app_path}/config/certs/*.key")[0]
+if keyfile
+  certfile = keyfile[..-4] + "crt"
+  ssl_bind(ENV["HOST"], ENV["PORT_TLS"] || "9292", {
+    cert: certfile,
+    key: keyfile,
+  })
+end
+
 if ENV.has_key?("LOGFILE")
   stdout_redirect("#{app_path}/log/puma-stdout.log", "#{app_path}/log/puma-stderr.log", true)
 end
