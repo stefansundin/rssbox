@@ -987,12 +987,12 @@ get "/twitch/download" do
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
-    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (legacy url, redirects to the one above)
-    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (deprecated url)
+    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false&parent=example.com
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
-    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
+    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s (legacy url)
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
     # https://player.twitch.tv/?video=v103620362 ("v" is optional)
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
@@ -1044,13 +1044,13 @@ get "/twitch/watch" do
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (deprecated url)
-    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
+    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false&parent=example.com
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
     # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s (legacy url)
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
-    # https://player.twitch.tv/?video=v103620362
+    # https://player.twitch.tv/?video=v103620362 ("v" is optional)
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
