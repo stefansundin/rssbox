@@ -548,6 +548,7 @@ get "/instagram" do
   if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
+    # https://www.instagram.com/p/CZfn8_-uYDz/ (carousel with video and photos)
   elsif params[:q].include?("instagram.com/explore/") || params[:q].start_with?("#")
     return [404, "This app does not support hashtags."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
