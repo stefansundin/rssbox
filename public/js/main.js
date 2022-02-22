@@ -360,11 +360,13 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.add("bg-dark");
       document.body.classList.add("text-light");
       $(".modal-content").addClass("bg-dark");
+      $(".follow-color-scheme").removeClass("bg-light").addClass("bg-dark");
     }
     else {
       document.body.classList.remove("bg-dark");
       document.body.classList.remove("text-light");
       $(".modal-content").removeClass("bg-dark");
+      $(".follow-color-scheme").removeClass("bg-dark").addClass("bg-light");
     }
   });
 
