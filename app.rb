@@ -1562,11 +1562,7 @@ get "/opensearch.xml" do
 end
 
 get "/health" do
-  if $redis.ping != "PONG"
-    return [500, "Redis error"]
-  end
-rescue Redis::CannotConnectError => e
-  return [500, "Redis connection error"]
+  return [200, ""]
 end
 
 if ENV["GOOGLE_VERIFICATION_TOKEN"]

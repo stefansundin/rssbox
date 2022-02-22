@@ -16,6 +16,8 @@ To deploy to Kubernetes, see [kubernetes/README.md](kubernetes/README.md).
 
 A Docker image is available on [Docker Hub](https://hub.docker.com/r/stefansundin/rssbox) and [Amazon ECR](https://gallery.ecr.aws/stefansundin/rssbox).
 
+**Note:** Redis is now an optional dependency! It is only used for the URL resolution feature (turned off on the public Heroku instance).
+
 #### Heroku
 
 If you need to re-provision redis, or you didn't use the deploy button above to provision the app initially, then you need to make sure to set the maxmemory policy:
