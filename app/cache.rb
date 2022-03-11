@@ -76,7 +76,7 @@ module App
         else
           # Write new data
           File.write(fn, data || "")
-          $metrics[:cache_size_bytes].increment(by: (data&.bytesize || 0) - cached_data.bytesize, labels: { prefix: cache_key_prefix })
+          $metrics[:cache_size_bytes].increment(by: (data&.bytesize || 0) - (cached_data&.bytesize || 0), labels: { prefix: cache_key_prefix })
           $metrics[:cache_written_bytes].increment(by: (data&.bytesize || 0), labels: { prefix: cache_key_prefix })
           $metrics[:cache_updates_changed_total].increment(labels: { prefix: cache_key_prefix })
         end

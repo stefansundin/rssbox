@@ -75,6 +75,8 @@ a.blue {
   position: fixed;
   bottom: 1em;
   right: 1em;
+  padding: 5px 10px 5px 30px;
+  border-radius: 5px;
   user-select: none;
   z-index: 1100;
 }

@@ -2,7 +2,7 @@
 
 module App
   class URL
-    URL_RESOLUTION_DISABLED = (ENV["URL_RESOLUTION_DISABLED"] == "true")
+    URL_RESOLUTION_DISABLED = ($redis.nil? || ENV["URL_RESOLUTION_DISABLED"] == "true")
 
     @@cache = {}
 
@@ -50,6 +50,8 @@ module App
         threads.push(thread)
       end
       threads.map(&:join)
+      return nil
+    rescue Redis::BaseConnectionError
       return nil
     end
 

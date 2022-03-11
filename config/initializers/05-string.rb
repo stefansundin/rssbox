@@ -62,7 +62,7 @@ class String
   end
 
   def parse_duration
-    if /^(?:(?<h>\d+)h)?(?:(?<m>\d+)m)?(?:(?<s>\d+)s)?$/ =~ self
+    if /^(?:(?<h>\d+)h)?(?:(?<m>\d+)m)?(?:(?<s>\d+)s?)?$/ =~ self
       result = 0
       result += 3600 * h.to_i if h
       result += 60 * m.to_i if m
@@ -136,12 +136,14 @@ class String
 
   def embed_html(request=nil)
     root_url = request ? request.root_url : ""
-    if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self || %r{^https?://www\.facebook\.com/video/embed\?video_id=(?<id>\d+)} =~ self
+    if %r{^https?://www\.facebook\.com/.*/videos/(?:vb\.\d+\/)?(?<id>\d+)} =~ self || %r{^https?://www\.facebook\.com/(?:watch/?v|video/embed\?video_id)=(?<id>\d+)} =~ self
+      # https://www.facebook.com/infectedmushroom/videos/454943357902682/
+      # https://www.facebook.com/watch/?v=454943357902682
       <<~EOF
         <iframe width="1280" height="720" src="https://www.facebook.com/video/embed?video_id=#{id}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
         <a href="https://www.facebook.com/video/embed?video_id=#{id}" rel="noreferrer">Open embed</a>
       EOF
-    elsif %r{^https?://(?:www\.|m\.)youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))+} =~ self || %r{^https?://(?:youtu\.be|(?:www\.)?youtube\.com/embed)/(?<id>[^?&#]+)(?:.*?[?&#](list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))*} =~ self
+    elsif %r{^https?://(?:www\.|m\.)?youtube\.com/(?:.*?[?&#](v=(?<id>[^&#]+)|list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))+} =~ self || %r{^https?://(?:youtu\.be|(?:www\.|m\.)?youtube\.com/(?:embed|v|shorts))/(?<id>[^?&#]+)(?:.*?[?&#](?:list=(?<list>[^&#]+)|(?:t|time_continue)=(?<t>[^&#]+)))*} =~ self
       # https://www.youtube.com/watch?v=z5OGD5_9cA0&list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7&index=3&t=30s
       url = "https://www.youtube.com/embed/#{id}?rel=0"
       url += "&list=#{list}" if list
@@ -177,8 +179,10 @@ class String
         height = set ? 450 : 166
         "<iframe width='853' height='#{height}' src='https://w.soundcloud.com/player/?url=#{url}&show_comments=false&hide_related=true' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
       end
-    elsif %r{^https?://(?:open|play)\.spotify\.com/(?<path>[^?#]+)} =~ self
-      "<iframe width='300' height='380' src='https://embed.spotify.com/?uri=spotify:#{path.gsub("/",":")}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
+    elsif %r{^https?://(?:open|play)\.spotify\.com/(?:embed\/)?(?<path>[^?#]+)} =~ self
+      # https://open.spotify.com/artist/6S2tas4z6DyIklBajDqJxI
+      # https://open.spotify.com/show/1VXcH8QHkjRcTCEd88U3ti
+      "<iframe width='800' height='380' src='https://open.spotify.com/embed/#{path}' frameborder='0' scrolling='no' referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://sverigesradio\.se/artikel/(?<id>\d+)} =~ self
       "<iframe width='853' height='155' src='https://sverigesradio.se/sida/embed/publication/#{id}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://gfycat\.com/(?:gifs/detail/)?(?<id>[^@\/?#]+)} =~ self
@@ -191,8 +195,8 @@ class String
       "<img src='#{self.https}' referrerpolicy='no-referrer'>"
     elsif %r{^https?://video\.twimg\.com/.+/(?<width>\d+)x(?<height>\d+)/.+\.mp4}i =~ self
       "<video width='#{width}' height='#{height}' controls='controls'><source type='video/mp4' src='#{self}'></video>"
-    elsif %r{^https?://[a-z0-9\-._~:/?#\[\]@!$&'()*+,;=]+\.mp4}i =~ self
-      uri = URI.parse(self)
+    elsif %r{^https?://[a-z0-9\-._~:/\[\]@!$&'()*+,;=]+\.mp4([\?#]|$)}i =~ self
+      uri = URI.parse(self) rescue return
       query = CGI.parse(uri.query || "").merge(CGI.parse(uri.fragment || "")) { |key,oldval,newval| oldval + newval }
       width = query["w"][0] || "640"
       height = query["h"][0] || "538"

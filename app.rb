@@ -10,7 +10,9 @@ before do
 end
 
 before %r{/(?:go|twitter|youtube|vimeo|instagram|periscope|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
-  halt [403, "This endpoint requires a web browser."] if !request.user_agent.include?("Mozilla/")
+  if !request.user_agent&.include?("Mozilla/") || !request.referer&.start_with?("#{request.base_url}/")
+    halt [403, "This endpoint should not be used by a robot. RSS Box is open source so you should instead reimplement the thing you need in your own application."]
+  end
   halt [400, "Insufficient parameters."] if params[:q].empty?
 end
 
@@ -102,7 +104,7 @@ get "/go" do
     redirect Addressable::URI.new(path: "/svtplay", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?odysee\.com\/@(?<channelClaim>[^\/?#]+)/ =~ params[:q]
     # https://odysee.com/@eevblog:7
-    redirect Addressable::URI.parse("https://lbryfeed.melroy.org/channel/odysee/#{channelClaim}/atom").normalize.to_s, 301
+    redirect Addressable::URI.parse("https://odysee.com/$/rss/#{channelClaim}").normalize.to_s, 301
   else
     return [404, "Unknown service"]
   end
@@ -283,6 +285,11 @@ get "/youtube" do
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that slug != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
     user = "#{type}/#{slug}"
+  elsif /(?:youtu\.be|youtube\.com\/(?:embed|v|shorts))\/(?<video_id>[^?#]+)/ =~ params[:q]
+    # https://youtu.be/vVXbgbMp0oY?t=1s
+    # https://www.youtube.com/embed/vVXbgbMp0oY
+    # https://www.youtube.com/v/vVXbgbMp0oY
+    # https://www.youtube.com/shorts/QHEG3OB14GA
   elsif /youtube\.com\/tv#\/watch\/video\/.*[?&]v=(?<video_id>[^&]+)/ =~ params[:q]
     # https://www.youtube.com/tv#/zylon-detail-surface?c=UCK5eBtuoj_HkdXKHNmBLAXg&resume
     # https://www.youtube.com/tv#/watch/video/idle?v=uYMD4elmVIE&resume
@@ -294,13 +301,16 @@ get "/youtube" do
     # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
   elsif /youtube\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
-  elsif /youtu\.be\/(?<video_id>[^?#]+)/ =~ params[:q]
-    # https://youtu.be/vVXbgbMp0oY?t=1s
   elsif /\b(?<channel_id>(?:UC[^\/?#]{22,}|S[^\/?#]{12,}))/ =~ params[:q]
     # it's a channel id
   else
     # it's probably a channel name
     user = params[:q]
+  end
+
+  if playlist_id
+    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s, 301
+    return
   end
 
   if user
@@ -344,8 +354,6 @@ get "/youtube" do
     redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }.merge(params.slice(:tz))).normalize.to_s, 301
   elsif channel_id
     redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s, 301
-  elsif playlist_id
-    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "playlist_id=#{playlist_id}").normalize.to_s, 301
   else
     return [404, "Could not find the channel."]
   end
@@ -480,6 +488,15 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
     @title = "#{username} on YouTube"
   end
 
+  if params.has_key?(:shorts)
+    remove_shorts = (params[:shorts] == "0")
+    @data.select! { |v| v["title"].downcase.include?("#shorts") != remove_shorts }
+  end
+
+  if params.has_key?(:min_length) && min_length = params[:min_length].parse_duration
+    @data.select! { |v| v["duration"] >= min_length }
+  end
+
   @data.map do |video|
     video["description"].grep_urls
   end.flatten.tap { |urls| App::URL.resolve(urls) }
@@ -531,6 +548,7 @@ get "/instagram" do
   if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
+    # https://www.instagram.com/p/CZfn8_-uYDz/ (carousel with video and photos)
   elsif params[:q].include?("instagram.com/explore/") || params[:q].start_with?("#")
     return [404, "This app does not support hashtags."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
@@ -557,10 +575,11 @@ get "/instagram" do
       end
       "#{user["id"] || user["pk"]}/#{user["username"]}"
     rescue App::InstagramRatelimitError
-      "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
+      "ratelimited"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
+    return [429, "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"] if path == "ratelimited"
   end
   redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s, 301
 end
@@ -633,10 +652,20 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
       }
     end.to_json
   rescue App::InstagramRatelimitError
-    "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
+    "ratelimited"
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
+
+  if data == "ratelimited"
+    if Time.now < @updated_at+300
+      # To make it easier to subscribe to Instagram feeds, there is a grace period for 5 minutes where an empty feed is returned.
+      # Note that you have to manually construct the feed URL yourself.
+      data = "[]"
+    else
+      return [429, "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"]
+    end
+  end
 
   @data = JSON.parse(data)
 
@@ -752,7 +781,8 @@ get "/soundcloud" do
   if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
   else
-    username = params[:q]
+    username = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if username.empty?
   end
 
   path, _ = App::Cache.cache("soundcloud.user", username.downcase, 60*60, 60) do
@@ -852,7 +882,8 @@ get "/mixcloud" do
   if /mixcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.mixcloud.com/infected-live/infected-mushroom-liveedc-las-vegas-21-5-2014/
   else
-    username = params[:q]
+    username = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if username.empty?
   end
 
   path, _ = App::Cache.cache("mixcloud.user", username.downcase, 24*60*60, 60) do
@@ -911,7 +942,8 @@ get "/twitch" do
     # https://www.twitch.tv/majinphil
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
   else
-    username = params[:q]
+    username = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if username.empty?
   end
 
   if game_name
@@ -958,18 +990,19 @@ get "/twitch/download" do
   if /twitch\.tv\/[^\/]+\/clip\/(?<clip_slug>[^?&#]+)/ =~ params[:url] || /clips\.twitch\.tv\/(?:embed\?clip=)?(?<clip_slug>[^?&#]+)/ =~ params[:url]
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
-    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (legacy url, redirects to the one above)
-    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
+    # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (deprecated url)
+    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false&parent=example.com
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
-    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s
+    # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s (legacy url)
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
     # https://player.twitch.tv/?video=v103620362 ("v" is optional)
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
-    channel_name = params[:url]
+    channel_name = params[:url][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if channel_name.empty?
   end
 
   if clip_slug
@@ -1014,17 +1047,18 @@ get "/twitch/watch" do
     # https://www.twitch.tv/majinphil/clip/TenaciousCreativePieNotATK
     # https://clips.twitch.tv/DignifiedThirstyDogYee
     # https://clips.twitch.tv/majinphil/UnusualClamRaccAttack (deprecated url)
-    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false
+    # https://clips.twitch.tv/embed?clip=DignifiedThirstyDogYee&autoplay=false&parent=example.com
   elsif /twitch\.tv\/(?:[^\/]+\/)?(?:v|videos?)\/(?<vod_id>\d+)/ =~ params[:url] || /(?:^|v)(?<vod_id>\d+)/ =~ params[:url]
     # https://www.twitch.tv/videos/25133028
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
     # https://www.twitch.tv/gamesdonequick/video/34377308?t=53m40s (legacy url)
     # https://www.twitch.tv/gamesdonequick/v/34377308?t=53m40s (legacy url)
-    # https://player.twitch.tv/?video=v103620362
+    # https://player.twitch.tv/?video=v103620362 ("v" is optional)
   elsif /twitch\.tv\/(?<channel_name>[^\/?#]+)/ =~ params[:url]
     # https://www.twitch.tv/trevperson
   else
-    channel_name = params[:url]
+    channel_name = params[:url][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if channel_name.empty?
   end
 
   if clip_slug
@@ -1042,6 +1076,7 @@ get "/twitch/watch" do
 
     response = App::HTTP.get(playlist_url)
     return [response.code, "Video does not exist."] if response.code == 404
+    return [response.code, "This video is restricted to subscribers."] if response.code == 403 && response.json[0]["error_code"] == "vod_manifest_restricted"
     raise(App::TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line[0] == "#" } + [playlist_url]
   elsif channel_name
@@ -1058,7 +1093,7 @@ get "/twitch/watch" do
     raise(App::TwitchError, response) if !response.success?
     streams = response.body.split("\n").reject { |line| line.start_with?("#") } + [playlist_url]
   end
-  if request.user_agent["Mozilla/"]
+  if request.user_agent&.include?("Mozilla/")
     redirect "vlc://#{streams[0]}" if params.has_key?("open")
     "Open this url in VLC and it will automatically open the top stream.\nTo open vlc:// links, see: https://github.com/stefansundin/vlc-protocol\n\n#{streams.join("\n")}"
   else
@@ -1128,7 +1163,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
         "id" => video["id"],
         "created_at" => video["created_at"],
         "published_at" => video["published_at"],
-        "is_live" => !video.has_key?("thumbnail_url"),
+        "is_live" => video["thumbnail_url"].empty?,
         "type" => video["type"],
         "title" => video["title"].strip,
         "description" => video["description"].strip,
@@ -1169,7 +1204,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
         "id" => video["id"],
         "created_at" => video["created_at"],
         "published_at" => video["published_at"],
-        "is_live" => !video.has_key?("thumbnail_url"),
+        "is_live" => video["thumbnail_url"].empty?,
         "type" => video["type"],
         "title" => video["title"].strip,
         "description" => video["description"].strip,
@@ -1309,7 +1344,8 @@ get "/dailymotion" do
     # https://www.dailymotion.com/ParodyEdits
   else
     # it's probably a username
-    user = params[:q]
+    user = params[:q][/[^\/?&#]+/]
+    return [400, "Invalid parameter."] if user.empty?
   end
 
   if video_id
@@ -1526,11 +1562,7 @@ get "/opensearch.xml" do
 end
 
 get "/health" do
-  if $redis.ping != "PONG"
-    return [500, "Redis error"]
-  end
-rescue Redis::CannotConnectError => e
-  return [500, "Redis connection error"]
+  return [200, ""]
 end
 
 if ENV["GOOGLE_VERIFICATION_TOKEN"]

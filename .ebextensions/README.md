@@ -2,7 +2,7 @@
 
 First of all, make sure you are running the latest version of the eb cli:
 ```
-pip3 install -U --user awscli awsebcli
+pip3 install -U --user awsebcli
 ```
 
 Use a t2.micro instance if you are using the AWS free tier. Otherwise, use t3.nano or t3a.nano with spot to get the lowest price.
@@ -10,7 +10,7 @@ Use a t2.micro instance if you are using the AWS free tier. Otherwise, use t3.na
 Create environment:
 ```
 git tag -f -a -m "First deploy" eb
-eb init rssbox --platform "Ruby 2.7 running on 64bit Amazon Linux 2" --keyname id_rsa
+eb init rssbox --platform ruby-3.0 --keyname id_rsa
 eb create --single --instance_type t2.micro
 ```
 
@@ -63,7 +63,7 @@ While testing, it is a lot faster to deploy if there is only one instance runnin
 To upgrade an existing app to a new major version of Ruby:
 ```
 aws elasticbeanstalk list-available-solution-stacks --region us-west-2 --query 'SolutionStacks[?contains(@,`Ruby`)==`true`]'
-aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2 v3.2.1 running Ruby 2.7"
+aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2 v3.4.0 running Ruby 3.0"
 ```
 
 Supported Ruby versions: https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.ruby

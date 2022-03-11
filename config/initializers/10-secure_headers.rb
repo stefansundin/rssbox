@@ -36,7 +36,7 @@ end
 
 # Index page
 SecureHeaders::Configuration.override(:index) do |config|
-  config.referrer_policy = "origin-when-cross-origin"
+  config.referrer_policy = "strict-origin-when-cross-origin"
   config.csp.merge!({
     # "meta" values. these will shape the header, but the values are not included in the header.
     report_only: false,
@@ -48,6 +48,7 @@ SecureHeaders::Configuration.override(:index) do |config|
     img_src: %w('self'),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com www.svtplay.se stefansundin.com www.paypal.com),
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.sndcdn.com),
+    frame_ancestors: %w('none'),
   })
 
   # Allow unsafe-inline for better_errors in development mode

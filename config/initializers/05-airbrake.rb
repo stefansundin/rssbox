@@ -2,6 +2,7 @@
 
 if ENV["AIRBRAKE_API_KEY"]
   require "airbrake"
+
   Airbrake.configure do |config|
     config.host = ENV["AIRBRAKE_HOST"] if ENV["AIRBRAKE_HOST"]
     config.project_id = ENV["AIRBRAKE_PROJECT_ID"]
@@ -12,11 +13,24 @@ if ENV["AIRBRAKE_API_KEY"]
   use Airbrake::Rack::Middleware
   enable :raise_errors
 
+  airbrake_throttle = {}
+
   Airbrake.add_filter do |notice|
     # Bots gonna bot
-    if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" } && (/\/wp-(?:admin|includes|content|login)/ =~ notice[:context][:url] || /\/facebook\/\d+\/?$/ =~ notice[:context][:url] || /\/twitter\/\d+\/?$/ =~ notice[:context][:url])
-      notice.ignore!
-      next
+    if notice[:errors].any? { |e| e[:type] == "Sinatra::NotFound" }
+      if notice[:context][:httpMethod] == "OPTIONS" || !ENV.has_key?("AIRBRAKE_REPORT_404")
+        notice.ignore!
+        next
+      elsif ENV["AIRBRAKE_REPORT_404"] == "true"
+        next
+      end
+
+      # Set the variable to a regexp to ignore certain spammy paths
+      re = Regexp.new(ENV["AIRBRAKE_REPORT_404"], Regexp::IGNORECASE)
+      if re =~ notice[:context][:url]
+        notice.ignore!
+        next
+      end
     end
 
     # Ignore SIGTERM which is sent on deploy and restart
@@ -30,13 +44,12 @@ if ENV["AIRBRAKE_API_KEY"]
     # The value in the redis key counts the number of throttled errors, although that information is not persisted anywhere.
     notice[:errors].each do |e|
       if Object.const_get(e[:type]) <= App::HTTPError
-        throttle_key = "airbrake_throttle:#{e[:type]}"
-        if $redis.exists?(throttle_key)
+        throttle_key = e[:type].to_s
+        if airbrake_throttle[throttle_key] && Time.now.to_i < airbrake_throttle[throttle_key] + 3600
           notice.ignore!
-          $redis.incr(throttle_key)
-          puts "Throttling reporting #{e[:type]} to Airbrake. Throttle counter: #{$redis.get(throttle_key)}."
+          puts "Throttling reporting #{e[:type]} to Airbrake."
         else
-          $redis.setex(throttle_key, ENV["AIRBRAKE_THROTTLE_DURATION"]&.to_i || 3600, 0)
+          airbrake_throttle[throttle_key] = Time.now.to_i
         end
       end
     end

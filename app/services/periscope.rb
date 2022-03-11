@@ -20,6 +20,7 @@ module App
         if response.success?
           return response
         end
+        @@session_id = nil
       end
       response = get("https://www.periscope.tv/cnn")
       raise(ERROR_CLASS, response) if !response.success?

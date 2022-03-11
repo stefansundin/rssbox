@@ -169,7 +169,7 @@ $(document).ready(async function() {
 
     const feed_modal = $("#feed-modal");
     const feed_url = $("#feed-url");
-    feed_url.val(url);
+    feed_url.val(url).trigger("input");
     feed_modal.modal("show", this);
     feed_url.select();
 
@@ -187,8 +187,14 @@ $(document).ready(async function() {
   });
 
   $("#copy-button").click(function() {
-    $("#feed-url").select();
-    document.execCommand("copy");
+    const feed_url = $("#feed-url");
+    feed_url.select();
+    navigator.clipboard.writeText(feed_url.val());
+    this.textContent = "Copied";
+  });
+
+  $("#feed-url").on("input", function() {
+    $("#copy-button").text("Copy");
   });
 
   $("#feed-modal form").submit(function(event) {
@@ -203,7 +209,7 @@ $(document).ready(async function() {
     if (qs != "") {
       url += `?${qs}`;
     }
-    $("#feed-url").val(url).select();
+    $("#feed-url").val(url).trigger("input").select();
   });
 
   $("[data-download-filename]").click(async function() {
@@ -354,11 +360,13 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.add("bg-dark");
       document.body.classList.add("text-light");
       $(".modal-content").addClass("bg-dark");
+      $(".follow-color-scheme").removeClass("bg-light").addClass("bg-dark");
     }
     else {
       document.body.classList.remove("bg-dark");
       document.body.classList.remove("text-light");
       $(".modal-content").removeClass("bg-dark");
+      $(".follow-color-scheme").removeClass("bg-dark").addClass("bg-light");
     }
   });
 
