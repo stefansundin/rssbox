@@ -336,6 +336,9 @@ $(document).ready(async function() {
       }
     }
   }
+
+  // Only show dark mode switch if JavaScript is enabled
+  $(".js-show").removeClass("d-none");
 });
 
 
