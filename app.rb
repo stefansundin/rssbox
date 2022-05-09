@@ -83,6 +83,8 @@ get "/go" do
     redirect Addressable::URI.new(path: "/imgur", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/medium\.com\/(?<user>@?[^\/?&#]+)/ =~ params[:q]
     redirect Addressable::URI.parse("https://medium.com/feed/#{user}").normalize.to_s, 301
+  elsif /^https?:\/\/dev\.to\/(?<user>[^\/?&#]+)/ =~ params[:q]
+    redirect Addressable::URI.parse("https://dev.to/feed/#{user}").normalize.to_s, 301
   elsif /^https?:\/\/(?<name>[a-z0-9\-]+)\.blogspot\./ =~ params[:q]
     redirect Addressable::URI.parse("https://#{name}.blogspot.com/feeds/posts/default").normalize.to_s, 301
   elsif /^https?:\/\/groups\.google\.com\/(?:forum\/[^#]*#!(?:[a-z]+)|g)\/(?<name>[^\/?&#]+)/ =~ params[:q]
