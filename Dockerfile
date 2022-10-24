@@ -32,7 +32,6 @@ RUN \
 
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
-RUN bundle config set --local path .bundle/gems
 RUN bundle config set --local without development:test
 RUN bundle install --retry=3 --jobs=4
 COPY . .
