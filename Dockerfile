@@ -16,7 +16,7 @@
 # docker buildx build --pull --push --platform linux/amd64,linux/arm64,linux/arm/v7 -t stefansundin/rssbox .
 # Push to public ECR:
 # export AWS_PROFILE=stefansundin
-# docker buildx build --push --platform linux/amd64,linux/arm64,linux/arm/v7 -t public.ecr.aws/stefansundin/rssbox .
+# docker buildx imagetools create -t public.ecr.aws/stefansundin/rssbox stefansundin/rssbox
 
 FROM stefansundin/ruby:3.1
 LABEL org.opencontainers.image.authors="Stefan Sundin"
