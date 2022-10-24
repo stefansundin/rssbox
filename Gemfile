@@ -15,7 +15,7 @@ gem "secure_headers"
 gem "clogger"
 gem "tzinfo"
 gem "nokogiri"
-gem "prometheus-client", require: "prometheus/middleware/exporter", git: "https://github.com/stefansundin/prometheus-client.git", branch: "master"
+gem "prometheus-client", require: "prometheus/middleware/exporter"
 
 # dilbert feed
 gem "feedjira"
