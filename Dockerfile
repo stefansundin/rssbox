@@ -8,12 +8,12 @@
 # docker run --rm --network=rssbox --name=rssbox --env-file=.dockerenv -i -t -p 3000:3000 stefansundin/rssbox
 # docker run --rm --network=rssbox -t redis redis-cli -h redis monitor
 
-# docker build --pull --squash -t stefansundin/rssbox .
-# docker push stefansundin/rssbox
+# Simple build:
+# docker build --pull --progress plain -t stefansundin/rssbox .
 
 # Multi-arch:
 # docker buildx create --use --name multiarch --node multiarch0
-# docker buildx build --pull --push --platform linux/amd64,linux/arm64,linux/arm/v7 -t stefansundin/rssbox .
+# docker buildx build --pull --push --progress plain --platform linux/amd64,linux/arm64,linux/arm/v7 -t stefansundin/rssbox .
 # Push to public ECR:
 # export AWS_PROFILE=stefansundin
 # docker buildx imagetools create -t public.ecr.aws/stefansundin/rssbox stefansundin/rssbox
