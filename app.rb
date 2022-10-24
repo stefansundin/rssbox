@@ -292,6 +292,8 @@ get "/youtube" do
     # https://www.youtube.com/embed/vVXbgbMp0oY
     # https://www.youtube.com/v/vVXbgbMp0oY
     # https://www.youtube.com/shorts/QHEG3OB14GA
+  elsif /youtube\.com\/clip\/(?<clip_id>[^?#]+)/ =~ params[:q]
+    # https://www.youtube.com/clip/UgkxHm3PY3DSQt8ecB67IrP-stLw7LAmjZSe
   elsif /youtube\.com\/tv#\/watch\/video\/.*[?&]v=(?<video_id>[^&]+)/ =~ params[:q]
     # https://www.youtube.com/tv#/zylon-detail-surface?c=UCK5eBtuoj_HkdXKHNmBLAXg&resume
     # https://www.youtube.com/tv#/watch/video/idle?v=uYMD4elmVIE&resume
@@ -335,6 +337,14 @@ get "/youtube" do
       if response.json["items"].length > 0
         response.json["items"][0]["snippet"]["channelId"]
       end
+    end
+  elsif clip_id
+    channel_id, _ = App::Cache.cache("youtube.clip", clip_id, 60*60, 60) do
+      response = App::HTTP.get("https://www.youtube.com/clip/#{clip_id}")
+      next "Error: Could not find the clip. Please try with a video url instead." if response.code == 404
+      raise(App::GoogleError, response) if !response.success?
+      doc = Nokogiri::HTML(response.body)
+      doc.at("meta[itemprop='channelId']")&.[]("content") || "Error: Could not find the user. Please try with a video url instead."
     end
   end
   return [422, "Something went wrong. Try again later."] if channel_id.nil?
