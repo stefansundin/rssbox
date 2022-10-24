@@ -20,7 +20,7 @@ GEM
     github-release-party (0.3.6)
       rake (>= 12)
     io-console (0.5.11)
-    irb (1.4.0)
+    irb (1.4.2)
       reline (>= 0.3.0)
     loofah (2.19.0)
       crass (~> 1.0.2)
@@ -93,7 +93,7 @@ DEPENDENCIES
   dotenv
   feedjira
   github-release-party
-  irb (= 1.4.0)
+  irb
   newrelic_rpm
   nokogiri
   opengraph_parser

@@ -37,6 +37,9 @@ RUN bundle install --retry=3 --jobs=4
 COPY . .
 RUN find
 
+# Disable irb history to prevent .irb_history permission error from showing
+RUN echo "IRB.conf[:SAVE_HISTORY] = nil" >> .irbrc
+
 # Run the container as an unprivileged user
 RUN mkdir -p tmp
 RUN chown nobody:nogroup tmp

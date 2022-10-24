@@ -3,7 +3,7 @@ source "https://rubygems.org"
 ruby ">= 2.7.0"
 
 gem "rake", require: false
-gem "irb", "=1.4.0" # https://github.com/ruby/irb/commit/99d3aa979dffece1fab06a7d5ebff4ae5da50aae
+gem "irb"
 gem "rack"
 gem "sinatra"
 gem "puma"
