@@ -35,6 +35,7 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle config set --local without development:test
 RUN bundle install --retry=3 --jobs=4
 COPY . .
+RUN find
 
 # Run the container as an unprivileged user
 RUN mkdir -p tmp
