@@ -26,7 +26,6 @@ GEM
       sax-machine (>= 1.0)
     github-release-party (0.3.6)
       rake (>= 12)
-    heroku-env (0.1.4)
     io-console (0.5.11)
     irb (1.4.0)
       reline (>= 0.3.0)
@@ -100,7 +99,6 @@ DEPENDENCIES
   dotenv
   feedjira
   github-release-party
-  heroku-env
   irb (= 1.4.0)
   newrelic_rpm
   nokogiri
