@@ -4,15 +4,15 @@
 /.dockerenv
 /.vagrant
 /.bundle
-Thumbs.db
-.DS_Store
-*.swp
-*~
+**/Thumbs.db
+**/.DS_Store
+**/*.swp
+**/*~
 ubuntu-*-cloudimg-console.log
 .powder
 .irb_history
-*.crt
-*.key
+**/*.crt
+**/*.key
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
@@ -38,3 +38,4 @@ ubuntu-*-cloudimg-console.log
 /docker-compose.yml
 /kubernetes
 /prometheus.yml
+/fly.toml
