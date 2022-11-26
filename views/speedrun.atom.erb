@@ -6,37 +6,18 @@
   <icon>https://www.speedrun.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.speedrun.com/<%= @abbr %>" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%-
-@data.each do |run|
-  videos = if run["videos"]
-    "Videos: " + run["videos"].join(" | ")
-  else
-    "No video"
-  end
--%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>speedrun:run:<%= run["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= run["times"].to_duration %>] <%= run["players"].join(", ").esc %> - <%= run["category"] %></title>
-    <link href="<%= "https://www.speedrun.com/run/#{run["id"]}" %>" />
-    <updated><%= run["submitted"] || Time.parse(run["date"]) %></updated>
-    <author><name><%= run["players"].join(", ").esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%= <<~EOF.esc
-  #{videos.linkify_and_embed(request).to_paragraphs}
-
-  #{run["comment"].linkify.to_paragraphs}
-
-  <p>Category: <a href="#{run["category_link"]}" rel="noreferrer">#{run["category"]}</a></p>
-  <p>Runners: #{run["players"].map { |name| "<a href='https://www.speedrun.com/user/#{name}' rel='noreferrer'>#{name}</a>" }.join(", ")}</p>
-EOF
--%>
-<%= <<~EOF.esc if run["platform"]
-  <p>Platform: #{run["platform"]}</p>
-EOF
--%>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

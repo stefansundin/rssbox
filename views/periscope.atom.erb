@@ -6,22 +6,18 @@
   <icon>https://assets.periscope.tv/images/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.periscope.tv/<%= @username %>" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%- @data.each do |broadcast| -%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>periscope:broadcast:<%= broadcast["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= broadcast["duration"].to_duration %>] <%= broadcast["status"].or("No title").to_line.esc %></title>
-    <link href="https://www.periscope.tv/<%= "#{broadcast["username"]}/#{broadcast["id"]}" %>" />
-    <updated><%= Time.parse(broadcast["created_at"]) %></updated>
-    <author><name><%= broadcast["user_display_name"].esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%= "<p><em>Live in #{broadcast["city"]}.</em></p>".esc if !broadcast["city"].empty? %>
-<%= <<~EOF.esc
-  <a href="https://www.periscope.tv/#{broadcast["username"]}/#{broadcast["id"]}" rel="noreferrer"><img src="#{request.root_url}/periscope_img/#{broadcast["id"]}" referrerpolicy="no-referrer"></a>
-EOF
--%>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

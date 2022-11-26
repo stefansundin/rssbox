@@ -6,20 +6,18 @@
   <icon>https://dilbert.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://dilbert.com/" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%- @entries.each do |entry| -%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>dilbert:<%= entry["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= entry["id"] %>: <%= entry["title"].to_line.esc %></title>
-    <link href="https://dilbert.com/strip/<%= entry["id"] %>" />
-    <updated><%= Time.parse(entry["id"]) %></updated>
-    <author><name>Scott Adams</name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-&lt;img src="<%= entry["image"] %>" referrerpolicy="no-referrer">
-
-&lt;p><%= entry["description"] %>&lt;/p>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

@@ -7,51 +7,18 @@
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.youtube.com/channel/<%= @channel_id %><%= Addressable::URI.new(path: "/search", query: "query=#{@query}").normalize.to_s if @query %>" rel="alternate" type="text/html" />
   <link href="https://www.youtube.com/feeds/videos.xml?channel_id=<%= @channel_id %>" rel="alternate" type="text/xml" />
-  <updated><%= @updated_at %></updated>
-<%-
-@data.each do |video|
-  id_extra = content_extra = nil
-  title = ""
-  title += "[#{video["duration"].to_duration}] " if video["duration"] > 0
-  title += video["title"].to_line
-  updated = video["publishedAt"]
-  if video.has_key?("liveStreamingDetails")
-    if video["liveStreamingDetails"].has_key?("actualEndTime")
-      updated = Time.parse(video["liveStreamingDetails"]["actualEndTime"])
-      id_extra = ":completed:#{updated}"
-      title += " (completed)"
-      content_extra = "<p>Live broadcast completed at: #{updated.readable(@tz)}.</p>"
-    elsif video["liveStreamingDetails"].has_key?("actualStartTime")
-      updated = Time.parse(video["liveStreamingDetails"]["actualStartTime"])
-      id_extra = ":started:#{updated}"
-      title += " (started)"
-      content_extra = "<p>Live broadcast started at: #{updated.readable(@tz)}.</p>"
-    elsif video["liveStreamingDetails"].has_key?("scheduledStartTime")
-      updated = Time.parse(video["liveStreamingDetails"]["scheduledStartTime"])
-      id_extra = ":scheduled:#{updated}"
-      title += " (scheduled for #{updated.readable(@tz)})"
-      content_extra = <<~EOF
-        <p>Live broadcast scheduled to start at: #{updated.readable(@tz)}.</p>
-        <iframe width="640" height="50" src="#{request.root_url}/countdown.html?date=#{updated}" frameborder="0" scrolling="yes" referrerpolicy="no-referrer"></iframe>
-      EOF
-    end
-  end
--%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>youtube:video:<%= video["id"] %><%= id_extra %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= title.esc %></title>
-    <link href="https://www.youtube.com/watch?v=<%= video["id"] %>" />
-    <updated><%= updated %></updated>
-    <author><name><%= @username.esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%= <<~EOF.esc
-  <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-  #{content_extra}
-  #{video["description"].linkify.to_paragraphs}
-EOF
--%>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

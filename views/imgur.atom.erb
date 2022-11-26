@@ -6,59 +6,18 @@
   <icon>https://s.imgur.com/images/favicon-96x96.png</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://imgur.com/<%= @username ? "user/#{@username}/submitted" : "r/#{@subreddit}" %>" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%-
-@data.each do |image|
-  if image["is_album"]
-    id = "imgur:album:#{image["id"]}"
-    title = "Album: #{image["title"]} (#{image["images_count"]} images)"
-    link = "https://imgur.com/a/#{image["id"]}"
-    body = <<~EOF.esc
-      <a href="#{link}" rel="noreferrer"><img src="https://i.imgur.com/#{image["cover"]}h.jpg" referrerpolicy="no-referrer"></a>
-
-      #{image["description"].linkify.to_paragraphs}
-      <p><a href="https://imgur.com/a/#{image["id"]}/zip" rel="noreferrer">Download album</a></p>
-      <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]} OR url:#{image["cover"]}").normalize.to_s}">Search for this on Reddit</a></p>
-    EOF
-  else
-    id = "imgur:image:#{image["id"]}"
-    title = "#{image["title"]} [#{image["width"]}x#{image["height"]}]"
-    link = "https://imgur.com/#{image["id"]}"
-    if image["gifv"]
-      title = "Gif: #{title}"
-      gifv_url = "https://i.imgur.com/#{image["id"]}.gifv"
-      body = <<~EOF.esc
-        <iframe width="#{image["width"]}" height="#{image["height"]+30}" src="#{gifv_url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-        <p><a href="#{gifv_url}" rel="noreferrer">Open embed</a></p>
-
-        #{image["description"].linkify.to_paragraphs}
-        <p><a href="https://imgur.com#{Addressable::URI.new(path: "/download/#{image["id"]}/#{image["title"]}").normalize.to_s}" rel="noreferrer">Download</a></p>
-        <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]}").normalize.to_s}">Search for this on Reddit</a></p>
-        <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
-      EOF
-    else
-      ext = image["type"].split("/")[1]
-      body = <<~EOF.esc
-        <a href="#{link}.#{ext}" rel="noreferrer"><img src="https://i.imgur.com/#{image["id"]}h.#{ext}" referrerpolicy="no-referrer"></a>
-
-        #{image["description"].linkify.to_paragraphs}
-        <p><a href="https://imgur.com#{Addressable::URI.new(path: "/download/#{image["id"]}/#{image["title"]}").normalize.to_s}" rel="noreferrer">Download</a></p>
-        <p><a href="https://www.reddit.com/search#{Addressable::URI.new(query: "include_over_18=on&q=url:#{image["id"]}").normalize.to_s}">Search for this on Reddit</a></p>
-        <p>Size: #{image["size"].to_filesize} (#{image["width"]}x#{image["height"]})</p>
-      EOF
-    end
-  end
--%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id><%= id %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= title.to_line.esc %></title>
-    <link href="<%= link.esc %>" />
-    <updated><%= Time.at(image["datetime"].to_i) %></updated>
-    <author><name><%= @username.esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%= body -%>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

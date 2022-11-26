@@ -6,41 +6,18 @@
   <icon>https://www.instagram.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.instagram.com/<%= @user %>" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%-
-@data.each do |post|
-  has_video = post["nodes"].any? { |n| n["is_video"] }
--%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>instagram:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= "[#{post["nodes"].length}] " if post["nodes"].length > 1 %><%= "Video: " if has_video %><%= post["text"]&.to_line&.esc || "No title" %></title>
-    <link href="https://www.instagram.com/p/<%= post["shortcode"] %>/" />
-    <updated><%= Time.at(post["taken_at_timestamp"]) %></updated>
-    <author><name><%= post["username"].esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%=
-if has_video
-  <<~EOF.esc
-    <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos.</p>
-    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-  EOF
-end
-%>
-<%=
-post["nodes"].select { |n| !n["is_video"] }.map do |n|
-  <<~EOF.esc
-    <img src="#{n["display_url"]}" referrerpolicy="no-referrer">
-  EOF
-end.join("\n")
-%>
-<%= post["text"]&.linkify&.to_paragraphs&.esc %>
-<%=
-<<~EOF.esc
-  <p><a href="#{request.root_url}/#{Addressable::URI.new(query: "download=https://www.instagram.com/p/#{post["shortcode"]}/").normalize.to_s}">Download with nice filename</a></p>
-EOF
--%>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

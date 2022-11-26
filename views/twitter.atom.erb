@@ -6,18 +6,18 @@
   <icon>https://abs.twimg.com/favicons/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://twitter.com/<%= @username %>" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%- @data["tweets"].each do |tweet| -%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>twitter:tweet:<%= tweet["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= tweet["text"].titelize.esc %></title>
-    <link href="https://twitter.com/<%= @username %>/status/<%= tweet["id"] %>" />
-    <updated><%= Time.parse(tweet["created_at"]) %></updated>
-    <author><name><%= @username.esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%= tweet["text"].linkify_and_embed(request).to_paragraphs.esc %>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>

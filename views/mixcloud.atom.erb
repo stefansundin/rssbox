@@ -6,25 +6,18 @@
   <icon>https://www.mixcloud.com/favicon.ico</icon>
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.mixcloud.com/<%= @username %>/" rel="alternate" />
-  <updated><%= @updated_at %></updated>
-<%- @data.each do |track| -%>
+  <updated>2022-11-25T20:00:00Z</updated>
 
   <entry>
-    <id>mixcloud:track:<%= track["slug"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title>[<%= track["audio_length"]&.to_duration || "?" %>] <%= track["name"].to_line.esc %></title>
-    <link href="<%= track["url"].esc %>" />
-    <updated><%= Time.parse(track["created_time"]) %></updated>
-    <author><name><%= track["user"]["username"].esc %></name></author>
+    <id>https://github.com/stefansundin/rssbox/issues/61</id>
+    <title>Notice: you need to migrate away from rssbox.herokuapp.com</title>
+    <link href="https://github.com/stefansundin/rssbox/discussions/64" />
+    <updated>2022-11-25T20:00:00Z</updated>
     <content type="html">
-<%= <<~EOF.esc
-  <iframe width="100%" height="120" src="https://www.mixcloud.com/widget/iframe/?feed=#{track["url"]}&hide_cover=1&light=1" frameborder="0" allowfullscreen referrerpolicy="no-referrer"></iframe>
-
-  <a href="#{track["pictures"]["extra_large"]}" rel="noreferrer"><img src="#{track["pictures"]["medium"]}" referrerpolicy="no-referrer"></a>
-
-  #{track["name"].to_paragraphs}
-EOF
--%>
-    </content>
+&lt;p>Heroku has shut down their free tier so this domain is no longer operational.&lt;/p>
+&lt;p>There is a list of other public instances here: &lt;a href="https://github.com/stefansundin/rssbox/discussions/64">https://github.com/stefansundin/rssbox/discussions/64&lt;/a>&lt;/p>
+&lt;p>If you want to learn more about why this domain has stopped working, read this: &lt;a href="https://github.com/stefansundin/rssbox/issues/61">https://github.com/stefansundin/rssbox/issues/61&lt;/a>&lt;/p>
+&lt;p>&lt;strong>Please unsubscribe from this feed as I can't guarantee that no one can take this domain afterwards!!!&lt;/strong>&lt;/p>
+</content>
   </entry>
-<%- end -%>
 </feed>
