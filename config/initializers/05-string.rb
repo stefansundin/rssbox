@@ -75,10 +75,10 @@ class String
     # https://en.wikipedia.org/wiki/ISO_8601#Durations
     # Converting year, month and day to seconds is not done properly here because it depends on the start time (see wikipedia), but it is ok because I've only see "P0D" being used by YouTube for offline live streams
     # P[n]Y[n]M[n]DT[n]H[n]M[n]S
-    if /^P(?:(?<y>\d+)Y)?(?:(?<m>\d+)M)?(?:(?<d>\d+)D)?(?:T(?:(?<h>\d+)H)?(?:(?<m>\d+)M)?(?:(?<s>\d+)S)?)?$/ =~ self
+    if /^P(?:(?<y>\d+)Y)?(?:(?<mo>\d+)M)?(?:(?<d>\d+)D)?(?:T(?:(?<h>\d+)H)?(?:(?<m>\d+)M)?(?:(?<s>\d+)S)?)?$/ =~ self
       result = 0
       result += 31536000 * y.to_i if y # 365 days
-      result += 2592000 * m.to_i if m # 30 days
+      result += 2592000 * mo.to_i if mo # 30 days
       result += 86400 * d.to_i if d # 24 hours
       result += 3600 * h.to_i if h
       result += 60 * m.to_i if m
