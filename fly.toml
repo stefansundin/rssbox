@@ -1,0 +1,47 @@
+# To deploy to your own fly app, change the app name below and run "fly launch".
+# Please do not add sensitive environment variables here, use "fly secrets" instead!
+
+app = "rssbox"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[env]
+  MAX_THREADS = "25"
+  MIN_THREADS = "25"
+  URL_MAX_CONCURRENCY = "5"
+  WEB_CONCURRENCY = "2"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[[services]]
+  http_checks = []
+  internal_port = 3000
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  [services.concurrency]
+    hard_limit = 50
+    soft_limit = 40
+    type = "connections"
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"
+
+[[statics]]
+  guest_path = "/app/public"
+  url_prefix = "/public"

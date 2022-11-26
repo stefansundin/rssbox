@@ -46,7 +46,7 @@ common: &default_settings
   # See https://newrelic.com/docs/site/renaming-applications for more details
   # on renaming your New Relic applications.
   #
-  app_name: <%= ENV["NEW_RELIC_APP_NAME"] || ENV["HEROKU_APP_NAME"] %>
+  app_name: <%= ENV["NEW_RELIC_APP_NAME"] || ENV["FLY_APP_NAME"] || ENV["HEROKU_APP_NAME"] %>
 
   # When "true", the agent collects performance data about your
   # application and reports this data to the New Relic service at

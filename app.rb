@@ -55,9 +55,9 @@ get "/twitch-embed.html" do
 end
 
 # This route is useful together with this bookmarklet:
-# javascript:location='https://rssbox.herokuapp.com/go?q='+encodeURIComponent(location.href);
+# javascript:location='https://rssbox.fly.dev/go?q='+encodeURIComponent(location.href);
 # Or for Firefox:
-# javascript:location='https://rssbox.herokuapp.com/?go='+encodeURIComponent(location.href);
+# javascript:location='https://rssbox.fly.dev/?go='+encodeURIComponent(location.href);
 get "/go" do
   if /^https?:\/\/(?:mobile\.)?twitter\.com\// =~ params[:q]
     redirect Addressable::URI.new(path: "/twitter", query_values: params).normalize.to_s, 301

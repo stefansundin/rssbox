@@ -2,13 +2,11 @@
 
 This app uses the API of other websites and gives you an RSS feed in return. Quick and simple.
 
+List of public RSS Box instances: https://github.com/stefansundin/rssbox/discussions/64
+
 To open `vlc://` links, see [vlc-protocol](https://github.com/stefansundin/vlc-protocol).
 
-You can use this app freely at [rssbox.herokuapp.com](https://rssbox.herokuapp.com/). An experimental Elastic Beanstalk version [is available](https://rssbox.us-west-2.elasticbeanstalk.com/).
-
 ## Roll your own
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/stefansundin/rssbox)
 
 To deploy to Elastic Beanstalk, see [.ebextensions/README.md](.ebextensions/README.md).
 
@@ -16,15 +14,7 @@ To deploy to Kubernetes, see [kubernetes/README.md](kubernetes/README.md).
 
 A Docker image is available on [Docker Hub](https://hub.docker.com/r/stefansundin/rssbox) and [Amazon ECR](https://gallery.ecr.aws/stefansundin/rssbox).
 
-**Note:** Redis is now an optional dependency! It is only used for the URL resolution feature (turned off on the public Heroku instance).
-
-#### Heroku
-
-If you need to re-provision redis, or you didn't use the deploy button above to provision the app initially, then you need to make sure to set the maxmemory policy:
-
-```
-heroku redis:maxmemory --policy=allkeys-lru
-```
+**Note:** Redis is an optional dependency! It is only used for the URL resolution feature.
 
 ### Configuration
 

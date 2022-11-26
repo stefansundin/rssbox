@@ -15,20 +15,11 @@
 # docker buildx create --use --name multiarch --node multiarch0
 # docker buildx build --pull --push --progress plain --platform linux/amd64,linux/arm64,linux/arm/v7 -t stefansundin/rssbox .
 # Push to public ECR:
-# export AWS_PROFILE=stefansundin
 # docker buildx imagetools create -t public.ecr.aws/stefansundin/rssbox stefansundin/rssbox
 
 FROM stefansundin/ruby:3.1
 LABEL org.opencontainers.image.authors="Stefan Sundin"
 LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
-
-# install gem dependencies
-RUN \
-  apt-get update && \
-  apt-get upgrade -y && \
-  apt-get install -y --no-install-recommends libxml2-dev libxslt1-dev libcurl4 && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
