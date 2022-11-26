@@ -17,7 +17,7 @@ GEM
     feedjira (3.2.2)
       loofah (>= 2.3.1)
       sax-machine (>= 1.0)
-    github-release-party (0.3.6)
+    github-release-party (0.4.0)
       rake (>= 12)
     io-console (0.5.11)
     irb (1.4.2)

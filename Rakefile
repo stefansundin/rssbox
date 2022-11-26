@@ -8,7 +8,7 @@ Bundler.require(:default, ENV["APP_ENV"])
 load "tasks/tasks.rake"
 
 if ENV["APP_ENV"] == "development"
-  require "github-release-party/tasks/heroku"
+  require "github-release-party/tasks/fly"
 end
 
 Dir["lib/tasks/*.rake"].sort.each { |f| load f }
