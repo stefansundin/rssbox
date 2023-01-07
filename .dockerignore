@@ -23,6 +23,7 @@ ubuntu-*-cloudimg-console.log
 
 # entries above are copied from .gitignore
 
+/bin/eb-deploy
 /.dockerenv.example
 /.dockerignore
 /.ebextensions

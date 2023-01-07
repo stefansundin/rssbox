@@ -17,7 +17,7 @@
 # Push to public ECR:
 # docker buildx imagetools create -t public.ecr.aws/stefansundin/rssbox stefansundin/rssbox
 
-FROM stefansundin/ruby:3.1
+FROM stefansundin/ruby:3.2
 LABEL org.opencontainers.image.authors="Stefan Sundin"
 LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
 
