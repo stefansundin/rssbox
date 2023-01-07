@@ -25,11 +25,10 @@
     title = "#{image["title"]} [#{image["width"]}x#{image["height"]}]"
     link = "https://imgur.com/#{image["id"]}"
     if image["gifv"]
-      title = "Gif: #{title}"
+      title = "Video: #{title}"
       gifv_url = "https://i.imgur.com/#{image["id"]}.gifv"
       body = <<~EOF.esc
-        <iframe width="#{image["width"]}" height="#{image["height"]+30}" src="#{gifv_url}" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
-        <p><a href="#{gifv_url}" rel="noreferrer">Open embed</a></p>
+        <p><a href="#{gifv_url}" rel="noreferrer">Open video</a></p>
 
         #{image["description"].linkify.to_paragraphs}
         <p><a href="https://imgur.com#{Addressable::URI.new(path: "/download/#{image["id"]}/#{image["title"]}").normalize.to_s}" rel="noreferrer">Download</a></p>
