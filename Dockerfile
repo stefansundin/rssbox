@@ -24,6 +24,7 @@ LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 RUN bundle config set --local without development:test
+RUN bundle config set --local deployment 'true'
 RUN bundle install --retry=3 --jobs=4
 COPY . .
 RUN find
