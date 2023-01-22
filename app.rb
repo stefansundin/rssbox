@@ -976,7 +976,7 @@ get "/twitch" do
       next "Error: Video does not exist." if response.code == 404
       raise(App::TwitchError, response) if !response.success?
       data = response.json["data"][0]
-      "#{data["user_id"]}/#{data["user_name"]}"
+      "#{data["user_id"]}/#{data["user_login"]}"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
@@ -988,7 +988,7 @@ get "/twitch" do
       raise(App::TwitchError, response) if !response.success?
       data = response.json["data"][0]
       next "Error: Can't find a user with that name." if data.nil?
-      "#{data["id"]}/#{data["display_name"]}"
+      "#{data["id"]}/#{data["login"]}"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
@@ -1171,6 +1171,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
 
     data = response.json["data"]
     user_name = data[0]["user_name"] if data.length > 0
+    user_login = data[0]["user_login"] if data.length > 0
     videos = data.map do |video|
       {
         "id" => video["id"],
@@ -1186,15 +1187,17 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
 
     {
       "user_name" => user_name,
+      "user_login" => user_login,
       "videos" => videos,
     }.to_json
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
 
   @data = JSON.parse(data)
-  user = @data["user_name"] || CGI.unescape(user)
-  @title = "#{user} on Twitch"
-  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
+  user_name = @data["user_name"] || CGI.unescape(user)
+  user_login = @data["user_login"] || CGI.unescape(user)
+  @title = "#{user_name} on Twitch"
+  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user_login.downcase}").normalize.to_s
 
   erb :"twitch.ics"
 end
@@ -1204,14 +1207,15 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
 
   @id = id
   @type = "user"
-
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
+
   data, @updated_at = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60) do
     response = App::Twitch.get("/videos", query: { user_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
     data = response.json["data"]
     user_name = data[0]["user_name"] if data.length > 0
+    user_login = data[0]["user_login"] if data.length > 0
     videos = data.map do |video|
       {
         "id" => video["id"],
@@ -1227,17 +1231,19 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
 
     {
       "user_name" => user_name,
+      "user_login" => user_login,
       "videos" => videos,
     }.to_json
   end
   return [422, "Something went wrong. Try again later."] if data.nil?
 
   @data = JSON.parse(data)
-  @user = @data["user_name"] || CGI.unescape(user)
-  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user.downcase}").normalize.to_s
+  @user_name = @data["user_name"] || CGI.unescape(user)
+  @user_login = @data["user_login"] || CGI.unescape(user)
+  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{@user_login.downcase}").normalize.to_s
   @data["videos"].reject! { |v| v["is_live"] }
 
-  @title = user
+  @title = @user_name
   @title += "'s highlights" if type == "highlight"
   @title += " on Twitch"
 

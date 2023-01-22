@@ -13,7 +13,7 @@ require "fileutils"
 
 module App
   class Cache
-    DIR = File.expand_path(ENV["CACHE_DIR"] || "../tmp/cache", __dir__) + "/v1"
+    DIR = File.expand_path(ENV["CACHE_DIR"] || "../tmp/cache", __dir__) + "/v2"
 
     # Create cache directory
     FileUtils.mkdir_p(DIR)
