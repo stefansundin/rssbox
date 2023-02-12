@@ -21,13 +21,22 @@ FROM stefansundin/ruby:3.2-jemalloc
 LABEL org.opencontainers.image.authors="Stefan Sundin"
 LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
 
+# install system utilities that are useful when debugging
+RUN \
+  apt-get update && \
+  apt-get upgrade -y && \
+  apt-get install -y --no-install-recommends \
+    vim less && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 RUN bundle config set --local without development:test
 RUN bundle config set --local deployment 'true'
 RUN bundle install --retry=3 --jobs=4
 COPY . .
-RUN find
+RUN find -not -path ./vendor
 
 # Disable irb history to prevent .irb_history permission error from showing
 RUN echo "IRB.conf[:SAVE_HISTORY] = nil" >> .irbrc
