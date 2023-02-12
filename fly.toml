@@ -1,5 +1,6 @@
 # To deploy to your own fly app, change the app name below and run "fly launch".
 # Please do not add sensitive environment variables here, use "fly secrets" instead!
+# Set CACHE_DIR=/data/rssbox/cache to store the RSS Box cache on a persistent volume.
 
 app = "rssbox"
 kill_signal = "SIGINT"
@@ -15,6 +16,10 @@ processes = []
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
+
+[mounts]
+source="data"
+destination="/data"
 
 [[services]]
   http_checks = []
