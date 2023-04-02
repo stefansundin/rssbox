@@ -12,7 +12,7 @@ SecureHeaders::Configuration.default do |config|
   config.hsts = "max-age=31536000; includeSubdomains; preload"
   config.x_frame_options = "DENY"
   config.x_content_type_options = "nosniff"
-  config.x_xss_protection = "1; mode=block"
+  config.x_xss_protection = "0"
   config.x_download_options = "noopen"
   config.x_permitted_cross_domain_policies = "none"
   config.referrer_policy = "no-referrer"
