@@ -36,7 +36,7 @@ RUN bundle config set --local without development:test
 RUN bundle config set --local deployment 'true'
 RUN bundle install --retry=3 --jobs=4
 COPY . .
-RUN find -not -path ./vendor
+RUN find -not -path './vendor/*'
 
 # Disable irb history to prevent .irb_history permission error from showing
 RUN echo "IRB.conf[:SAVE_HISTORY] = nil" >> .irbrc
