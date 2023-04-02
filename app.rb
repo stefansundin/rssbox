@@ -303,9 +303,9 @@ get "/youtube" do
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
-  elsif /youtube\.com\/@?(?<user>[^\/?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
-    # https://www.youtube.com/@khanacademy
+    # https://www.youtube.com/@awscommunity
   elsif /\b(?<channel_id>(?:UC[^\/?#]{22,}|S[^\/?#]{12,}))/ =~ params[:q]
     # it's a channel id
   else
