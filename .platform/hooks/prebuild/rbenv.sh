@@ -6,3 +6,7 @@ rm -f .ruby-version
 
 # Work around annoying Errno::ENOENT issue?
 mkdir -p /var/app/staging/vendor/bundle/ruby/2.7.0/cache
+
+# I dunno why this directory isn't created.. and I don't care enough to figure out why.
+mkdir -p /var/log/nginx/healthd
+chown nginx:nginx /var/log/nginx/healthd
