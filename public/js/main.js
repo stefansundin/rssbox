@@ -353,32 +353,35 @@ $(document).ready(async function() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("dark-mode");
-  checkbox.addEventListener("click", (e) => {
-    if (e.isTrusted && localStorageUsable) {
-      // user initiated
-      if (e.shiftKey) {
-        localStorage.removeItem("theme");
-        e.target.checked = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        e.target.indeterminate = true;
+  const label = checkbox.parentElement.querySelector('label[for="dark-mode"]');
+  for (const el of [checkbox, label]) {
+    el.addEventListener("click", (e) => {
+      if (e.isTrusted && localStorageUsable) {
+        // user initiated
+        if (e.shiftKey) {
+          localStorage.removeItem("theme");
+          checkbox.checked = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          checkbox.indeterminate = true;
+        }
+        else {
+          localStorage.setItem("theme", (checkbox.checked ? "dark" : "light"));
+        }
+      }
+
+      if (checkbox.checked) {
+        document.body.classList.add("bg-dark");
+        document.body.classList.add("text-light");
+        $(".modal-content").addClass("bg-dark");
+        $(".follow-color-scheme").removeClass("bg-light").addClass("bg-dark");
       }
       else {
-        localStorage.setItem("theme", (e.target.checked ? "dark" : "light"));
+        document.body.classList.remove("bg-dark");
+        document.body.classList.remove("text-light");
+        $(".modal-content").removeClass("bg-dark");
+        $(".follow-color-scheme").removeClass("bg-dark").addClass("bg-light");
       }
-    }
-
-    if (e.target.checked) {
-      document.body.classList.add("bg-dark");
-      document.body.classList.add("text-light");
-      $(".modal-content").addClass("bg-dark");
-      $(".follow-color-scheme").removeClass("bg-light").addClass("bg-dark");
-    }
-    else {
-      document.body.classList.remove("bg-dark");
-      document.body.classList.remove("text-light");
-      $(".modal-content").removeClass("bg-dark");
-      $(".follow-color-scheme").removeClass("bg-dark").addClass("bg-light");
-    }
-  });
+    });
+  }
 
   // Pass theme=dark in the query string to default to dark mode
   let theme = window.location.search.substring(1).split('&').find(v => v.startsWith('theme='))?.split('=')?.[1]
