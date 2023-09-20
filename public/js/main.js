@@ -1,3 +1,10 @@
+let localStorageUsable = false;
+try {
+  if ('localStorage' in window && localStorage) {
+    localStorageUsable = true;
+  }
+} catch {}
+
 function pad(s) {
   return ("0"+s).slice(-2);
 }
@@ -347,15 +354,15 @@ $(document).ready(async function() {
 document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("dark-mode");
   checkbox.addEventListener("click", (e) => {
-    if (e.isTrusted) {
+    if (e.isTrusted && localStorageUsable) {
       // user initiated
       if (e.shiftKey) {
-        localStorage.removeItem("dark-mode");
+        localStorage.removeItem("theme");
         e.target.checked = window.matchMedia("(prefers-color-scheme: dark)").matches;
         e.target.indeterminate = true;
       }
       else {
-        localStorage.setItem("dark-mode", e.target.checked.toString());
+        localStorage.setItem("theme", (e.target.checked ? "dark" : "light"));
       }
     }
 
@@ -373,16 +380,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  const dark_mode = localStorage.getItem("dark-mode");
-  if (dark_mode == "true" || (dark_mode == undefined && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-    checkbox.click();
+  if (localStorageUsable) {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark" || (theme === null && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+      checkbox.click();
+    }
+    checkbox.indeterminate = (theme === null);
   }
-  checkbox.indeterminate = (dark_mode == undefined);
 });
 
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
   const checkbox = document.getElementById("dark-mode");
-  if (checkbox.indeterminate && checkbox.checked != e.matches) {
+  if (checkbox.indeterminate && checkbox.checked !== e.matches) {
     checkbox.click();
     checkbox.indeterminate = true;
   }
