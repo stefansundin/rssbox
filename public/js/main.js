@@ -171,6 +171,7 @@ $(document).ready(async function() {
     const feed_url = $("#feed-url");
     feed_url.val(url).trigger("input");
     feed_modal.modal("show", this);
+    feed_url.select();
 
     return false;
   });
@@ -208,7 +209,7 @@ $(document).ready(async function() {
     if (qs != "") {
       url += `?${qs}`;
     }
-    $("#feed-url").val(url);
+    $("#feed-url").val(url).trigger("input").select();
   });
 
   $("[data-download-filename]").click(async function() {
@@ -331,6 +332,7 @@ $(document).ready(async function() {
         const feed_url = $("#feed-url");
         feed_url.val(url);
         feed_modal.modal("show");
+        feed_url.select();
       }
     }
   }
