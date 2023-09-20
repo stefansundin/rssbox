@@ -380,13 +380,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Pass theme=dark in the query string to default to dark mode
+  let theme = window.location.search.substring(1).split('&').find(v => v.startsWith('theme='))?.split('=')?.[1]
   if (localStorageUsable) {
-    const theme = localStorage.getItem("theme");
-    if (theme === "dark" || (theme === null && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      checkbox.click();
+    // localStorage has preference over query parameter
+    const localTheme = localStorage.getItem("theme");
+    if (localTheme) {
+      theme = localTheme;
     }
-    checkbox.indeterminate = (theme === null);
   }
+  if (theme === "dark" || (theme === undefined && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    checkbox.click();
+  }
+  checkbox.indeterminate = (theme === undefined);
 });
 
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
