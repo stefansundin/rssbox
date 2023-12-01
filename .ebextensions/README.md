@@ -1,58 +1,70 @@
 # Initial setup
 
 First of all, make sure you are running the latest version of the eb cli:
-```
-pip3 install -U --user awsebcli
+
+```shell
+pip3 install --upgrade --user awsebcli
 ```
 
-Use a t2.micro instance if you are using the AWS free tier. Otherwise, use t3.nano or t3a.nano with spot to get the lowest price.
+Use a `t2.micro` instance if you are using the AWS free tier. Otherwise, use `t3.micro` or `t3a.micro` with spot to get the lowest price.
+
+Due to memory requirements, the `nano` size does not work since the upgrade to Amazon Linux 2023.
 
 Create environment:
-```
+
+```shell
 git tag -f -a -m "First deploy" eb
-eb init rssbox --platform ruby-3.0 --keyname id_rsa
+eb init rssbox --platform ruby-3.2 --keyname id_rsa
 eb create --single --instance_type t2.micro
 ```
 
+<!--
+To find the `--platform` value for `eb init`, run:
+eb platform list
+-->
+
 Using spot instances:
-```
-eb create --single --enable-spot --instance-types t3.nano,t3a.nano
+
+```shell
+eb create --single --enable-spot --instance-types t3.micro,t3a.micro
 ```
 
 With an application load balancer:
-```
-eb create --enable-spot --instance-types t3.nano,t3a.nano --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
+
+```shell
+eb create --enable-spot --instance-types t3.micro,t3a.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
 With a network load balancer:
-```
-eb create --enable-spot --instance-types t3.nano,t3a.nano --elb-type network --envvars ASG_HEALTH_CHECK_TYPE=ELB
+
+```shell
+eb create --enable-spot --instance-types t3.micro,t3a.micro --elb-type network --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
 Launch in a specific VPC (alternatively omit `--vpc` and update [vpc.config](vpc.config)):
-```
-eb create --vpc --instance-types t3.nano,t3a.nano --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
+
+```shell
+eb create --vpc --instance-types t3.micro,t3a.micro --elb-type application --envvars ASG_HEALTH_CHECK_TYPE=ELB
 ```
 
 The following environment variables are automatically set:
 - `BUNDLER_DEPLOYMENT_MODE=true`
 - `BUNDLE_WITHOUT=test:development`
-- `RACK_ENV=production` (this is why the app still has to default `APP_ENV` to `RACK_ENV`)
+- `RACK_ENV=production`
 - `RAILS_SKIP_ASSET_COMPILATION=false`
 - `RAILS_SKIP_MIGRATIONS=false`
-
-For best experience, please set the following variables as well:
-- `LANG=en_US.UTF-8`
 
 # Deploy
 
 Deploy with:
-```
+
+```shell
 ./bin/eb-deploy --staged
 ```
 
 To export a deployable zip, use:
-```
+
+```shell
 git archive --format zip -9 -o rssbox.zip HEAD
 ```
 
@@ -61,9 +73,10 @@ While testing, it is a lot faster to deploy if there is only one instance runnin
 # Upgrade major Ruby version
 
 To upgrade an existing app to a new major version of Ruby:
-```
+
+```shell
 aws elasticbeanstalk list-available-solution-stacks --region us-west-2 --query 'SolutionStacks[?contains(@,`Ruby`)==`true`]'
-aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2 v3.4.0 running Ruby 3.0"
+aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2023 v4.0.1 running Ruby 3.2"
 ```
 
 Supported Ruby versions: https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.ruby
