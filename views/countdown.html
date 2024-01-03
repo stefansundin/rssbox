@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 <style>
@@ -13,19 +13,14 @@ body {
 </head>
 <body>
 
-<div id="js-error">Please enable JavaScript.</div>
+<noscript>Please enable JavaScript to see this count down.</noscript>
+
 <div id="date"></div>
 <div id="countdown"></div>
 
 <script>
-document.getElementById("js-error").remove();
-
-var countdown = document.getElementById("countdown");
-var then;
-
-function pad(s) {
-  return `0${s}`.slice(-2);
-}
+const countdown = document.getElementById("countdown");
+let then;
 
 function pluralize(n) {
   if (n == 1) return "";
@@ -34,28 +29,28 @@ function pluralize(n) {
 
 function init() {
   // Parse query string, e.g: /countdown.html?date=2018-09-27T03:30:00Z
-  var params = {};
+  const params = {};
   window.location.search.substr(1).split("&").forEach(function(param) {
     param = param.split("=");
     params[param[0]] = param[1] ? decodeURIComponent(param[1]) : null;
   });
 
-  var date = document.getElementById("date");
+  const date = document.getElementById("date");
 
   if (!params["date"]) {
-    date.innerText = "Missing date parameter.";
+    date.textContent = "Missing date parameter.";
     return;
   }
 
   then = Date.parse(params["date"]);
   if (isNaN(then)) {
-    date.innerText = "Error parsing date.";
+    date.textContent = "Error parsing date.";
     return;
   }
 
-  var d = new Date(then);
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  date.innerText = `Countdown to ${d.getHours()}:${pad(d.getMinutes())}:${pad(d.getSeconds())} on ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}.`
+  const d = new Date(then);
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  date.textContent = `Countdown to ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')} on ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}.`
   date.title = `${params["date"]} (displayed in your timezone)`;
 
   setInterval(update, 1000);
@@ -63,21 +58,21 @@ function init() {
 }
 
 function update() {
-  var passed = false;
-  var now = Date.now();
-  var diff = Math.floor((then - now) / 1000);
+  const now = Date.now();
+  let passed = false;
+  let diff = Math.floor((then - now) / 1000);
 
   if (diff < 0) {
     passed = true;
     diff *= -1;
   }
 
-  var seconds = diff % 60;
-  var minutes = Math.floor((diff % 3600) / 60);
-  var hours = Math.floor((diff % 86400) / 3600);
-  var days = Math.floor(diff / 86400);
+  const seconds = diff % 60;
+  const minutes = Math.floor((diff % 3600) / 60);
+  const hours = Math.floor((diff % 86400) / 3600);
+  const days = Math.floor(diff / 86400);
 
-  var text = "";
+  let text = "";
   if (!passed && diff < 3600) {
     text += "Starting soon:";
   }
@@ -100,7 +95,7 @@ function update() {
     text += " ago";
   }
 
-  countdown.innerText = text;
+  countdown.textContent = text;
 }
 
 init();
