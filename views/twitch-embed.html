@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 <style>
@@ -18,7 +18,7 @@ iframe {
 <script>
 let qs = window.location.hash.substr(1);
 qs += `&parent=${window.location.hostname}`;
-if (document.referrer != "") {
+if (document.referrer !== "") {
   const referrer = new URL(document.referrer);
   qs += `&parent=${referrer.hostname}`;
 }
