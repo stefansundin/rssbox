@@ -5,10 +5,6 @@ try {
   }
 } catch {}
 
-function pad(s) {
-  return ("0"+s).slice(-2);
-}
-
 function sign(n) {
   if (n < 0) {
     return "-";
@@ -301,7 +297,7 @@ $(document).ready(async function() {
 
   const tz_offset = -new Date().getTimezoneOffset();
   if (tz_offset != 0) {
-    $("form[action=youtube]").append($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${pad(Math.abs(tz_offset/60))}:${pad(Math.abs(tz_offset%60))}`));
+    $("#youtube_q").after($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${Math.abs(tz_offset/60).toString().padStart(2,'0')}:${Math.abs(tz_offset%60).toString().padStart(2,'0')}`));
   }
 
   const params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
