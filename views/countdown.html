@@ -71,7 +71,7 @@ function update() {
   var seconds = diff % 60;
   var minutes = Math.floor((diff % 3600) / 60);
   var hours = Math.floor((diff % 86400) / 3600);
-  var days = Math.floor((diff % 2073600) / 86400);
+  var days = Math.floor(diff / 86400);
 
   var text = "";
   if (!passed && diff < 3600) {
