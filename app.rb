@@ -1528,13 +1528,16 @@ get "/imgur/:user_id/:username" do |user_id, username|
 end
 
 get "/svtplay" do
-  if /https?:\/\/(?:www\.)?svtplay\.se\/video\/\d+\/(?<program>[^\/]+)/ =~ params[:q]
+  if /https?:\/\/(?:www\.)?svtplay\.se\/video\/[a-zA-Z0-9]+\/(?<program>[^\/]+)/ =~ params[:q]
     # https://www.svtplay.se/video/7181623/veckans-brott/veckans-brott-sasong-12-avsnitt-10
+    # https://www.svtplay.se/video/jbrEL2D/veckans-brott/krimjournalister-journalistikens-nya-rockstjarnor
+  elsif /https?:\/\/(?:www\.)?svtplay\.se\/(?<program>kategori\/[^\/]+)/ =~ params[:q]
+    # https://www.svtplay.se/kategori/vetenskapens-varld
   elsif /https?:\/\/(www\.)?svtplay\.se\/(?<program>[^\/]+)/ =~ params[:q]
     # https://www.svtplay.se/veckans-brott
   else
     # it's probably a program name
-    program = params[:q].downcase.gsub(/[:.]/, "").gsub(" ", "-")
+    program = params[:q].downcase.gsub(/[:.]/, "").gsub(" ", "-").gsub("å", "a").gsub("ä", "a").gsub("ö", "o")
   end
 
   if program
