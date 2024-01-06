@@ -158,7 +158,7 @@ $(document).ready(async function() {
         // local feed
         let pathname = window.location.pathname;
         if (pathname.endsWith("/")) {
-          pathname = pathname.substr(0, pathname.length-1);
+          pathname = pathname.substring(0, pathname.length-1);
         }
         url = `${window.location.protocol}//${window.location.host}${pathname}${data}`;
         // initiate a request just to get a head start on resolving urls
@@ -300,7 +300,7 @@ $(document).ready(async function() {
     $("#youtube_q").after($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${Math.abs(tz_offset/60).toString().padStart(2,'0')}:${Math.abs(tz_offset%60).toString().padStart(2,'0')}`));
   }
 
-  const params = toObject(window.location.search.substr(1).split("&").map((arg) => arg.split("=")));
+  const params = toObject(window.location.search.substring(1).split("&").map((arg) => arg.split("=")));
   if (params.q) {
     $('input[type="search"]').val(params.q);
   }
