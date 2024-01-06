@@ -45,7 +45,7 @@ SecureHeaders::Configuration.override(:index) do |config|
     default_src: %w('none'),
     style_src: %w('self' cdn.jsdelivr.net),
     script_src: %w('self' cdn.jsdelivr.net code.jquery.com),
-    img_src: %w('self'),
+    img_src: %w('self' data:),
     form_action: %w('self' www.youtube.com vimeo.com imgur.com www.svtplay.se stefansundin.com www.paypal.com),
     connect_src: %w('self' *.fbcdn.net *.cdninstagram.com *.sndcdn.com),
     frame_ancestors: %w('none'),

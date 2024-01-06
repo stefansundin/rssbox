@@ -32,36 +32,19 @@ h2 {
 progress {
   width: 100%;
 }
-input[type="submit"] {
-  min-width: 130px;
-}
 
 .input-group {
   margin-bottom: 10px;
 }
-.form-group .input-group {
-  margin: 0;
-}
-.form-inline {
-  margin-bottom: 15px;
-}
-.form-inline .input-group {
-  margin-top: 0;
-  margin-right: 10px;
-}
-.input-group-prepend label {
+#services label {
   min-width: 100px;
   margin: 0;
 }
+#services input[type="submit"] {
+  min-width: 130px;
+}
 .dropdown-toggle {
-  border-radius: 0;
   padding: 6px 4px;
-}
-*[monospace] {
-  font-family: monospace;
-}
-input[monospace] {
-  min-height: 38px;
 }
 
 .expander {
@@ -75,8 +58,20 @@ a.blue {
   position: fixed;
   bottom: 1em;
   right: 1em;
-  padding: 5px 10px 5px 30px;
+  padding: 5px 12px 5px 34px;
   border-radius: 5px;
   user-select: none;
   z-index: 1100;
+}
+body.modal-open .bottom-right-fixed {
+  right: calc(1em + 15px);
+}
+
+
+/* bootstrap v5 overrides */
+:root {
+  scroll-behavior: auto;
+}
+.form-check-input:focus {
+  box-shadow: none;
 }
