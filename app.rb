@@ -9,9 +9,13 @@ before do
   content_type :text
 end
 
+csrf_protection_enabled = ENV["CSRF_PROTECTION"] != "off"
+
 before %r{/(?:go|twitter|youtube|vimeo|instagram|periscope|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
-  if !request.user_agent&.include?("Mozilla/") || !request.referer&.start_with?("#{request.base_url}/")
-    halt [403, "This endpoint should not be used by a robot. RSS Box is open source so you should instead reimplement the thing you need in your own application."]
+  if csrf_protection_enabled
+    if !request.user_agent&.include?("Mozilla/") || !request.referer&.start_with?("#{request.base_url}/")
+      halt [403, "This endpoint should not be used by a robot. RSS Box is open source so you should instead reimplement the thing you need in your own application.\n"]
+    end
   end
   halt [400, "Insufficient parameters."] if params[:q].empty?
 end
