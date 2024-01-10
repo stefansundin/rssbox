@@ -4,7 +4,6 @@ version: "3"
 services:
   web:
     build: .
-    entrypoint: bin/server
     environment:
       - PORT=3000
       - REDIS_URL=redis://redis:6379/3

@@ -3,4 +3,4 @@
 # export RUBYOPT="--jit --jit-verbose=1"
 export PORT=${PORT-3000}
 echo http://localhost:$PORT/
-bundle exec puma -C config/puma.rb "$@"
+exec bundle exec puma -C config/puma.rb "$@"

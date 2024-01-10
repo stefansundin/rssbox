@@ -48,4 +48,4 @@ USER nobody:nogroup
 
 EXPOSE 3000
 ENV PORT=3000
-ENTRYPOINT ["bin/server"]
+ENTRYPOINT ["bundle", "exec", "puma", "-C", "config/puma.rb"]
