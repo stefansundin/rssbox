@@ -8,7 +8,7 @@ services:
     environment:
       - PORT=3000
       - REDIS_URL=redis://redis:6379/3
-    env_file: .dockerenv
+    # env_file: .dockerenv
     ports:
       - "3000:3000"
     networks:
