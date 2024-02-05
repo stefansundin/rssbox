@@ -142,8 +142,7 @@ $(document).ready(async function() {
     if (response.status === 503) {
       // This is usually just HTML garbage when the server request timeout is reached, so print a better error
       alert("Something went wrong. Try again later.");
-    }
-    else if (!response.ok) {
+    } else if (!response.ok) {
       alert(await response.text());
       return;
     }
@@ -151,8 +150,7 @@ $(document).ready(async function() {
     let url;
     if (response.redirected) {
       url = response.url;
-    }
-    else {
+    } else {
       const data = await response.json();
       if (data.startsWith("/")) {
         // local feed
@@ -163,8 +161,7 @@ $(document).ready(async function() {
         url = `${window.location.protocol}//${window.location.host}${pathname}${data}`;
         // initiate a request just to get a head start on resolving urls
         fetch(url);
-      }
-      else {
+      } else {
         // external feed
         url = data;
       }
@@ -315,12 +312,10 @@ $(document).ready(async function() {
         const form = input.parents("form");
         if (params.download) {
           form.find("[data-download-filename]").click();
-        }
-        else {
+        } else {
           form.submit();
         }
-      }
-      else if (params.go) {
+      } else if (params.go) {
         const response = await fetch(`go?q=${encodeURIComponent(params.go)}`, {
           headers: {
             "Accept": "application/json",
@@ -358,8 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.removeItem("theme");
           checkbox.checked = window.matchMedia("(prefers-color-scheme: dark)").matches;
           checkbox.indeterminate = true;
-        }
-        else {
+        } else {
           localStorage.setItem("theme", (checkbox.checked ? "dark" : "light"));
         }
       }
