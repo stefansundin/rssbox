@@ -61,7 +61,7 @@ $(document).ready(async function() {
     let links = document.querySelectorAll("a[fubar]");
     for (let i=0; i < links.length; i++) {
       const a = links[i];
-      if (a.href != "") {
+      if (a.href !== "") {
         continue;
       }
       a.textContent = a.textContent
@@ -113,7 +113,7 @@ $(document).ready(async function() {
     form.find("[data-irc]").each(function() {
       const btn = $(this);
       const m = /(?:https?:\/\/(?:www\.|clips\.)?twitch\.tv\/)?([^/]+)/.exec(q);
-      if (m == null) {
+      if (m === null) {
         return;
       }
       const channel = m[1];
@@ -139,7 +139,7 @@ $(document).ready(async function() {
     });
     submit.attr("value", submit_value);
     form.find("input").prop("disabled", false);
-    if (response.status == 503) {
+    if (response.status === 503) {
       // This is usually just HTML garbage when the server request timeout is reached, so print a better error
       alert("Something went wrong. Try again later.");
     }
@@ -207,9 +207,9 @@ $(document).ready(async function() {
 
   $("#feed-modal form").change(function() {
     const form = $(this);
-    const qs = $.param(form.serializeArray().filter(input => input.value != ""));
+    const qs = $.param(form.serializeArray().filter(input => input.value !== ""));
     let url = form.attr("action");
-    if (qs != "") {
+    if (qs !== "") {
       url += `?${qs}`;
     }
     $("#feed-url").val(url).trigger("input").select();
@@ -218,7 +218,7 @@ $(document).ready(async function() {
   $("[data-download-filename]").click(async function() {
     const form = $(this).parents("form");
     const q = form.find("input[name=q]").val();
-    if (q == "") {
+    if (q === "") {
       alert("Please enter a URL.");
       return;
     }
@@ -233,7 +233,7 @@ $(document).ready(async function() {
       return;
     }
     let data = await response.json();
-    if (data.constructor != Array) {
+    if (!Array.isArray(data)) {
       data = [data];
     }
 
@@ -296,7 +296,7 @@ $(document).ready(async function() {
   });
 
   const tz_offset = -new Date().getTimezoneOffset();
-  if (tz_offset != 0) {
+  if (tz_offset !== 0) {
     $("#youtube_q").after($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${Math.abs(tz_offset/60).toString().padStart(2,'0')}:${Math.abs(tz_offset%60).toString().padStart(2,'0')}`));
   }
 
