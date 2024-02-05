@@ -41,6 +41,15 @@ function basename(url) {
   return url.substr(url.lastIndexOf("/")+1);
 }
 
+// fly sometimes return "502 Bad Gateway" errors and it works on the second try, so retry at most once
+async function fetchWithRetry(resource, options) {
+  let response = await fetch(resource, options);
+  if (response.status === 502) {
+    response = await fetch(resource, options);
+  }
+  return response;
+}
+
 $(document).ready(async function() {
   {
     const links = document.querySelectorAll(".expander");
@@ -132,7 +141,7 @@ $(document).ready(async function() {
     submit.attr("value", "Working...");
     form.find("input").prop("disabled", true);
 
-    const response = await fetch(`${action}?${qs}`, {
+    const response = await fetchWithRetry(`${action}?${qs}`, {
       headers: {
         "Accept": "application/json",
       },
@@ -143,7 +152,12 @@ $(document).ready(async function() {
       // This is usually just HTML garbage when the server request timeout is reached, so print a better error
       alert("Something went wrong. Try again later.");
     } else if (!response.ok) {
-      alert(await response.text());
+      const body = await response.text();
+      let error = `Received an error response. HTTP code: ${response.status}`;
+      if (body) {
+        error += `\n${body}`;
+      }
+      alert(error);
       return;
     }
 
@@ -316,7 +330,7 @@ $(document).ready(async function() {
           form.submit();
         }
       } else if (params.go) {
-        const response = await fetch(`go?q=${encodeURIComponent(params.go)}`, {
+        const response = await fetchWithRetry(`go?q=${encodeURIComponent(params.go)}`, {
           headers: {
             "Accept": "application/json",
           },
