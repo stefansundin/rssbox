@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby ">= 2.7.0"
+ruby ">= 2.8.0"
 
 gem "rake", require: false
 gem "irb"
@@ -12,7 +12,7 @@ gem "redis"
 gem "addressable"
 gem "rack-ssl-enforcer"
 gem "secure_headers"
-gem "clogger"
+gem "clogger", git: "http://bogomips.org/clogger.git"
 gem "tzinfo"
 gem "nokogiri"
 gem "prometheus-client", require: "prometheus/middleware/exporter"
