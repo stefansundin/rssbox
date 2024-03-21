@@ -26,7 +26,7 @@ These services do not require API keys: Instagram, Periscope, Mixcloud, Speedrun
 
 #### Twitter
 
-Go to [Twitter Application Management](https://apps.twitter.com/) and create a new app.
+Go to the [Twitter Developer Portal](https://developer.twitter.com/) and create a new app.
 
 Once you have the consumer key and consumer secret, run the following to get the bearer token.
 
@@ -35,6 +35,8 @@ curl -X POST -d grant_type=client_credentials -u CONSUMER_KEY:CONSUMER_SECRET ht
 ```
 
 Copy the `access_token` and put it in the config.
+
+You need to create a project and add the app to it for it to work.
 
 #### YouTube
 
