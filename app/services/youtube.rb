@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 # https://developers.google.com/youtube/v3/docs/
 
+require_relative "google"
+
 module App
   class YouTube < Google
     BASE_URL = "https://www.googleapis.com/youtube/v3"
