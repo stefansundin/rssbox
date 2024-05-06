@@ -24,6 +24,9 @@ gem "opengraph_parser"
 gem "airbrake", require: false
 gem "newrelic_rpm", require: false
 
+# Silence Ruby deprecation warning by including drb here. https://github.com/Mon-Ouie/pry-remote/pull/88
+gem "drb"
+
 group :development do
   gem "sinatra-contrib", require: "sinatra/reloader"
   gem "powder"
