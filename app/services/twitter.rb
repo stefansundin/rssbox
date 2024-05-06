@@ -1,23 +1,26 @@
 # frozen_string_literal: true
-# https://dev.twitter.com/rest/reference/get/statuses/user_timeline
+# https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/api-reference/get-users-id-tweets
 
 module App
   class TwitterError < HTTPError; end
 
   class Twitter < HTTP
-    BASE_URL = "https://api.twitter.com/1.1"
+    BASE_URL = "https://api.twitter.com/2"
     HEADERS = {
       "Accept" => "application/json",
       "Authorization" => "Bearer #{ENV["TWITTER_ACCESS_TOKEN"]}",
     }
     ERROR_CLASS = TwitterError
 
-    # https://developer.twitter.com/en/docs/twitter-api/v1/rate-limits
+    # https://developer.twitter.com/en/docs/twitter-api/rate-limits#v2-limits
     @@ratelimit = {
-      "/users/show" => {
+      "/users/by/id" => {
         limit: 300,
       },
-      "/statuses/user_timeline" => {
+      "/users/by/username" => {
+        limit: 300,
+      },
+      "/users/tweets" => {
         limit: 1500,
       },
     }
@@ -32,16 +35,15 @@ module App
       return @@ratelimit[endpoint][:remaining], @@ratelimit[endpoint][:reset]
     end
 
-    def self.get(*args, &block)
-      response = super(*args, &block)
+    def self.get(url, ratelimit_endpoint, options={})
+      response = super(url, options)
       if response.headers.has_key?("x-rate-limit-limit") \
         && response.headers.has_key?("x-rate-limit-remaining") \
         && response.headers.has_key?("x-rate-limit-reset")
-        endpoint = args[0]
-        @@ratelimit[endpoint][:limit] = response.headers["x-rate-limit-limit"][0].to_i
-        @@ratelimit[endpoint][:remaining] = response.headers["x-rate-limit-remaining"][0].to_i
-        @@ratelimit[endpoint][:reset] = response.headers["x-rate-limit-reset"][0].to_i
-        $metrics[:ratelimit].set(response.headers["x-rate-limit-remaining"][0].to_i, labels: { service: "twitter", endpoint: endpoint })
+        @@ratelimit[ratelimit_endpoint][:limit] = response.headers["x-rate-limit-limit"][0].to_i
+        @@ratelimit[ratelimit_endpoint][:remaining] = response.headers["x-rate-limit-remaining"][0].to_i
+        @@ratelimit[ratelimit_endpoint][:reset] = response.headers["x-rate-limit-reset"][0].to_i
+        $metrics[:ratelimit].set(response.headers["x-rate-limit-remaining"][0].to_i, labels: { service: "twitter", endpoint: ratelimit_endpoint })
       end
       return response
     end
