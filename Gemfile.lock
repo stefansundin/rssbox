@@ -1,5 +1,5 @@
 GIT
-  remote: http://bogomips.org/clogger.git
+  remote: https://yhbt.net/clogger.git
   revision: 4ae4cf792bd794533b8f2ae90f41ff277f97fc9b
   specs:
     clogger (2.4.0)
