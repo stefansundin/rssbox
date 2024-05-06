@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "net/http"
-require "resolv-replace.rb"
 
 class String
   URL_REGEXP = /\bhttps?:\/\/(?:[a-z0-9\/\-+=_#%\.~?\[\]@!$&'*,;:\|]|\([a-z0-9\/\-+=_#%\.~?\[\]@!$&'*,;:\|]+\))+(?<![%\.~?\[\]@!$&'*,;:])/i
