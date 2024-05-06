@@ -130,12 +130,23 @@ $(document).ready(async function() {
     });
   });
 
+  let shiftKey = false;
+  document.addEventListener("keydown", function (e) {
+    shiftKey = e.shiftKey;
+  });
+  document.addEventListener("keyup", function (e) {
+    shiftKey = e.shiftKey;
+  });
+
   $("#services form").submit(async function(event) {
     event.preventDefault();
 
     const form = $(this);
     const action = form.attr("action");
-    const qs = form.serialize();
+    let qs = form.serialize();
+    if (shiftKey) {
+      qs += "&shift";
+    }
     const submit = form.find('input[type="submit"]');
     const submit_value = submit.attr("value");
     submit.attr("value", "Working...");
@@ -172,7 +183,7 @@ $(document).ready(async function() {
         if (pathname.endsWith("/")) {
           pathname = pathname.substring(0, pathname.length-1);
         }
-        url = `${window.location.protocol}//${window.location.host}${pathname}${data}`;
+        url = `${window.location.origin}${pathname}${data}`;
         // initiate a request just to get a head start on resolving urls
         fetch(url);
       } else {
@@ -180,6 +191,11 @@ $(document).ready(async function() {
         url = data;
       }
     }
+
+    // Normalize URL
+    const uri = new URL(url);
+    uri.search = uri.searchParams.toString();
+    url = uri.toString();
 
     const feed_modal = $("#feed-modal");
     const feed_url = $("#feed-url");
@@ -197,7 +213,16 @@ $(document).ready(async function() {
     const url = $("#feed-url").val();
     console.log(url);
     modal.find("form").hide();
-    modal.find(`#${action}-options`).show().attr("action", url).trigger("change");
+    if (url.startsWith(window.location.origin)) {
+      if (action === "youtube") {
+        const uri = new URL(url);
+        const q = uri.searchParams.get("q");
+        if (q) {
+          $("#youtube_title_filter").val(q);
+        }
+      }
+      modal.find(`#${action}-options`).show().attr("action", url).trigger("change");
+    }
   });
 
   $("#copy-button").click(function() {
@@ -216,14 +241,24 @@ $(document).ready(async function() {
     return false;
   });
 
-  $("#feed-modal form").change(function() {
+  $("#feed-modal form").on("input", function(e) {
     const form = $(this);
-    const qs = $.param(form.serializeArray().filter(input => input.value !== ""));
-    let url = form.attr("action");
-    if (qs !== "") {
-      url += `?${qs}`;
+    const uri = new URL(form.attr("action"));
+    const inputs = form.serializeArray();
+    for (const input of inputs) {
+      if (input.value === "") {
+        if (uri.searchParams.has(input.name)) {
+          uri.searchParams.delete(input.name);
+        }
+        continue;
+      }
+      uri.searchParams.set(input.name, input.value);
     }
-    $("#feed-url").val(url).trigger("input").select();
+    const url = uri.toString();
+    $("#feed-url").val(url).trigger("input");
+    if (e.target.tagName !== "INPUT" || e.target.type !== "text") {
+      $("#feed-url").select();
+    }
   });
 
   $("[data-download-filename]").click(async function() {

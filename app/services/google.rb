@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# https://developers.google.com/youtube/v3/docs/
 
 module App
   class GoogleError < HTTPError; end

@@ -8,6 +8,10 @@ class FalseClass
       return 0
     end
   end
+
+  def to_i
+    return 0
+  end
 end
 
 class TrueClass
@@ -17,5 +21,9 @@ class TrueClass
     else
       return 0
     end
+  end
+
+  def to_i
+    return 1
   end
 end

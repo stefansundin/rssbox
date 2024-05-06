@@ -221,6 +221,32 @@
             </div>
           </form>
 
+          <form id="youtube-options" method="get">
+            <div class="form-check">
+              <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="shorts" value="0"> Filter out shorts
+              </label>
+            </div>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="min_length" value="1m"> Minimum video length
+              </label>
+            </div>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="eventType" value="live,upcoming"> Live and upcoming streams
+              </label>
+            </div>
+            <div class="row gx-2 mt-2">
+              <div class="col-auto">
+                <label class="col-form-label" for="youtube_title_filter">Filter by video title</label>
+              </div>
+              <div class="col-auto">
+                <input type="text" id="youtube_title_filter" name="q" class="form-control">
+              </div>
+            </div>
+          </form>
+
           <form id="instagram-options" method="get">
             <div class="form-check">
               <label class="form-check-label">

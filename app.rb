@@ -282,15 +282,14 @@ get "/youtube" do
     # https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g/videos
     # https://www.youtube.com/channel/SWu5RTwuNMv6U
     # https://www.youtube.com/channel/UCd6MoB9NC6uYN2grvUNT-Zg/search?query=aurora
-  elsif /youtube\.com\/(?<type>user|c|show)\/(?<slug>[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
+  elsif /youtube\.com\/user\/(?<user>[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
     # https://www.youtube.com/user/khanacademy/videos
-    # https://www.youtube.com/c/khanacademy
-    # https://www.youtube.com/show/redvsblue
     # https://www.youtube.com/user/AmazonWebServices/search?query=aurora
+  elsif /youtube\.com\/(?<path>c\/[^\/?#]+)(?:\/search\?query=(?<query>[^&#]+))?/ =~ params[:q]
+    # https://www.youtube.com/c/khanacademy
     # https://www.youtube.com/c/khanacademy/search?query=Frequency+stability
     # there is no way to resolve these accurately through the API, the best way is to look for the channelId meta tag in the website HTML
     # note that slug != username, e.g. https://www.youtube.com/c/kawaiiguy and https://www.youtube.com/user/kawaiiguy are two different channels
-    user = "#{type}/#{slug}"
   elsif /(?:youtu\.be|youtube\.com\/(?:embed|v|shorts))\/(?<video_id>[^?#]+)/ =~ params[:q]
     # https://youtu.be/vVXbgbMp0oY?t=1s
     # https://www.youtube.com/embed/vVXbgbMp0oY
@@ -307,14 +306,17 @@ get "/youtube" do
     # https://www.youtube.com/watch?v=vVXbgbMp0oY&t=5s
   elsif /youtube\.com\/.*[?&]list=(?<playlist_id>[^&#]+)/ =~ params[:q]
     # https://www.youtube.com/playlist?list=PL0QrZvg7QIgpoLdNFnEePRrU-YJfr9Be7
-  elsif /youtube\.com\/(?<user>[^\/?#]+)/ =~ params[:q]
+  elsif /youtube\.com\/(?<handle>[^\/?#]+)/ =~ params[:q]
     # https://www.youtube.com/khanacademy
     # https://www.youtube.com/@awscommunity
   elsif /\b(?<channel_id>(?:UC[^\/?#]{22,}|S[^\/?#]{12,}))/ =~ params[:q]
     # it's a channel id
+  elsif params[:q].start_with?("@")
+    # it's a handle
+    handle = params[:q]
   else
-    # it's probably a channel name
-    user = params[:q]
+    # maybe it is a handle?
+    handle = "@#{params[:q]}"
   end
 
   if playlist_id
@@ -324,9 +326,28 @@ get "/youtube" do
 
   if user
     channel_id, _ = App::Cache.cache("youtube.user", user.downcase, 60*60, 60) do
-      response = App::HTTP.get("https://www.youtube.com/#{user}")
+      response = App::YouTube.get("/channels", query: { forUsername: user })
+      raise(App::GoogleError, response) if !response.success?
+      if response.json["items"] && response.json["items"].length > 0
+        response.json["items"][0]["id"]
+      else
+        "Error: Could not find the user. Please try with a video url instead."
+      end
+    end
+  elsif handle
+    channel_id, _ = App::Cache.cache("youtube.handle", handle.downcase, 60*60, 60) do
+      response = App::YouTube.get("/channels", query: { forHandle: handle })
+      raise(App::GoogleError, response) if !response.success?
+      if response.json["items"] && response.json["items"].length > 0
+        response.json["items"][0]["id"]
+      else
+        "Error: Could not find the user. Please try with a video url instead."
+      end
+    end
+  elsif path
+    channel_id, _ = App::Cache.cache("youtube.path", path.downcase, 60*60, 60) do
+      response = App::HTTP.get("https://www.youtube.com/#{path}")
       if response.redirect?
-        # https://www.youtube.com/tyt -> https://www.youtube.com/user/theyoungturks (different from https://www.youtube.com/user/tyt)
         response = App::HTTP.get(response.redirect_url)
       end
       next "Error: Could not find the user. Please try with a video url instead." if response.code == 404
@@ -336,7 +357,7 @@ get "/youtube" do
     end
   elsif video_id
     channel_id, _ = App::Cache.cache("youtube.video", video_id, 60*60, 60) do
-      response = App::Google.get("/youtube/v3/videos", query: { part: "snippet", id: video_id })
+      response = App::YouTube.get("/videos", query: { part: "snippet", id: video_id })
       raise(App::GoogleError, response) if !response.success?
       if response.json["items"].length > 0
         response.json["items"][0]["snippet"]["channelId"]
@@ -354,7 +375,7 @@ get "/youtube" do
   return [422, "Something went wrong. Try again later."] if channel_id.nil?
   return [422, channel_id] if channel_id.start_with?("Error:")
 
-  if query || params[:type]
+  if query || params.has_key?(:shift)
     username, _ = App::Cache.cache("youtube.channel", channel_id, 60*60, 60) do
       # it is no longer possible to get usernames using the API
       # note that the values include " - YouTube" at the end if the User-Agent is a browser
@@ -370,7 +391,11 @@ get "/youtube" do
     query = CGI.unescape(query) # youtube uses + here instead of %20
     redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: { q: query }.merge(params.slice(:tz))).normalize.to_s, 301
   elsif channel_id
-    redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s, 301
+    if params.has_key?(:shift)
+      redirect Addressable::URI.new(path: "/youtube/#{channel_id}/#{username}", query_values: params.slice(:tz)).normalize.to_s, 301
+    else
+      redirect "https://www.youtube.com/feeds/videos.xml" + Addressable::URI.new(query: "channel_id=#{channel_id}").normalize.to_s, 301
+    end
   else
     return [404, "Could not find the channel."]
   end
@@ -386,12 +411,12 @@ get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   data, _ = App::Cache.cache("youtube.ics", channel_id, 60*60, 60) do
     # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
     response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}")
-    next "Error: It seems like this channel no longer exists." if response.code == 404
+    next "Error: This channel no longer exists or has no videos." if response.code == 404
     raise(App::GoogleError, response) if !response.success?
     doc = Nokogiri::XML(response.body)
     ids = doc.xpath("//yt:videoId").map(&:text)
 
-    response = App::Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
+    response = App::YouTube.get("/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
     raise(App::GoogleError, response) if !response.success?
 
     items = response.json["items"].sort_by! do |video|
@@ -455,12 +480,12 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
 
   data, @updated_at = App::Cache.cache("youtube.videos", channel_id, 60*60, 60) do
     # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
-    response = App::Google.get("/youtube/v3/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
-    next "Error: It seems like this channel no longer exists." if response.code == 404
+    response = App::YouTube.get("/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
+    next "Error: This channel no longer exists or has no videos." if response.code == 404
     raise(App::GoogleError, response) if !response.success?
     ids = response.json["items"].sort_by { |v| Time.parse(v["snippet"]["publishedAt"]) }.reverse.map { |v| v["snippet"]["resourceId"]["videoId"] }
 
-    response = App::Google.get("/youtube/v3/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
+    response = App::YouTube.get("/videos", query: { part: "snippet,liveStreamingDetails,contentDetails", id: ids.join(",") })
     raise(App::GoogleError, response) if !response.success?
 
     response.json["items"].map do |video|
@@ -507,7 +532,7 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
 
   if params.has_key?(:shorts)
     remove_shorts = (params[:shorts] == "0")
-    @data.select! { |v| v["title"].downcase.include?("#shorts") != remove_shorts }
+    @data.select! { |v| App::YouTube.is_short?(v["id"]) != remove_shorts }
   end
 
   if params.has_key?(:min_length) && min_length = params[:min_length].parse_duration
@@ -1495,7 +1520,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
     data, @updated_at = App::Cache.cache("imgur.user", @username.downcase, 60*60, 60) do
       # can't use user_id in this request unfortunately
       response = App::Imgur.get("/account/#{@username}/submissions")
-      next "Error: It seems like this user no longer exists." if response.code == 404
+      next "Error: This user no longer exists." if response.code == 404
       raise(App::ImgurError, response) if !response.success? || response.body.empty?
       response.json["data"].map do |image|
         image.slice("animated", "cover", "datetime", "description", "gifv", "height", "id", "images_count", "is_album", "nsfw", "score", "size", "title", "type", "width")
