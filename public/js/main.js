@@ -212,7 +212,7 @@ $(document).ready(async function() {
     const action = form.attr("action");
     const url = $("#feed-url").val();
     console.log(url);
-    modal.find("form").hide();
+    modal.find("form").trigger("reset").hide();
     if (url.startsWith(window.location.origin)) {
       if (action === "youtube") {
         const uri = new URL(url);
