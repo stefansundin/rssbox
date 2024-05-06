@@ -26,11 +26,20 @@ These services do not require API keys: Instagram, Periscope, Mixcloud, Speedrun
 
 #### Twitter
 
+> [!WARNING]
+> The Twitter integration is legacy code and is not maintained. It may be broken or have serious issues.
+
+> [!CAUTION]
+> Use at your own risk! I am not responsible if RSS Box uses all of your Twitter API quota!
+
+> [!IMPORTANT]
+> RSS Box uses Twitter API v2.
+
 Go to the [Twitter Developer Portal](https://developer.twitter.com/) and create a new app.
 
 Once you have the consumer key and consumer secret, run the following to get the bearer token.
 
-```
+```shell
 curl -X POST -d grant_type=client_credentials -u CONSUMER_KEY:CONSUMER_SECRET https://api.twitter.com/oauth2/token
 ```
 
