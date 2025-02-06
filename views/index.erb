@@ -76,12 +76,6 @@
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
 
-      <form class="input-group" method="get" action="periscope">
-        <span class="input-group-text"><label for="periscope_q">Periscope</label></span>
-        <input class="form-control" type="search" name="q" id="periscope_q" placeholder="Enter a Periscope username or a url." required>
-        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </form>
-
       <%- if ENV["SOUNDCLOUD_CLIENT_ID"] -%>
       <form class="input-group" method="get" action="soundcloud">
         <span class="input-group-text"><label for="soundcloud_q">SoundCloud</label></span>

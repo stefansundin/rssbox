@@ -11,7 +11,7 @@ end
 
 csrf_protection_enabled = ENV["CSRF_PROTECTION"] != "off"
 
-before %r{/(?:go|twitter|youtube|vimeo|instagram|periscope|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
+before %r{/(?:go|twitter|youtube|vimeo|instagram|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
   if csrf_protection_enabled
     if !request.user_agent&.include?("Mozilla/") || !request.referer&.start_with?("#{request.base_url}/")
       halt [403, "This endpoint should not be used by a robot. RSS Box is open source so you should instead reimplement the thing you need in your own application.\n"]
@@ -69,8 +69,6 @@ get "/go" do
     redirect Addressable::URI.new(path: "/youtube", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?instagram\.com/ =~ params[:q]
     redirect Addressable::URI.new(path: "/instagram", query_values: params).normalize.to_s, 301
-  elsif /^https?:\/\/(?:www\.)?(?:periscope|pscp)\.tv/ =~ params[:q]
-    redirect Addressable::URI.new(path: "/periscope", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?soundcloud\.com/ =~ params[:q]
     redirect Addressable::URI.new(path: "/soundcloud", query_values: params).normalize.to_s, 301
   elsif /^https?:\/\/(?:www\.)?mixcloud\.com/ =~ params[:q]
@@ -752,92 +750,6 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   end.flatten.tap { |urls| App::URL.resolve(urls) }
 
   erb :"instagram.atom"
-end
-
-get "/periscope" do
-  if /(?:periscope|pscp)\.tv\/w\/(?<broadcast_id>[^\/?#]+)/ =~ params[:q]
-    # https://www.periscope.tv/w/1MYGNmBPMnNKw
-    # https://www.pscp.tv/w/1MYGNmBPMnNKw
-  elsif /(?:periscope|pscp)\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
-    # https://www.periscope.tv/nasa
-    # https://www.pscp.tv/nasa
-  else
-    username = params[:q]
-  end
-
-  if broadcast_id
-    url = "https://www.periscope.tv/w/#{broadcast_id}"
-    cache_key_prefix = "periscope.broadcast"
-    cache_key = broadcast_id
-  else
-    url = "https://www.periscope.tv/#{username}"
-    cache_key_prefix = "periscope.user"
-    cache_key = username.downcase
-  end
-
-  path, _ = App::Cache.cache(cache_key_prefix, cache_key, 60*60, 60) do
-    response = App::Periscope.get(url)
-    next "Error: This user has not created a Periscope account yet." if response.code == 302
-    next "Error: That username does not exist." if response.code == 404
-    next "Error: That broadcast has expired." if response.code == 410
-    next "Error: Please enter a username." if response.code/100 == 4
-    raise(App::PeriscopeError, response) if !response.success?
-    doc = Nokogiri::HTML(response.body)
-    data = doc.at("div#page-container")["data-store"]
-    json = JSON.parse(data)
-    username, user_id = json["UserCache"]["usernames"].to_a[0]
-    "#{user_id}/#{username}"
-  end
-  return [422, "Something went wrong. Try again later."] if path.nil?
-  return [422, path] if path.start_with?("Error:")
-
-  redirect Addressable::URI.new(path: "/periscope/#{path}").normalize.to_s, 301
-end
-
-get %r{/periscope/(?<id>[^/]+)/(?<username>.+)} do |id, username|
-  @id = id
-  @username = CGI.unescape(username)
-
-  data, @updated_at = App::Cache.cache("periscope.broadcasts", id, 4*60*60, 60) do
-    response = App::Periscope.get_broadcasts(id)
-    raise(App::PeriscopeError, response) if !response.success?
-    response.json["broadcasts"].select do |broadcast|
-      # filter out live broadcasts
-      broadcast.has_key?("end")
-    end.map do |broadcast|
-      broadcast_start = Time.parse(broadcast["start"])
-      broadcast_end = Time.parse(broadcast["end"])
-      duration = (broadcast_end - broadcast_start).round
-      broadcast.slice("id", "status", "username", "created_at", "user_display_name", "city").merge({
-        "duration" => duration,
-      })
-    end.to_json
-  end
-  return [422, "Something went wrong. Try again later."] if data.nil?
-
-  @data = JSON.parse(data)
-  @user = if @data.length > 0
-    @data[0]["user_display_name"]
-  else
-    @username
-  end
-
-  erb :"periscope.atom"
-end
-
-get %r{/periscope_img/(?<broadcast_id>[^/]+)} do |id|
-  cache_control :public, :max_age => 31556926 # cache a long time
-  # The image URL expires after 24 hours, so to avoid the URL from being cached by the RSS client and then expire, we just redirect on demand
-  # Interestingly enough, if a request is made before the token expires, it will be cached by their CDN and continue to work even after the token expires
-  image_url, _ = App::Cache.cache("periscope.image", id, 4*60*60, 60) do
-    response = App::Periscope.get("/accessVideoPublic", query: { broadcast_id: id })
-    next "Error: Broadcast not found." if response.code == 404
-    raise(App::PeriscopeError, response) if !response.success?
-    response.json["broadcast"]["image_url"]
-  end
-  return [422, "Something went wrong. Try again later."] if image_url.nil?
-  return [422, image_url] if image_url.start_with?("Error:")
-  redirect image_url
 end
 
 get "/soundcloud" do
