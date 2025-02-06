@@ -19,7 +19,7 @@ SecureHeaders::Configuration.default do |config|
   config.csp = {
     default_src: %w('none'),
     script_src: SecureHeaders::OPT_OUT,
-    block_all_mixed_content: true,
+    upgrade_insecure_requests: true,
   }
   config.csp[:report_uri] = ENV["CSP_REPORT_URI"].split(",") if ENV["CSP_REPORT_URI"]
 
