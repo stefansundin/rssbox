@@ -3,7 +3,12 @@
 First of all, make sure you are running the latest version of the eb cli:
 
 ```shell
-pip3 install --upgrade --user awsebcli
+# If you do not have a user-writable pip set up yet, run:
+python3 -m venv ~/.pip --system-site-packages
+# Then put this in your shell config:
+export PATH="$HOME/.pip/bin:$PATH"
+# Afterwards, you should be able to install the eb cli:
+pip3 install --upgrade awsebcli
 ```
 
 Use a `t2.micro` instance if you are using the AWS free tier. Otherwise, use `t3.micro` or `t3a.micro` with spot to get the lowest price.
@@ -14,13 +19,13 @@ Create environment:
 
 ```shell
 git tag -f -a -m "First deploy" eb
-eb init rssbox --platform ruby-3.2 --keyname id_rsa
+eb init rssbox --platform ruby-3.3 --keyname id_rsa
 eb create --single --instance_type t2.micro
 ```
 
 <!--
 To find the `--platform` value for `eb init`, run:
-eb platform list
+eb platform list --region us-west-2 | grep ruby
 -->
 
 Using spot instances:
@@ -76,7 +81,7 @@ To upgrade an existing app to a new major version of Ruby:
 
 ```shell
 aws elasticbeanstalk list-available-solution-stacks --region us-west-2 --query 'SolutionStacks[?contains(@,`Ruby`)==`true`]'
-aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2023 v4.0.1 running Ruby 3.2"
+aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2023 v4.3.1 running Ruby 3.3"
 ```
 
 Supported Ruby versions: https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.ruby
