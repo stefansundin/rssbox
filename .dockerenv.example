@@ -15,7 +15,6 @@ REDIS_URL=redis://redis:6379
 
 #IMGUR_CLIENT_ID=
 
-# Get your own at https://report-uri.com/
 #CSP_REPORT_URI=
 
 # Google Webmaster Tools
