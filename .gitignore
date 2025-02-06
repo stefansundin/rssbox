@@ -2,7 +2,6 @@
 /tmp
 /.env
 /.dockerenv
-/.vagrant
 /.bundle
 Thumbs.db
 .DS_Store

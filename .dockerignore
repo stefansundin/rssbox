@@ -2,7 +2,6 @@
 /tmp
 /.env
 /.dockerenv
-/.vagrant
 /.bundle
 **/Thumbs.db
 **/.DS_Store
@@ -34,7 +33,6 @@ ubuntu-*-cloudimg-console.log
 /.ruby-version
 /Caddyfile
 /Dockerfile
-/Vagrantfile
 /app.json
 /docker-compose.yml
 /kubernetes
