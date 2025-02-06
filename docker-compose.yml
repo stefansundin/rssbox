@@ -1,6 +1,5 @@
 # Grafana is available at http://localhost:3001/. Login with admin/admin. Configure a Prometheus data source to pull metrics from http://prometheus:9090.
 
-version: "3"
 services:
   web:
     build: .
