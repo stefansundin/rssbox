@@ -14,6 +14,10 @@ Dir["#{app_path}/lib/**/*.rb"].sort.each { |f| require f }
 # set :environment, :production
 
 configure do
+  # Use a custom logger
+  disable :logging
+  use BetterLogger
+
   use Rack::Deflater, sync: false
   use Rack::SslEnforcer, only_hosts: (ENV["SSL_ENFORCER_HOST"] || /\.herokuapp\.com$/)
   use SecureHeaders::Middleware
