@@ -42,3 +42,16 @@ if ENV["WEB_CONCURRENCY"]
     end
   end
 end
+
+
+# Because Ruby applications accumulate bloat over time, it is a good idea to periodically restart the app.
+# Enable by setting RESTART_APP_INTERVAL to the number of seconds the app should run before attempting to restart itself.
+
+if ENV["RESTART_APP_INTERVAL"]
+  on_booted do
+    Thread.new do
+      sleep ENV["RESTART_APP_INTERVAL"].to_i
+      Process.kill('SIGUSR2', Process.pid)
+    end
+  end
+end
