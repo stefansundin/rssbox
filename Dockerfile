@@ -42,8 +42,8 @@ RUN find -not -path './vendor/*'
 RUN echo "IRB.conf[:SAVE_HISTORY] = nil" >> .irbrc
 
 # Run the container as an unprivileged user
-RUN mkdir -p tmp
-RUN chown nobody:nogroup tmp
+RUN mkdir -p tmp /nonexistent
+RUN chown nobody:nogroup tmp /nonexistent
 USER nobody:nogroup
 
 EXPOSE 3000
