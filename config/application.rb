@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ENV["APP_ENV"] ||= ENV["RACK_ENV"] || "development"
-ENV["APP_VERSION"] ||= ENV["HEROKU_RELEASE_VERSION"] || "unknown"
+ENV["APP_VERSION"] ||= ENV["HEROKU_RELEASE_VERSION"] || File.mtime(__FILE__).iso8601
 
 require "bundler/setup"
 Bundler.require(:default, ENV["APP_ENV"])

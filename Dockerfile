@@ -41,6 +41,9 @@ RUN find -not -path './vendor/*'
 # Disable irb history to prevent .irb_history permission error from showing
 RUN echo "IRB.conf[:SAVE_HISTORY] = nil" >> .irbrc
 
+# Touch config/application.rb to indicate when the docker image was built
+RUN touch config/application.rb
+
 # Run the container as an unprivileged user
 RUN mkdir -p tmp /nonexistent
 RUN chown nobody:nogroup tmp /nonexistent
