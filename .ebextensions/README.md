@@ -19,7 +19,7 @@ Create environment:
 
 ```shell
 git tag -f -a -m "First deploy" eb
-eb init rssbox --platform ruby-3.3 --keyname id_rsa
+eb init rssbox --platform ruby-3.4 --keyname id_rsa
 eb create --single --instance_type t2.micro
 ```
 
@@ -81,7 +81,7 @@ To upgrade an existing app to a new major version of Ruby:
 
 ```shell
 aws elasticbeanstalk list-available-solution-stacks --region us-west-2 --query 'SolutionStacks[?contains(@,`Ruby`)==`true`]'
-aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2023 v4.3.1 running Ruby 3.3"
+aws elasticbeanstalk update-environment --region us-west-2 --environment-name rssbox --solution-stack-name "64bit Amazon Linux 2023 v4.4.0 running Ruby 3.4"
 ```
 
 Supported Ruby versions: https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.ruby
