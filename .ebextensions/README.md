@@ -96,3 +96,8 @@ Logs on the instances are available at:
 
 Elastic Beanstalk deployment logs:
 - `/var/log/eb-engine.log`
+
+Get environment variables:
+```shell
+/opt/elasticbeanstalk/bin/get-config environment | jq
+```
