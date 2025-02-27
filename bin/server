@@ -1,6 +1,7 @@
 #!/bin/bash
 # listens on port 3000 unless PORT is specified
 # export RUBYOPT="--jit --jit-verbose=1"
+export RUBYOPT="-W:deprecated"
 export PORT=${PORT-3000}
 echo http://localhost:$PORT/
 exec bundle exec puma -C config/puma.rb "$@"

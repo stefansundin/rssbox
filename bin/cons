@@ -1,2 +1,3 @@
 #!/bin/bash
+# export RUBYOPT='-W:deprecated'
 bundle exec irb --multiline -r ./app
