@@ -10,6 +10,7 @@ before do
 end
 
 csrf_protection_enabled = ENV["CSRF_PROTECTION"] != "off"
+$enabled_services = ENV["ENABLED_SERVICES"]&.split(",")
 
 before %r{/(?:go|twitter|youtube|vimeo|instagram|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay)} do
   if csrf_protection_enabled
@@ -18,6 +19,14 @@ before %r{/(?:go|twitter|youtube|vimeo|instagram|soundcloud|mixcloud|twitch|spee
     end
   end
   halt [400, "Insufficient parameters."] if params[:q].empty?
+end
+
+if $enabled_services
+  before %r{/(twitter|youtube|vimeo|instagram|soundcloud|mixcloud|twitch|speedrun|dailymotion|imgur|svtplay).*} do
+    if !$enabled_services.include?(params["captures"][0])
+      halt [404, "Service not enabled."]
+    end
+  end
 end
 
 after do

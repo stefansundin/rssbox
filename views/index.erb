@@ -40,7 +40,7 @@
     <%- end -%>
 
     <div id="services">
-      <%- if ENV["TWITTER_ACCESS_TOKEN"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("twitter")) && ENV["TWITTER_ACCESS_TOKEN"] -%>
       <form class="input-group" method="get" action="twitter">
         <span class="input-group-text"><label for="twitter_q">Twitter</label></span>
         <input class="form-control" type="search" name="q" id="twitter_q" placeholder="Enter a Twitter handle or a url." required>
@@ -48,7 +48,7 @@
       </form>
       <%- end -%>
 
-      <%- if ENV["GOOGLE_API_KEY"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("youtube")) && ENV["GOOGLE_API_KEY"] -%>
       <form class="input-group" method="get" action="youtube">
         <span class="input-group-text"><label for="youtube_q">YouTube</label></span>
         <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
@@ -56,7 +56,7 @@
       </form>
       <%- end -%>
 
-      <%- if ENV["VIMEO_ACCESS_TOKEN"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("vimeo")) && ENV["VIMEO_ACCESS_TOKEN"] -%>
       <form class="input-group" method="get" action="vimeo">
         <span class="input-group-text"><label for="vimeo_q">Vimeo</label></span>
         <input class="form-control" type="search" name="q" id="vimeo_q" placeholder="Enter a Vimeo channel name, video id, or a url to a channel or video." required>
@@ -64,6 +64,7 @@
       </form>
       <%- end -%>
 
+      <%- if !$enabled_services || $enabled_services.include?("instagram") -%>
       <form class="input-group" method="get" action="instagram">
         <span class="input-group-text"><label for="instagram_q">Instagram</label></span>
         <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
@@ -75,8 +76,9 @@
         </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
+      <%- end -%>
 
-      <%- if ENV["SOUNDCLOUD_CLIENT_ID"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("soundcloud")) && ENV["SOUNDCLOUD_CLIENT_ID"] -%>
       <form class="input-group" method="get" action="soundcloud">
         <span class="input-group-text"><label for="soundcloud_q">SoundCloud</label></span>
         <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
@@ -88,13 +90,15 @@
       </form>
       <%- end -%>
 
+      <%- if !$enabled_services || $enabled_services.include?("mixcloud") -%>
       <form class="input-group" method="get" action="mixcloud">
         <span class="input-group-text"><label for="mixcloud_q">Mixcloud</label></span>
         <input class="form-control" type="search" name="q" id="mixcloud_q" placeholder="Enter a Mixcloud username or a url to a user or track." required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
+      <%- end -%>
 
-      <%- if ENV["TWITCH_CLIENT_ID"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("twitch")) && ENV["TWITCH_CLIENT_ID"] -%>
       <form class="input-group" method="get" action="twitch">
         <span class="input-group-text"><label for="twitch_q">Twitch</label></span>
         <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username, a url to a user, video or game." required>
@@ -111,19 +115,23 @@
       </form>
       <%- end -%>
 
+      <%- if !$enabled_services || $enabled_services.include?("speedrun") -%>
       <form class="input-group" method="get" action="speedrun">
         <span class="input-group-text"><label for="speedrun_q">Speedrun</label></span>
         <input class="form-control" type="search" name="q" id="speedrun_q" placeholder="Enter a game name or a speedrun.com url." required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
+      <%- end -%>
 
+      <%- if !$enabled_services || $enabled_services.include?("dailymotion") -%>
       <form class="input-group" method="get" action="dailymotion">
         <span class="input-group-text"><label for="dailymotion_q">Dailymotion</label></span>
         <input class="form-control" type="search" name="q" id="dailymotion_q" placeholder="Enter a Dailymotion channel name or a url." required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
+      <%- end -%>
 
-      <%- if ENV["IMGUR_CLIENT_ID"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("imgur")) && ENV["IMGUR_CLIENT_ID"] -%>
       <form class="input-group" method="get" action="imgur">
         <span class="input-group-text"><label for="imgur_q">Imgur</label></span>
         <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur username or a url. Or subreddit url." required>
@@ -131,11 +139,13 @@
       </form>
       <%- end -%>
 
+      <%- if !$enabled_services || $enabled_services.include?("svtplay") -%>
       <form class="input-group" method="get" action="svtplay">
         <span class="input-group-text"><label for="svtplay_q">SVT Play</label></span>
         <input class="form-control" type="search" name="q" id="svtplay_q" placeholder="Enter a SVT Play program name or a url." required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
+      <%- end -%>
     </div>
 
     <h2 id="about">About</h2>
