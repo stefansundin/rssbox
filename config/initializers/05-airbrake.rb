@@ -8,6 +8,9 @@ if ENV["AIRBRAKE_API_KEY"]
     config.project_id = ENV["AIRBRAKE_PROJECT_ID"]
     config.project_key = ENV["AIRBRAKE_API_KEY"]
     config.environment = ENV["AIRBRAKE_ENVIRONMENT"] if ENV["AIRBRAKE_ENVIRONMENT"]
+    config.performance_stats = (ENV["AIRBRAKE_PERFORMANCE_STATS"] == "true")
+    config.remote_config = (ENV["AIRBRAKE_REMOTE_CONFIG"] == "true")
+    config.app_version = ENV["APP_VERSION"] if ENV["APP_VERSION"]
   end
 
   use Airbrake::Rack::Middleware
