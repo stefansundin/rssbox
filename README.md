@@ -57,6 +57,9 @@ Go to the [Vimeo developer website](https://developer.vimeo.com/apps) and create
 
 #### Instagram
 
+> [!WARNING]
+> The Instagram integration is not being maintained and may not work very well at all. You may be wasting your time.
+
 The Instagram support works without a `sessionid`, although it appears that the Instagram rate limits are much higher when one is used.
 
 **I highly recommend that you create a dedicated Instagram account for this. If someone manages to access your sessionid then your account may be compromised!**
