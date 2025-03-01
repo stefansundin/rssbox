@@ -78,13 +78,14 @@
       </form>
       <%- end -%>
 
-      <%- if (!$enabled_services || $enabled_services.include?("soundcloud")) && ENV["SOUNDCLOUD_CLIENT_ID"] -%>
+      <%- if (!$enabled_services || $enabled_services.include?("soundcloud")) && ENV["SOUNDCLOUD_CLIENT_ID"] && ENV["SOUNDCLOUD_CLIENT_SECRET"] -%>
       <form class="input-group" method="get" action="soundcloud">
         <span class="input-group-text"><label for="soundcloud_q">SoundCloud</label></span>
         <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu dropdown-menu-end">
-          <a class="dropdown-item" data-download>Get download command</a>
+          <a class="dropdown-item" data-download target="_blank">Download track</a>
+          <a class="dropdown-item" data-download-filename>Download track with nice filename</a>
         </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>

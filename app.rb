@@ -762,7 +762,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
 end
 
 get "/soundcloud" do
-  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
+  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"] || !ENV["SOUNDCLOUD_CLIENT_SECRET"]
 
   if /soundcloud\.com\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://soundcloud.com/infectedmushroom/01-she-zorement?in=infectedmushroom/sets/converting-vegetarians-ii
@@ -773,20 +773,22 @@ get "/soundcloud" do
 
   path, _ = App::Cache.cache("soundcloud.user", username.downcase, 60*60, 60) do
     response = App::Soundcloud.get("/resolve", query: { url: "https://soundcloud.com/#{username}" })
-    if response.code == 200
-      data = response.json
-      data = data["user"] if data.has_key?("user")
-      next "Error: Can't identify the user." if data["kind"] != "user"
+    if response.code == 302
+      api_url = response.headers["location"][0]
+      next "Error: Can't resolve the user." if !api_url.include?("soundcloud.com/users/")
+      user_id = api_url.split("/").last
     elsif response.code == 404 && username.numeric?
-      response = App::Soundcloud.get("/users/#{username}")
-      next "Error: Can't find a user with that id." if response.code == 400 || response.code == 404
-      raise(App::SoundcloudError, response) if !response.success?
-      data = response.json
+      user_id = username
     elsif response.code == 404
       next "Error: Can't find a user with that name."
     else
       raise(App::SoundcloudError, response)
     end
+
+    response = App::Soundcloud.get("/users/#{user_id}")
+    raise(App::SoundcloudError, response) if !response.success?
+    data = response.json
+
     "#{data["id"]}/#{data["permalink"]}"
   end
   return [422, "Something went wrong. Try again later."] if path.nil?
@@ -796,29 +798,40 @@ get "/soundcloud" do
 end
 
 get "/soundcloud/download" do
-  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
+  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"] || !ENV["SOUNDCLOUD_CLIENT_SECRET"]
 
   url = params[:url]
-  url = "https://#{url}" if !url.start_with?("http:", "https:")
+  return [404, "Please use a URL directly to a track."] if !url.start_with?("https://soundcloud.com/")
   response = App::Soundcloud.get("/resolve", query: { url: url })
   return [response.code, "URL does not resolve."] if response.code == 404
-  raise(App::SoundcloudError, response) if response.code != 200
+  raise(App::SoundcloudError, response) if response.code != 302
 
-  data = response.json
-  return [404, "URL does not resolve to a track."] if data["kind"] != "track"
+  api_url = response.headers["location"][0]
+  return [404, "URL does not resolve to a track."] if !api_url.include?("soundcloud.com/tracks/")
 
-  data_uri = Addressable::URI.parse(data["media"]["transcodings"][0]["url"])
-  response = App::Soundcloud.get(data_uri.path)
-  raise(App::SoundcloudError, response) if response.code != 200
+  track_id = api_url.split("/").last
+  response = App::Soundcloud.get("/tracks/#{track_id}/stream")
+  return [response.code, "Does not seem like this track is downloadable."] if response.code != 302
 
-  url = response.json["url"]
-  fn = "#{Date.parse(data["created_at"])} - #{data["title"]}.mp3".to_filename
+  stream_url = response.headers["location"][0]
 
-  "ffmpeg -i '#{url}' -acodec copy '#{fn}'"
+  if env["HTTP_ACCEPT"] == "application/json"
+    response = App::Soundcloud.get("/tracks/#{track_id}")
+    data = response.json
+    filename = "#{Date.parse(data["created_at"])} - #{data["title"]}.mp3"
+
+    content_type :json
+    return [{
+      url: stream_url,
+      filename: filename.to_filename,
+    }].to_json
+  end
+
+  redirect stream_url, 302
 end
 
 get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
-  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"]
+  return [404, "Credentials not configured"] if !ENV["SOUNDCLOUD_CLIENT_ID"] || !ENV["SOUNDCLOUD_CLIENT_SECRET"]
 
   @id = id
 
@@ -827,7 +840,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
     next "Error: That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
     raise(App::SoundcloudError, response) if !response.success?
 
-    data = response.json["collection"]
+    data = response.json
     if data.length > 0
       user = data[0]["user"]["username"]
       user_permalink = data[0]["user"]["permalink"]

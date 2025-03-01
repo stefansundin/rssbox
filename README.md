@@ -74,7 +74,7 @@ Facebook was supported in the past, but I have been unable to obtain API access 
 
 #### SoundCloud
 
-Go to the [SoundCloud developer website](https://soundcloud.com/you/apps) and create an app. Copy your client id and secret.
+Go to the [SoundCloud developer website](https://soundcloud.com/you/apps). You need to open a support ticket to create an app. Copy your client id and secret.
 
 #### Twitch
 
