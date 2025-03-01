@@ -818,7 +818,7 @@ get "/soundcloud/download" do
   if env["HTTP_ACCEPT"] == "application/json"
     response = App::Soundcloud.get("/tracks/#{track_id}")
     data = response.json
-    filename = "#{Date.parse(data["created_at"])} - #{data["title"]}.mp3"
+    filename = "#{Date.parse(data["created_at"])} - #{data["user"]["username"]} - #{data["title"]}.mp3"
 
     content_type :json
     return [{
