@@ -11,7 +11,7 @@ export PATH="$HOME/.pip/bin:$PATH"
 pip3 install --upgrade awsebcli
 ```
 
-Use a `t2.micro` instance if you are using the AWS free tier. Otherwise, use `t3.micro` or `t3a.micro` with spot to get the lowest price.
+Use a `t2.micro` instance if you are using the AWS free tier. Otherwise, use `t3.micro` or `t3a.micro` with spot to get the lowest price. Use `t4g.micro` to use AWS Gravitron (arm64) and save a little bit more.
 
 Due to memory requirements, the `nano` size does not work since the upgrade to Amazon Linux 2023.
 
@@ -74,6 +74,12 @@ git archive --format zip -9 -o rssbox.zip HEAD
 ```
 
 While testing, it is a lot faster to deploy if there is only one instance running.
+
+# Enable optional features
+
+Some of the `.config` files have commented sections. These can be enabled after successfully creating the application, and after following the prerequisite steps described in each file.
+
+Most of the configuration here has to be modified directly, and potentially committed with git.
 
 # Upgrade major Ruby version
 
