@@ -15,9 +15,6 @@ gem "secure_headers"
 gem "tzinfo"
 gem "nokogiri"
 gem "prometheus-client", require: "prometheus/middleware/exporter"
-
-# dilbert feed
-gem "feedjira"
 gem "opengraph_parser"
 
 gem "airbrake", require: false

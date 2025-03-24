@@ -1535,30 +1535,6 @@ get "/svtplay" do
   end
 end
 
-get "/dilbert" do
-  data, @updated_at = App::Cache.cache("dilbert", "feed", 10, 60*60) do
-    feed = Feedjira.parse(App::HTTP.get("http://feeds.dilbert.com/DilbertDailyStrip").body)
-    entries = feed.entries.map do |entry|
-      data, _ = App::Cache.cache("dilbert.entry", entry.id, 30*24*60*60, 60*60) do
-        og = OpenGraph.new("https://dilbert.com/strip/#{entry.id}")
-        {
-          "image" => og.images.first,
-          "title" => og.title,
-          "description" => og.description,
-        }.to_json
-      end
-      return [422, "Something went wrong. Try again later."] if data.nil?
-      data = JSON.parse(data)
-      data["id"] = entry.id
-      data
-    end.to_json
-  end
-  return [422, "Something went wrong. Try again later."] if data.nil?
-  @entries = JSON.parse(data)
-
-  erb :"dilbert.atom"
-end
-
 get "/favicon.ico" do
   redirect "/img/icon32.png", 301
 end
