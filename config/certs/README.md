@@ -4,7 +4,7 @@ Use `.crt` for the public certificate file and `.key` for the private key file, 
 
 You can also generate a self-signed certificate with:
 
-```
+```shell
 openssl req -x509 -nodes -days 36500 -newkey rsa:2048 -keyout selfsigned.key -out selfsigned.crt -subj "/"
 ```
 
@@ -17,6 +17,6 @@ COPY rssbox.example.com.crt rssbox.example.com.key config/certs/
 
 And run:
 
-```
+```shell
 docker build -t rssbox-tls .
 ```
