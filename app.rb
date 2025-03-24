@@ -1356,29 +1356,31 @@ get "/dailymotion" do
   if video_id
     user, _ = App::Cache.cache("dailymotion.video", video_id, 60*60, 60) do
       response = App::Dailymotion.get("/video/#{video_id}")
+      next "Error: Can't find a video with that ID." if response.code == 404
       raise(App::DailymotionError, response) if !response.success?
       response.json["owner"]
     end
   elsif playlist_id
     user, _ = App::Cache.cache("dailymotion.playlist", playlist_id, 60*60, 60) do
       response = App::Dailymotion.get("/playlist/#{playlist_id}")
+      next "Error: Can't find a playlist with that ID." if response.code == 404
       raise(App::DailymotionError, response) if !response.success?
       response.json["owner"]
     end
   end
+  return [404, user] if user.start_with?("Error:")
   return [422, "Something went wrong. Try again later."] if user.nil?
 
   path, _ = App::Cache.cache("dailymotion.user", user.downcase, 60*60, 60) do
     response = App::Dailymotion.get("/user/#{user}", query: { fields: "id,username" })
+    next "Error: Can't find a user with that name." if response.code == 404
     raise(App::DailymotionError, response) if !response.success?
     data = response.json
     "#{data["id"]}/#{data["username"]}"
   end
-  if path
-    redirect Addressable::URI.new(path: "/dailymotion/#{path}").normalize.to_s, 301
-  else
-    return [404, "Could not find a user with that name."]
-  end
+  return [404, path] if path.start_with?("Error:")
+
+  redirect Addressable::URI.new(path: "/dailymotion/#{path}").normalize.to_s, 301
 end
 
 get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username|
