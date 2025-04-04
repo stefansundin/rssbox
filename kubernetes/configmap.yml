@@ -5,7 +5,6 @@ metadata:
   name: rssbox
 data:
   REDIS_URL: "redis://redis:6379/3"
-  # TWITTER_ACCESS_TOKEN: ""
   # GOOGLE_API_KEY: ""
   # VIMEO_ACCESS_TOKEN: ""
   # INSTAGRAM_SESSIONID: ""

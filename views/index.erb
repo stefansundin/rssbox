@@ -40,14 +40,6 @@
     <%- end -%>
 
     <div id="services">
-      <%- if (!$enabled_services || $enabled_services.include?("twitter")) && ENV["TWITTER_ACCESS_TOKEN"] -%>
-      <form class="input-group" method="get" action="twitter">
-        <span class="input-group-text"><label for="twitter_q">Twitter</label></span>
-        <input class="form-control" type="search" name="q" id="twitter_q" placeholder="Enter a Twitter handle or a url." required>
-        <input class="btn btn-primary" type="submit" value="Get RSS Feed">
-      </form>
-      <%- end -%>
-
       <%- if (!$enabled_services || $enabled_services.include?("youtube")) && ENV["GOOGLE_API_KEY"] -%>
       <form class="input-group" method="get" action="youtube">
         <span class="input-group-text"><label for="youtube_q">YouTube</label></span>
@@ -207,24 +199,6 @@
             <input class="form-control" type="text" id="feed-url" placeholder="Feed URL">
             <button type="button" class="btn btn-primary" id="copy-button">Copy</button>
           </div>
-
-          <form id="twitter-options" method="get">
-            <div class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="checkbox" name="include_rts" value="0"> Exclude retweets
-              </label>
-            </div>
-            <div class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="checkbox" name="exclude_replies" value="1"> Exclude replies
-              </label>
-            </div>
-            <div class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="checkbox" name="with_media" value="1"> With media
-              </label>
-            </div>
-          </form>
 
           <form id="youtube-options" method="get">
             <div class="form-check">

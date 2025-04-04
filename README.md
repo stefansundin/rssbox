@@ -24,29 +24,6 @@ A couple of services do not have official APIs, or do not require API keys, so t
 
 These services do not require API keys: Instagram, Mixcloud, Speedrun, Dailymotion.
 
-#### Twitter
-
-> [!WARNING]
-> The Twitter integration is legacy code and is not maintained. It may be broken or have serious issues.
-
-> [!CAUTION]
-> Use at your own risk! I am not responsible if RSS Box uses all of your Twitter API quota!
-
-> [!IMPORTANT]
-> RSS Box uses Twitter API v2.
-
-Go to the [Twitter Developer Portal](https://developer.twitter.com/) and create a new app.
-
-Once you have the consumer key and consumer secret, run the following to get the bearer token.
-
-```shell
-curl -X POST -d grant_type=client_credentials -u CONSUMER_KEY:CONSUMER_SECRET https://api.twitter.com/oauth2/token
-```
-
-Copy the `access_token` and put it in the config.
-
-You need to create a project and add the app to it for it to work.
-
 #### YouTube
 
 Go to the [Google Developer Console](https://console.developers.google.com/), create a project and a server key. Copy the server key. Enable "YouTube Data API v3" in the project.
