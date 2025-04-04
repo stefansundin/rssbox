@@ -30,10 +30,7 @@ configure do
   # Look up Rack::Mime::MIME_TYPES to see rack defaults
   mime_type :opensearch, "application/opensearchdescription+xml"
   settings.add_charset << "application/atom+xml"
-end
-
-configure :production do
-  set :static_cache_control, [:public, :max_age => 86400]
+  set :static_cache_control, [:public, :no_cache]
 end
 
 configure :development do
