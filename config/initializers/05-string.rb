@@ -162,7 +162,7 @@ class String
       "<iframe width='640' height='360' src='#{url}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?vimeo\.com/(?<id>\d+)} =~ self
       "<iframe width='853' height='480' src='https://player.vimeo.com/video/#{id}' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
-    elsif %r{^https?://(?:www\.)?instagram\.com/(?:p|tv)/(?<id>[^/?#]+)} =~ self
+    elsif %r{^https?://(?:www\.)?instagram\.com/(?:p|tv|reel)/(?<id>[^/?#]+)} =~ self
       "<iframe width='612' height='710' src='https://www.instagram.com/p/#{id}/embed/' frameborder='0' scrolling='no' allowfullscreen referrerpolicy='no-referrer'></iframe>"
     elsif %r{^https?://(?:www\.)?twitch\.tv/(?:videos/(?<vod_id>\d+)|(?<channel_name>[^/]+)(?:/(?:v|video)/(?<vod_id>\d+))?).*?(?:[?&#](?:t|time)=(?<t>[^&#]+))?} =~ self && !%w[directory broadcast].include?(channel_name)
       # https://www.twitch.tv/videos/76877760?t=20h38m50s

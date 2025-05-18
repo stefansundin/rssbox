@@ -44,6 +44,49 @@ module App
       self::ERROR_CLASS ||= HTTPError
       raise(self::ERROR_CLASS, e)
     end
+
+    def self.post(url, data, options={})
+      relative_url = (url[0] == "/")
+
+      if defined?(self::BASE_URL) && relative_url
+        url = self::BASE_URL+url
+      end
+
+      if defined?(self::PARAMS) && relative_url
+        if url["?"]
+          url += "&"+self::PARAMS
+        else
+          url += "?"+self::PARAMS
+        end
+      end
+
+      uri = Addressable::URI.parse(url).normalize
+
+      if options.has_key?(:query)
+        if uri.query_values.nil?
+          uri.query_values = options[:query]
+        else
+          uri.query_values = uri.query_values.merge(options[:query])
+        end
+      end
+
+      opts = {
+        use_ssl: uri.scheme == "https",
+        open_timeout: 10,
+        read_timeout: 10,
+      }
+      Net::HTTP.start(uri.host, uri.port, opts) do |http|
+        headers = {}
+        headers.merge!(self::HEADERS) if defined?(self::HEADERS) && relative_url
+        headers.merge!(options[:headers]) if options.has_key?(:headers)
+        response = http.request_post(uri.request_uri, data, headers)
+        $metrics[:requests_total].increment(labels: { service: self.to_s.split("::").last.downcase, response_code: response.code })
+        return HTTPResponse.new(response, uri.to_s)
+      end
+    rescue => e
+      self::ERROR_CLASS ||= HTTPError
+      raise(self::ERROR_CLASS, e)
+    end
   end
 
   class HTTPResponse

@@ -7,39 +7,21 @@
   <link href="<%= request.original_url.esc %>" rel="self" />
   <link href="https://www.instagram.com/<%= @user %>" rel="alternate" />
   <updated><%= @updated_at %></updated>
-<%-
-@data.each do |post|
-  has_video = post["nodes"].any? { |n| n["is_video"] }
--%>
+<%- @data.each do |post| -%>
 
   <entry>
     <id>instagram:post:<%= post["id"] %><%= ":#{params[:cachebuster]}" if params[:cachebuster] %></id>
-    <title><%= "[#{post["nodes"].length}] " if post["nodes"].length > 1 %><%= "Video: " if has_video %><%= post["text"]&.to_line&.esc || "No title" %></title>
-    <link href="https://www.instagram.com/p/<%= post["shortcode"] %>/" />
-    <updated><%= Time.at(post["taken_at_timestamp"]) %></updated>
+    <title><%= "[#{post["media_count"]}] " if post["media_count"] > 1 %><%= post["text"]&.to_line&.esc || "No caption" %></title>
+    <link href="https://www.instagram.com/p/<%= post["code"] %>/" />
+    <updated><%= Time.at(post["taken_at"]) %></updated>
     <author><name><%= post["username"].esc %></name></author>
     <content type="html">
 <%=
-if has_video
   <<~EOF.esc
-    <p>#{post["nodes"].select { |n| n["is_video"] }.length} videos.</p>
-    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["shortcode"]}/embed/" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["code"]}/embed/" allowfullscreen referrerpolicy="no-referrer" style="border: 0;"></iframe>
   EOF
-end
-%>
-<%=
-post["nodes"].select { |n| !n["is_video"] }.map do |n|
-  <<~EOF.esc
-    <img src="#{n["display_url"]}" referrerpolicy="no-referrer">
-  EOF
-end.join("\n")
 %>
 <%= post["text"]&.linkify&.to_paragraphs&.esc %>
-<%=
-<<~EOF.esc
-  <p><a href="#{request.root_url}/#{Addressable::URI.new(query: "download=https://www.instagram.com/p/#{post["shortcode"]}/").normalize.to_s}">Download with nice filename</a></p>
-EOF
--%>
     </content>
   </entry>
 <%- end -%>

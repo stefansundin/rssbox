@@ -441,10 +441,11 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/instagram" do
-  if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
+  if /instagram\.com\/(?:p|tv|reel)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
     # https://www.instagram.com/p/CZfn8_-uYDz/ (carousel with video and photos)
+    # https://www.instagram.com/reel/DH3ybI3Icgk/
   elsif params[:q].include?("instagram.com/explore/") || params[:q].start_with?("#")
     return [404, "This app does not support hashtags."]
   elsif /instagram\.com\/(?<name>[^\/?#]+)/ =~ params[:q]
@@ -455,132 +456,68 @@ get "/instagram" do
 
   if post_id
     post = App::Instagram.get_post(post_id)
-    return [422, "Something went wrong. Try again later."] if post.nil?
+    return [422, "Something went wrong. Try with the username instead."] if post.nil?
     user = post["owner"]
     path = "#{user["id"]}/#{user["username"]}"
   else
-    path, _ = App::Cache.cache("instagram.user", name.downcase, 24*60*60, 60*60) do
-      response = App::Instagram.get("/#{name}/")
-      if response.success?
-        user = response.json["graphql"]["user"]
-      else
-        # https://www.instagram.com/web/search/topsearch/?query=infected
-        response = App::Instagram.get("/web/search/topsearch/", query: { query: name })
-        raise(App::InstagramError, response) if !response.success?
-        user = response.json["users"][0]["user"]
-      end
-      "#{user["id"] || user["pk"]}/#{user["username"]}"
-    rescue App::InstagramRatelimitError
-      "ratelimited"
+    name.downcase!
+    path, _ = App::Cache.cache("instagram.user", name, 24*60*60, 60*60) do
+      response = App::Instagram.post("/graphql/query",
+        "variables=%7B%22data%22%3A%7B%22context%22%3A%22blended%22%2C%22include_reel%22%3A%22true%22%2C%22query%22%3A%22#{name}%22%2C%22rank_token%22%3A%22%22%2C%22search_surface%22%3A%22web_top_search%22%7D%2C%22hasQuery%22%3Atrue%7D&doc_id=9346396502107496",
+        {
+          headers: {
+            "Content-Type" => "application/x-www-form-urlencoded",
+          }
+        }
+      )
+      raise(App::InstagramError, response) if !response.success? || !response.json?
+      data = response.json["data"]["xdt_api__v1__fbsearch__topsearch_connection"]["users"].find { |data| data["user"]["username"] == name }
+      next "Error: Could not find an Instagram user with that username. Please enter the username exactly." if !data
+      user = data["user"]
+      "#{user["id"]}/#{user["username"]}"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
-    return [429, "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"] if path == "ratelimited"
   end
   redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s, 301
-end
-
-get "/instagram/download" do
-  return [400, "Insufficient parameters"] if params[:url].empty?
-
-  if /instagram\.com\/(?:p|tv)\/(?<post_id>[^\/?#]+)/ =~ params[:url]
-    # https://www.instagram.com/p/B-Pv6COFOjV/
-    # https://www.instagram.com/tv/B-Pv6COFOjV/
-  else
-    post_id = params[:url]
-  end
-
-  post = App::Instagram.get_post(post_id)
-  return [422, "Something went wrong. Try again later."] if post.nil?
-
-  if env["HTTP_ACCEPT"] == "application/json"
-    content_type :json
-    created_at = Time.at(post["taken_at_timestamp"])
-    caption = post["text"] rescue post_id
-
-    return post["nodes"].map.with_index do |node, i|
-      url = node["video_url"] || node["display_url"]
-      filename = "#{created_at.to_date} - #{post["owner"]["username"]} - #{caption}"
-      filename += " - #{i+1}" if post["nodes"].length > 1
-      filename += "#{url.url_ext}"
-      {
-        url: url,
-        filename: filename.to_filename,
-      }
-    end.to_json
-  end
-
-  node = post["nodes"][0]
-  url = node["video_url"] || node["display_url"]
-  return [422, "Something went wrong. Try again later."] if !url
-  redirect url
 end
 
 get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   @user_id = user_id
   @user = CGI.unescape(username)
 
-  data, @updated_at = App::Cache.cache("instagram.posts", user_id, 4*60*60, 60*60) do
+  data, @updated_at, etag = App::Cache.cache("instagram.posts", user_id, 4*60*60, 60*60, env["HTTP_IF_NONE_MATCH"]) do
     # To find the query_hash, simply use the Instagram website and monitor the network calls.
-    # This request in particular is the one that gets the next page when you scroll down on a profile, but we change it to get the first 12 posts instead of the second or third page.
-    response = App::Instagram.get("/graphql/query/", {
-      query: { query_hash: "f045d723b6f7f8cc299d62b57abd500a", variables: "{\"id\":\"#{user_id}\",\"first\":12}" },
-    })
+    # Search for "xdt_api__v1__feed__user_timeline_graphql_connection" to hopefully find the GraphQL request.
+    response = App::Instagram.post("/graphql/query",
+      "variables=%7B%22data%22%3A%7B%22count%22%3A12%7D%2C%22username%22%3A%22#{username}%22%2C%22__relay_internal__pv__PolarisIsLoggedInrelayprovider%22%3Atrue%2C%22__relay_internal__pv__PolarisShareSheetV3relayprovider%22%3Atrue%7D&doc_id=9750506811647048",
+      {
+        headers: {
+          "Content-Type" => "application/x-www-form-urlencoded",
+        }
+      }
+    )
     raise(App::InstagramError, response) if !response.success? || !response.json?
-    user = response.json["data"]["user"]
-    next "Error: Instagram user does not exist." if !user
+    next "Error: Something went wrong. Perhaps the Instagram user no longer exists?" if response.json["errors"]
 
-    user["edge_owner_to_timeline_media"]["edges"].map do |post|
-      if post["node"]["__typename"] == "GraphSidecar"
-        nodes = App::Instagram.get_post(post["node"]["shortcode"])["nodes"]
-      else
-        nodes = [ post["node"].slice("is_video", "display_url", "video_url") ]
-      end
-      text = post["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"] if post["node"]["edge_media_to_caption"]["edges"][0]
-
+    response.json["data"]["xdt_api__v1__feed__user_timeline_graphql_connection"]["edges"].map do |post|
       {
         "id" => post["node"]["id"],
-        "shortcode" => post["node"]["shortcode"],
-        "taken_at_timestamp" => post["node"]["taken_at_timestamp"],
+        "code" => post["node"]["code"],
+        "taken_at" => post["node"]["taken_at"],
         "username" => post["node"]["owner"]["username"],
-        "text" => text,
-        "nodes" => nodes,
+        "text" => post["node"]["caption"]["text"],
+        "media_count" => post["node"]["carousel_media_count"] || 1,
       }
     end.to_json
-  rescue App::InstagramRatelimitError
-    "ratelimited"
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
-  if data == "ratelimited"
-    if Time.now < @updated_at+300
-      # To make it easier to subscribe to Instagram feeds, there is a grace period for 5 minutes where an empty feed is returned.
-      # Note that you have to manually construct the feed URL yourself.
-      data = "[]"
-    else
-      return [429, "Error: Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"]
-    end
-  end
-
   @data = JSON.parse(data)
-
-  type = %w[videos photos].pick(params[:type]) || "posts"
-  if type == "videos"
-    @data.select! { |post| post["nodes"].any? { |node| node["is_video"] } }
-  elsif type == "photos"
-    @data.select! { |post| !post["nodes"].any? { |node| node["is_video"] } }
-  end
-
-  @title = @user
-  @title += "'s #{type}" if type != "posts"
-  @title += " on Instagram"
-
-  @data.select do |post|
-    post["text"]
-  end.map do |post|
-    post["text"].grep_urls
-  end.flatten.tap { |urls| App::URL.resolve(urls) }
+  @title = "#{@user} on Instagram"
 
   erb :"instagram.atom"
 end

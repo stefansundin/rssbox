@@ -7,10 +7,10 @@ module App
 
   class Instagram < HTTP
     BASE_URL = "https://www.instagram.com"
-    PARAMS = "__a=1"
     HEADERS = {
-      "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:80.0) Gecko/20100101 Firefox/80.0",
+      "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
       "Cookie" => "ig_cb=1",
+      "X-CSRFToken" => "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", # This must be present but doesn't seem to be validated?!
     }
     ERROR_CLASS = InstagramError
 
@@ -22,63 +22,22 @@ module App
       HEADERS["Cookie"] += "; sessionid=#{sessionid}"
     end
 
-    def self.get(url, options={})
-      response = super(url, options)
-      if response.code == 403
-        raise(InstagramTokenError, response)
-      elsif response.code == 429 || response.code == 302
-        raise(InstagramRatelimitError, response)
-      end
-      response
-    end
-
     def self.get_post(id)
       data, _ = Cache.cache("instagram.post", id, 7*24*60*60, 60*60) do
-        response = get("/p/#{id}/")
-        next if response.code == 404
-        raise(InstagramError, response) if !response.success? || !response.json
-        data = response.json
-        if data.has_key?("graphql")
-          # response when not logged in
-          post = data["graphql"]["shortcode_media"]
-
-          if post.has_key?("edge_sidecar_to_children")
-            nodes = post["edge_sidecar_to_children"]["edges"].map do |edge|
-              edge["node"].slice("is_video", "display_url", "video_url")
-            end
-          else
-            nodes = [ post.slice("is_video", "display_url", "video_url") ]
-          end
-          text = post["edge_media_to_caption"]["edges"][0]["node"]["text"] if post["edge_media_to_caption"]["edges"][0]
-
+        response = App::Instagram.post("/graphql/query/",
+          "variables=%7B%22shortcode%22%3A%22#{id}%22%2C%22fetch_tagged_user_count%22%3Anull%2C%22hoisted_comment_id%22%3Anull%2C%22hoisted_reply_id%22%3Anull%7D&doc_id=8845758582119845",
           {
-            "owner" => post["owner"].slice("id", "username"),
-            "taken_at_timestamp" => post["taken_at_timestamp"],
-            "text" => text,
-            "nodes" => nodes,
-          }.to_json
-        else
-          # response when logged in with INSTAGRAM_SESSIONID
-          post = data["items"][0]
-
-          nodes = (post["carousel_media"] || [post]).map do |media|
-            {
-              "is_video" => (media["media_type"] == 2),
-              "display_url" => media["image_versions2"]["candidates"][0]["url"],
-              "video_url" => media&.[]("video_versions")&.[](0)&.[]("url"),
+            headers: {
+              "Content-Type" => "application/x-www-form-urlencoded",
             }
-          end
+          }
+        )
+        raise(InstagramError, response) if !response.success? || !response.json
 
-          {
-            "owner" => {
-              "id" => post["user"]["pk"],
-              "username" => post["user"]["username"],
-            },
-            "taken_at_timestamp" => post["taken_at"],
-            "text" => post&.[]("caption")&.[]("text"),
-            "nodes" => nodes,
-          }.to_json
-        end
+        data = response.json["data"]["xdt_shortcode_media"]
+        {
+          "owner" => data["owner"].slice("id", "username"),
+        }.to_json
       end
       return nil if data.nil?
       return JSON.parse(data)
@@ -89,9 +48,4 @@ end
 error App::InstagramError do |e|
   status 422
   "There was a problem talking to Instagram. Please try again in a moment."
-end
-
-error App::InstagramRatelimitError do |e|
-  status 429
-  "Instagram is ratelimited. For more information, see https://github.com/stefansundin/rssbox/issues/39"
 end

@@ -60,12 +60,6 @@
       <form class="input-group" method="get" action="instagram">
         <span class="input-group-text"><label for="instagram_q">Instagram</label></span>
         <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
-        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-        <div class="dropdown-menu dropdown-menu-end">
-          <a class="dropdown-item" data-download>Open post</a>
-          <a class="dropdown-item" data-download download>Download post</a>
-          <a class="dropdown-item" data-download-filename>Download post with nice filename</a>
-        </div>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -223,24 +217,6 @@
               <div class="col-auto">
                 <input type="text" id="youtube_title_filter" name="q" class="form-control">
               </div>
-            </div>
-          </form>
-
-          <form id="instagram-options" method="get">
-            <div class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="radio" name="type" value="" checked> All posts
-              </label>
-            </div>
-            <div class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="radio" name="type" value="videos"> Videos only
-              </label>
-            </div>
-            <div class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="radio" name="type" value="photos"> Photos only
-              </label>
             </div>
           </form>
 
