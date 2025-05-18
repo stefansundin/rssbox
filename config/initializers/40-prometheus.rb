@@ -24,6 +24,10 @@ $metrics = {
   requests_total: prometheus.counter(:requests_total, labels: %i[service response_code], docstring: "Number of requests made to external services."),
   urls_resolved_total: prometheus.counter(:urls_resolved_total, docstring: "Number of URLs resolved."),
 
+  # Response metrics:
+  responses_total: prometheus.counter(:responses_total, labels: %i[method status path_prefix], docstring: "Number of responses made."),
+  response_size_bytes: prometheus.counter(:response_size_bytes, labels: %i[method status path_prefix], docstring: "Number of bytes in response bodies."),
+
   # Cache:
   cache_keys_total: prometheus.counter(:cache_keys_total, labels: %i[prefix], docstring: "Number of keys in the cache."),
   cache_hits_duration_seconds: prometheus.histogram(:cache_hits_duration_seconds, labels: %i[prefix], buckets: Prometheus::Client::Histogram.exponential_buckets(start: 60, count: 10), docstring: "Cache hits, bucketed by cache age in seconds."),

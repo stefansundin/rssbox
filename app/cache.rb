@@ -8,6 +8,7 @@
 # To save on disk space, the caller should only cache the data that is needed from the service. Data may also be pre-processed where it makes sense.
 # When incompatible changes are made, the version number in the cache directory should be incremented.
 # On case-insensitive filesystems (Windows, macOS), there is a chance that the cache keys may collide (e.g. for YouTube channel ids), therefore a case-sensitive filesystem is recommended for production usage.
+# An ETag is also generated which clients can use in an If-None-Match header to skip downloading the data (in this case the cache file is not even read).
 
 require "fileutils"
 
@@ -24,7 +25,7 @@ module App
       end
     end
 
-    def self.cache(cache_key_prefix, cache_key, cache_duration, negative_cache_duration, &block)
+    def self.cache(cache_key_prefix, cache_key, cache_duration, negative_cache_duration, if_none_match=nil, &block)
       # Try to make the cache key safer in case it contains user input
       cache_key = cache_key.gsub("/", "-").gsub(":", "-")
       fn = "#{DIR}/#{cache_key_prefix}.#{cache_key}.rssbox-cache"
@@ -36,52 +37,71 @@ module App
         # There is cached data
         stat = File.stat(fn)
 
-        if stat.size > 0
-          # There is cached data with contents
+        # Is there a negative cache in place that is still active?
+        if stat.size == 0 && Time.now < stat.mtime+negative_cache_duration+negative_cache_duration_jitter
+          $metrics[:cache_hits_negative_total].increment(labels: { prefix: cache_key_prefix })
+          return nil, stat.mtime, nil
+        end
+
+        # Is there cached data?
+        if stat.size > 0 && Time.now < stat.mtime+cache_duration+cache_duration_jitter
+          etag = generate_etag(stat)
+          if etag == if_none_match
+            # The generated etag matches the supplied if_none_match, so there is no need to read the data from disk!
+            return nil, stat.mtime, etag
+          end
           cached_data = File.read(fn)
           $metrics[:cache_read_bytes].increment(by: cached_data.bytesize, labels: { prefix: cache_key_prefix })
-          if Time.now < stat.mtime+cache_duration+cache_duration_jitter
-            $metrics[:cache_hits_duration_seconds].observe(Time.now-stat.mtime, labels: { prefix: cache_key_prefix })
-            return cached_data, stat.mtime
-          end
-        else
-          if Time.now < stat.mtime+negative_cache_duration+negative_cache_duration_jitter
-            # A negative cache is in place and it is still active
-            $metrics[:cache_hits_negative_total].increment(labels: { prefix: cache_key_prefix })
-            return nil, stat.mtime
-          end
+          $metrics[:cache_hits_duration_seconds].observe(Time.now-stat.mtime, labels: { prefix: cache_key_prefix })
+          return cached_data, stat.mtime, etag
         end
 
         # The cached data has expired
         begin
           $metrics[:cache_misses_total].increment(labels: { prefix: cache_key_prefix })
-          data = yield(cached_data, stat)
+          data = yield
         rescue
           $metrics[:cache_errors_total].increment(labels: { prefix: cache_key_prefix })
-          if cached_data
+          if stat.size > 0
             # Update mtime so a yield is not attempted for negative_cache_duration
             FileUtils.touch(fn, mtime: Time.now-cache_duration+negative_cache_duration)
+            etag = generate_etag(stat)
+            if etag == if_none_match
+              return nil, stat.mtime, etag
+            end
+            cached_data = File.read(fn)
+            $metrics[:cache_read_bytes].increment(by: cached_data.bytesize, labels: { prefix: cache_key_prefix })
             $metrics[:cache_hits_duration_seconds].observe(Time.now-stat.mtime, labels: { prefix: cache_key_prefix })
-            return cached_data, stat.mtime
+            return cached_data, stat.mtime, etag
           end
           # Trigger negative cache and re-raise the exception
           FileUtils.touch(fn)
           raise
         end
 
+        # Read the cached data if there is any
+        if stat.size > 0
+          cached_data = File.read(fn)
+          $metrics[:cache_read_bytes].increment(by: cached_data.bytesize, labels: { prefix: cache_key_prefix })
+        end
+
+        # Should the cache be updated?
         if data == cached_data
           # The new data is exactly the same as the previously cached data, so just update the file mtime
           FileUtils.touch(fn, mtime: Time.now)
           $metrics[:cache_updates_unchanged_total].increment(labels: { prefix: cache_key_prefix })
         else
-          # Write new data
-          File.write(fn, data || "")
+          # Write new data, make sure the birthtime is updated by creating a new file and then renaming it to replace the old file
+          fn_temp = "#{DIR}/#{cache_key_prefix}.#{cache_key}.temp.rssbox-cache"
+          File.write(fn_temp, data || "")
+          File.rename(fn_temp, fn)
           $metrics[:cache_size_bytes].increment(by: (data&.bytesize || 0) - (cached_data&.bytesize || 0), labels: { prefix: cache_key_prefix })
           $metrics[:cache_written_bytes].increment(by: (data&.bytesize || 0), labels: { prefix: cache_key_prefix })
           $metrics[:cache_updates_changed_total].increment(labels: { prefix: cache_key_prefix })
         end
 
-        return data, Time.now
+        stat = File.stat(fn)
+        return data, stat.mtime, generate_etag(stat)
       end
 
       # There is no cached data
@@ -95,12 +115,23 @@ module App
         $metrics[:cache_keys_total].increment(labels: { prefix: cache_key_prefix })
         raise
       end
-      File.write(fn, data || "")
+      # Write the data to a temporary file first and then rename it, this ensures the cache entry appears atomically to any other processes
+      fn_temp = "#{DIR}/#{cache_key_prefix}.#{cache_key}.temp.rssbox-cache"
+      File.write(fn_temp, data || "")
+      File.rename(fn_temp, fn)
       $metrics[:cache_size_bytes].increment(by: (data&.bytesize || 0), labels: { prefix: cache_key_prefix })
       $metrics[:cache_written_bytes].increment(by: (data&.bytesize || 0), labels: { prefix: cache_key_prefix })
       $metrics[:cache_keys_total].increment(labels: { prefix: cache_key_prefix })
 
-      return data, Time.now
+      stat = File.stat(fn)
+      return data, stat.mtime, generate_etag(stat)
+    end
+
+    private
+
+    def self.generate_etag(stat)
+      # The ETag is generated using the file creation time and file size
+      sprintf("\"%x-%x\"", stat.birthtime.to_i, stat.size)
     end
   end
 end

@@ -23,6 +23,7 @@ configure do
   use SecureHeaders::Middleware
   use XRobotsTag
   use Prometheus::Middleware::Exporter
+  use ResponseMetrics
 
   set :protection, :except => [:frame_options] # Disable things that secure_headers handles
   set :erb, trim: "-"

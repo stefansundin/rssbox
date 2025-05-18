@@ -258,7 +258,7 @@ get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   @username = username
   @title = "#{username} on YouTube"
 
-  data, _ = App::Cache.cache("youtube.ics", channel_id, 60*60, 60) do
+  data, _, etag = App::Cache.cache("youtube.ics", channel_id, 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     # The API is really inconsistent in listing scheduled live streams, but the RSS endpoint seems to consistently list them, so experiment with using that
     response = App::HTTP.get("https://www.youtube.com/feeds/videos.xml?channel_id=#{channel_id}")
     next "Error: This channel no longer exists or has no videos." if response.code == 404
@@ -286,6 +286,8 @@ get "/youtube/:channel_id/:username.ics" do |channel_id, username|
       }.compact
     end.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
@@ -328,7 +330,7 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
     end
   end
 
-  data, @updated_at = App::Cache.cache("youtube.videos", channel_id, 60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("youtube.videos", channel_id, 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     # The results from this query are not sorted by publishedAt for whatever reason.. probably due to some uploads being scheduled to be published at a certain time
     response = App::YouTube.get("/playlistItems", query: { part: "snippet", playlistId: playlist_id, maxResults: 10 })
     next "Error: This channel no longer exists or has no videos." if response.code == 404
@@ -349,6 +351,8 @@ get "/youtube/:channel_id/:username" do |channel_id, username|
       }.compact
     end.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
@@ -655,7 +659,7 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
 
   @id = id
 
-  data, @updated_at = App::Cache.cache("soundcloud.tracks", id, 4*60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("soundcloud.tracks", id, 4*60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Soundcloud.get("/users/#{id}/tracks")
     next "Error: That user no longer exist." if response.code == 500 && response.body == '{"error":"Match failed"}'
     raise(App::SoundcloudError, response) if !response.success?
@@ -683,6 +687,8 @@ get %r{/soundcloud/(?<id>\d+)/(?<username>.+)} do |id, username|
       "tracks" => tracks,
     }.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
@@ -720,7 +726,7 @@ get "/mixcloud" do
 end
 
 get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
-  data, @updated_at = App::Cache.cache("mixcloud.tracks", username.downcase, 4*60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("mixcloud.tracks", username.downcase, 4*60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Mixcloud.get("/#{username}/cloudcasts/")
     next "Error: That username no longer exist." if response.code == 404
     raise(App::MixcloudError, response) if !response.success?
@@ -736,6 +742,8 @@ get %r{/mixcloud/(?<username>[^/]+)/(?<user>.+)} do |username, user|
       }
     end.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
@@ -927,7 +935,7 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
   @type = "game"
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
 
-  data, @updated_at = App::Cache.cache("twitch.videos.game", "#{id}.#{type}", 60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("twitch.videos.game", "#{id}.#{type}", 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Twitch.get("/videos", query: { game_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
@@ -950,6 +958,8 @@ get %r{/twitch/directory/game/(?<id>\d+)/(?<game_name>.+)} do |id, game_name|
       "videos" => videos,
     }.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
 
   @data = JSON.parse(data)
@@ -971,7 +981,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
 
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
 
-  data, @updated_at = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Twitch.get("/videos", query: { user_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
@@ -997,6 +1007,8 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)\.ics} do |id, user|
       "videos" => videos,
     }.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
 
   @data = JSON.parse(data)
@@ -1015,7 +1027,7 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
   @type = "user"
   type = %w[all upload archive highlight].pick(params[:type]) || "all"
 
-  data, @updated_at = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("twitch.videos.user", "#{id}.#{type}", 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Twitch.get("/videos", query: { user_id: id, type: type })
     raise(App::TwitchError, response) if !response.success?
 
@@ -1041,6 +1053,8 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
       "videos" => videos,
     }.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
 
   @data = JSON.parse(data)
@@ -1096,7 +1110,7 @@ get "/speedrun/:id/:abbr" do |id, abbr|
   @id = id
   @abbr = abbr
 
-  data, @updated_at = App::Cache.cache("speedrun.runs", id, 60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("speedrun.runs", id, 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Speedrun.get("/runs", query: { status: "verified", orderby: "verify-date", direction: "desc", game: id, embed: "category,players,level,platform,region" })
     raise(App::SpeedrunError, response) if !response.success?
     response.json["data"].reject do |run|
@@ -1137,6 +1151,8 @@ get "/speedrun/:id/:abbr" do |id, abbr|
       }
     end.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
@@ -1207,7 +1223,7 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
   @user_id = user_id
   @username = CGI.unescape(username)
 
-  data, @updated_at = App::Cache.cache("dailymotion.videos", user_id, 60*60, 60) do
+  data, @updated_at, etag = App::Cache.cache("dailymotion.videos", user_id, 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
     response = App::Dailymotion.get("/user/#{user_id}/videos", query: { fields: "id,title,created_time,description,allow_embed,available_formats,duration" })
     next "Error: That user no longer exist." if response.code == 404
     raise(App::DailymotionError, response) if !response.success?
@@ -1215,6 +1231,8 @@ get %r{/dailymotion/(?<user_id>[a-z0-9]+)/(?<username>.+)} do |user_id, username
       video.slice("id", "title", "created_time", "duration", "title", "description")
     end.to_json
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
@@ -1286,7 +1304,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
 
   if user_id == "r"
     @subreddit = username
-    data, @updated_at = App::Cache.cache("imgur.r", @subreddit.downcase, 60*60, 60) do
+    data, @updated_at, etag = App::Cache.cache("imgur.r", @subreddit.downcase, 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
       response = App::Imgur.get("/gallery/r/#{@subreddit}")
       raise(App::ImgurError, response) if !response.success? || response.body.empty?
       response.json["data"].map do |image|
@@ -1296,7 +1314,7 @@ get "/imgur/:user_id/:username" do |user_id, username|
   else
     @user_id = user_id
     @username = username
-    data, @updated_at = App::Cache.cache("imgur.user", @username.downcase, 60*60, 60) do
+    data, @updated_at, etag = App::Cache.cache("imgur.user", @username.downcase, 60*60, 60, env["HTTP_IF_NONE_MATCH"]) do
       # can't use user_id in this request unfortunately
       response = App::Imgur.get("/account/#{@username}/submissions")
       next "Error: This user no longer exists." if response.code == 404
@@ -1306,6 +1324,8 @@ get "/imgur/:user_id/:username" do |user_id, username|
       end.to_json
     end
   end
+  headers "ETag" => etag if etag
+  return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
   return [422, data] if data.start_with?("Error:")
 
