@@ -132,6 +132,9 @@ module App
     def self.generate_etag(stat)
       # The ETag is generated using the file creation time and file size
       sprintf("\"%x-%x\"", stat.birthtime.to_i, stat.size)
+    rescue NotImplementedError
+      # birthtime is not implemented on all platforms, fall back to just the file size :(
+      sprintf("\"%x\"", stat.size)
     end
   end
 end
