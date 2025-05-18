@@ -32,7 +32,7 @@
       title += " (scheduled for #{updated.readable(@tz)})"
       content_extra = <<~EOF
         <p>Live broadcast scheduled to start at: #{updated.readable(@tz)}.</p>
-        <iframe width="640" height="50" src="#{request.root_url}/countdown.html?date=#{updated}" frameborder="0" scrolling="yes" referrerpolicy="no-referrer"></iframe>
+        <iframe width="640" height="50" src="#{request.root_url}/countdown.html?date=#{updated}" referrerpolicy="no-referrer" style="border: 0;"></iframe>
       EOF
     end
   end
@@ -46,7 +46,7 @@
     <author><name><%= @username.esc %></name></author>
     <content type="html">
 <%= <<~EOF.esc
-  <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]}?rel=0" frameborder="0" scrolling="no" allowfullscreen referrerpolicy="no-referrer"></iframe>
+  <iframe width="640" height="360" src="https://www.youtube.com/embed/#{video["id"]}?rel=0" allowfullscreen referrerpolicy="no-referrer" style="border: 0;"></iframe>
   #{content_extra}
   #{video["description"].linkify.to_paragraphs}
 EOF

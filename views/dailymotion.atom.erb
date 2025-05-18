@@ -17,7 +17,7 @@
     <author><name><%= @username.esc %></name></author>
     <content type="html">
 <%= <<~EOF.esc
-  <iframe width="480" height="270" scrolling="no" frameborder="no" src="https://www.dailymotion.com/embed/video/#{video["id"]}" allowfullscreen referrerpolicy="no-referrer"></iframe>
+  <iframe width="480" height="270" src="https://www.dailymotion.com/embed/video/#{video["id"]}" allowfullscreen referrerpolicy="no-referrer" style="border: 0;"></iframe>
 
   #{video["description"].to_paragraphs}
 EOF

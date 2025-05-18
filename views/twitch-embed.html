@@ -8,6 +8,8 @@ body {
 }
 iframe {
   min-height: 378px;
+  border: 0;
+  overflow: hidden;
 }
 </style>
 </head>
@@ -27,8 +29,6 @@ if (window.location.hash) {
   const iframe = document.createElement('iframe');
   iframe.width = '100%';
   iframe.height = '100%';
-  iframe.frameBorder = '0';
-  iframe.scrolling = 'no';
   iframe.allowFullscreen = true;
   iframe.src = `https://player.twitch.tv/?${qs}`;
   document.body.appendChild(iframe);
