@@ -11,7 +11,6 @@ processes = []
   MAX_THREADS = "25"
   MIN_THREADS = "25"
   URL_MAX_CONCURRENCY = "5"
-  WEB_CONCURRENCY = "2"
   RESTART_APP_INTERVAL = "86400"
 
 [experimental]
