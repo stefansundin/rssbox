@@ -706,6 +706,9 @@ get "/twitch" do
     return [404, "Unsupported url."]
   elsif /twitch\.tv\/videos\/(?<vod_id>\d+)/ =~ params[:q]
     # https://www.twitch.tv/videos/25133028
+  elsif /twitch\.tv\/(?<username>[^\/]+)\/schedule/ =~ params[:q]
+    # https://www.twitch.tv/majinphil/schedule
+    type = "schedule"
   elsif /twitch\.tv\/(?<username>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/majinphil
     # https://www.twitch.tv/gsl/video/25133028 (legacy url)
@@ -747,6 +750,15 @@ get "/twitch" do
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
     return [422, path] if path.start_with?("Error:")
+    if type == "schedule"
+      if params.has_key?(:shift)
+        redirect Addressable::URI.new(path: "/twitch/#{path}.ics").normalize.to_s, 301
+      else
+        id = path.split("/")[0]
+        redirect "https://api.twitch.tv/helix/schedule/icalendar?broadcaster_id=#{id}", 301
+      end
+      return
+    end
     redirect Addressable::URI.new(path: "/twitch/#{path}").normalize.to_s, 301
   end
 end
