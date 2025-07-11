@@ -510,7 +510,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
         "code" => post["node"]["code"],
         "taken_at" => post["node"]["taken_at"],
         "username" => post["node"]["owner"]["username"],
-        "text" => post["node"]["caption"]["text"],
+        "text" => post["node"]["caption"]&.[]("text"),
         "media_count" => post["node"]["carousel_media_count"] || 1,
       }
     end.to_json
