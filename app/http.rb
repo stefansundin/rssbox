@@ -3,17 +3,21 @@
 module App
   class HTTP
     def self.get(url, options={})
-      relative_url = (url[0] == "/")
+      relative_url = (url.nil? || url[0] == "/")
 
-      if defined?(self::BASE_URL) && relative_url
-        url = self::BASE_URL+url
-      end
+      if url.nil?
+        url = self::BASE_URL
+      else
+        if defined?(self::BASE_URL) && relative_url
+          url = self::BASE_URL+url
+        end
 
-      if defined?(self::PARAMS) && relative_url
-        if url["?"]
-          url += "&"+self::PARAMS
-        else
-          url += "?"+self::PARAMS
+        if defined?(self::PARAMS) && relative_url
+          if url["?"]
+            url += "&"+self::PARAMS
+          else
+            url += "?"+self::PARAMS
+          end
         end
       end
 
@@ -46,17 +50,21 @@ module App
     end
 
     def self.post(url, data, options={})
-      relative_url = (url[0] == "/")
+      relative_url = (url.nil? || url[0] == "/")
 
-      if defined?(self::BASE_URL) && relative_url
-        url = self::BASE_URL+url
-      end
+      if url.nil?
+        url = self::BASE_URL
+      else
+        if defined?(self::BASE_URL) && relative_url
+          url = self::BASE_URL+url
+        end
 
-      if defined?(self::PARAMS) && relative_url
-        if url["?"]
-          url += "&"+self::PARAMS
-        else
-          url += "?"+self::PARAMS
+        if defined?(self::PARAMS) && relative_url
+          if url["?"]
+            url += "&"+self::PARAMS
+          else
+            url += "?"+self::PARAMS
+          end
         end
       end
 

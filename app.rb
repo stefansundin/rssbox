@@ -701,6 +701,9 @@ get "/twitch" do
   if /twitch\.tv\/directory\/game\/(?<game_name>[^\/?#]+)/ =~ params[:q]
     # https://www.twitch.tv/directory/game/Perfect%20Dark
     game_name = Addressable::URI.unescape(game_name)
+  elsif /twitch\.tv\/directory\/category\/(?<category_slug>[^\/?#]+)/ =~ params[:q]
+    # https://www.twitch.tv/directory/category/perfect-dark-2000
+    category_slug = Addressable::URI.unescape(category_slug)
   elsif /twitch\.tv\/directory/ =~ params[:q]
     # https://www.twitch.tv/directory/all/tags/7cefbf30-4c3e-4aa7-99cd-70aabb662f27
     return [404, "Unsupported url."]
@@ -726,6 +729,10 @@ get "/twitch" do
       "#{data["id"]}/#{game_name}"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
+    return [422, path] if path.start_with?("Error:")
+    redirect Addressable::URI.new(path: "/twitch/directory/game/#{path}").normalize.to_s, 301
+  elsif category_slug
+    path = App::TwitchGraphQL.resolve_category_slug(category_slug)
     return [422, path] if path.start_with?("Error:")
     redirect Addressable::URI.new(path: "/twitch/directory/game/#{path}").normalize.to_s, 301
   elsif vod_id
