@@ -177,6 +177,7 @@ get "/youtube" do
   if user
     channel_id, _ = App::Cache.cache("youtube.user", user.downcase, 60*60, 60) do
       response = App::YouTube.get("/channels", query: { forUsername: user })
+      next "Error: YouTube returned an Internal Server Error. Please try again in a few minutes." if response.code == 500
       raise(App::GoogleError, response) if !response.success?
       if response.json["items"] && response.json["items"].length > 0
         response.json["items"][0]["id"]
@@ -187,6 +188,7 @@ get "/youtube" do
   elsif handle
     channel_id, _ = App::Cache.cache("youtube.handle", handle.downcase, 60*60, 60) do
       response = App::YouTube.get("/channels", query: { forHandle: handle })
+      next "Error: YouTube returned an Internal Server Error. Please try again in a few minutes." if response.code == 500
       raise(App::GoogleError, response) if !response.success?
       if response.json["items"] && response.json["items"].length > 0
         response.json["items"][0]["id"]
@@ -201,6 +203,7 @@ get "/youtube" do
         response = App::HTTP.get(response.redirect_url)
       end
       next "Error: Could not find the user. Please try with a video url instead." if response.code == 404
+      next "Error: YouTube returned an Internal Server Error. Please try again in a few minutes." if response.code == 500
       raise(App::GoogleError, response) if !response.success?
       doc = Nokogiri::HTML(response.body)
       doc.at("meta[itemprop='identifier']")&.[]("content") || "Error: Could not find the user. Please try with a video url instead."
@@ -208,6 +211,7 @@ get "/youtube" do
   elsif video_id
     channel_id, _ = App::Cache.cache("youtube.video", video_id, 60*60, 60) do
       response = App::YouTube.get("/videos", query: { part: "snippet", id: video_id })
+      next "Error: YouTube returned an Internal Server Error. Please try again in a few minutes." if response.code == 500
       raise(App::GoogleError, response) if !response.success?
       if response.json["items"].length > 0
         response.json["items"][0]["snippet"]["channelId"]
