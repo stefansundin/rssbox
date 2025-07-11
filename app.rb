@@ -1012,8 +1012,8 @@ get %r{/twitch/(?<id>\d+)/(?<user>.+)} do |id, user|
 
   @data = JSON.parse(data)
   @user_name = @data["user_name"] || CGI.unescape(user)
-  @user_login = @data["user_login"] || CGI.unescape(user)
-  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{@user_login.downcase}").normalize.to_s
+  user_login = @data["user_login"] || CGI.unescape(user)
+  @alternate_url = Addressable::URI.parse("https://www.twitch.tv/#{user_login.downcase}").normalize.to_s
   @data["videos"].reject! { |v| v["is_live"] }
 
   @title = @user_name
