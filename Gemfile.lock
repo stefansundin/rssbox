@@ -24,11 +24,15 @@ GEM
       reline (>= 0.4.2)
     logger (1.7.0)
     method_source (1.1.0)
+    mini_portile2 (2.8.9)
     multi_json (1.17.0)
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
     newrelic_rpm (9.20.0)
     nio4r (2.7.4)
+    nokogiri (1.18.9)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
     nokogiri (1.18.9-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.9-arm-linux-gnu)
@@ -109,6 +113,7 @@ PLATFORMS
   arm64-darwin-23
   arm64-darwin-24
   armv7l-linux-eabihf
+  riscv64-linux
   x86_64-linux
 
 DEPENDENCIES
