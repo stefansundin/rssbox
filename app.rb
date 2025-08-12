@@ -501,6 +501,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
         }
       }
     )
+    next "ratelimited" if response.code == 401 && response.body.includes?('"Please wait a few minutes before you try again."')
     raise(App::InstagramError, response) if !response.success? || !response.json?
     next "Error: Something went wrong. Perhaps the Instagram user no longer exists?" if response.json["errors"]
 
@@ -518,6 +519,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
   headers "ETag" => etag if etag
   return [304] if env["HTTP_IF_NONE_MATCH"] && etag == env["HTTP_IF_NONE_MATCH"]
   return [422, "Something went wrong. Try again later."] if data.nil?
+  return [429, "Ratelimited. Try again later."] if data == "ratelimited"
   return [422, data] if data.start_with?("Error:")
 
   @data = JSON.parse(data)
