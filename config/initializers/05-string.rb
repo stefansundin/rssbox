@@ -163,7 +163,7 @@ class String
     elsif %r{^https?://(?:www\.)?vimeo\.com/(?<id>\d+)} =~ self
       "<iframe width=\"853\" height=\"480\" src=\"https://player.vimeo.com/video/#{id}\" allowfullscreen referrerpolicy=\"no-referrer\" style=\"border: 0;\"></iframe>"
     elsif %r{^https?://(?:www\.)?instagram\.com/(?:p|tv|reel)/(?<id>[^/?#]+)} =~ self
-      "<iframe width=\"612\" height=\"710\" src=\"https://www.instagram.com/p/#{id}/embed/\" allowfullscreen referrerpolicy=\"no-referrer\" style=\"border: 0;\"></iframe>"
+      "<iframe width=\"612\" height=\"940\" src=\"https://www.instagram.com/p/#{id}/embed/\" allowfullscreen referrerpolicy=\"no-referrer\" style=\"border: 0;\"></iframe>"
     elsif %r{^https?://(?:www\.)?twitch\.tv/(?:videos/(?<vod_id>\d+)|(?<channel_name>[^/]+)(?:/(?:v|video)/(?<vod_id>\d+))?).*?(?:[?&#](?:t|time)=(?<t>[^&#]+))?} =~ self && !%w[directory broadcast].include?(channel_name)
       # https://www.twitch.tv/videos/76877760?t=20h38m50s
       # https://www.twitch.tv/gamesdonequick

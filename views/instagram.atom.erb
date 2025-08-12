@@ -18,7 +18,7 @@
     <content type="html">
 <%=
   <<~EOF.esc
-    <iframe width="612" height="710" src="https://www.instagram.com/p/#{post["code"]}/embed/" allowfullscreen referrerpolicy="no-referrer" style="border: 0;"></iframe>
+    <iframe width="612" height="940" src="https://www.instagram.com/p/#{post["code"]}/embed/" allowfullscreen referrerpolicy="no-referrer" style="border: 0;"></iframe>
   EOF
 %>
 <%= post["text"]&.linkify&.to_paragraphs&.esc %>
