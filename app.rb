@@ -501,7 +501,7 @@ get %r{/instagram/(?<user_id>\d+)/(?<username>.+)} do |user_id, username|
         }
       }
     )
-    next "ratelimited" if response.code == 401 && response.body.includes?('"Please wait a few minutes before you try again."')
+    next "ratelimited" if response.code == 401 && response.body.include?('"Please wait a few minutes before you try again."')
     raise(App::InstagramError, response) if !response.success? || !response.json?
     next "Error: Something went wrong. Perhaps the Instagram user no longer exists?" if response.json["errors"]
 
