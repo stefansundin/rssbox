@@ -474,6 +474,7 @@ get "/instagram" do
           }
         }
       )
+      next "ratelimited" if response.code == 401 && response.body.include?('"Please wait a few minutes before you try again."')
       raise(App::InstagramError, response) if !response.success? || !response.json?
       data = response.json["data"]["xdt_api__v1__fbsearch__topsearch_connection"]["users"].find { |data| data["user"]["username"] == name }
       next "Error: Could not find an Instagram user with that username. Please enter the username exactly." if !data
@@ -481,6 +482,7 @@ get "/instagram" do
       "#{user["id"]}/#{user["username"]}"
     end
     return [422, "Something went wrong. Try again later."] if path.nil?
+    return [429, "Ratelimited. Try again later."] if path == "ratelimited"
     return [422, path] if path.start_with?("Error:")
   end
   redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s, 301

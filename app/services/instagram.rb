@@ -32,6 +32,7 @@ module App
             }
           }
         )
+        next nil if response.code == 401 && response.body.include?('"Please wait a few minutes before you try again."')
         raise(InstagramError, response) if !response.success? || !response.json
 
         data = response.json["data"]["xdt_shortcode_media"]
