@@ -1,7 +1,7 @@
 # https://hub.docker.com/r/stefansundin/rssbox
 # docker pull stefansundin/rssbox
-# docker run -i -t -p 3000:3000 stefansundin/rssbox
-# docker run -i -t --entrypoint bin/cons stefansundin/rssbox
+# docker run --rm -it -p 3000:3000 stefansundin/rssbox
+# docker run --rm -it --entrypoint bin/cons stefansundin/rssbox
 
 # docker network create rssbox
 # docker run --rm --network=rssbox --name=redis redis redis-server --appendonly yes
@@ -17,24 +17,52 @@
 # Push to public ECR:
 # docker buildx imagetools create -t public.ecr.aws/stefansundin/rssbox stefansundin/rssbox
 
-FROM stefansundin/ruby:3.4-jemalloc
+# Verify jemalloc:
+# docker run --rm -it --entrypoint ruby -e MALLOC_CONF=stats_print:true stefansundin/rssbox -- -e exit
+# Verify YJIT:
+# docker run --rm -it --entrypoint ruby -e RUBYOPT="--yjit" stefansundin/rssbox -e "puts RUBY_DESCRIPTION"
+
+FROM ruby:3.4 AS builder
+
+RUN echo 'gem: --no-document' >> /usr/local/etc/gemrc
+
+WORKDIR /app
+COPY Gemfile Gemfile.lock ./
+
+RUN bundle config set --local without development:test
+RUN bundle config set --local deployment true
+RUN bundle install --retry=3 --jobs=4
+
+
+FROM ruby:3.4-slim
+
 LABEL org.opencontainers.image.authors="Stefan Sundin"
 LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
 
-# install system utilities that are useful when debugging
 RUN \
   apt-get update && \
   apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
+    libjemalloc2 \
+    rustc \
+    git \
     vim less && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
+RUN ln -s $(uname -m)-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
+ENV MALLOC_ARENA_MAX=2
+
+ENV APP_ENV=production
+
 WORKDIR /app
-COPY Gemfile Gemfile.lock ./
-RUN bundle config set --local without development:test
-RUN bundle config set --local deployment true
-RUN bundle install --retry=3 --jobs=4
+COPY --from=builder /usr/local/etc/gemrc /usr/local/etc/gemrc
+COPY --from=builder /usr/local/bundle/config /usr/local/bundle/config
+COPY --from=builder /app /app
+
+RUN bundle check
+
 COPY . .
 RUN find -not -path './vendor/*'
 
