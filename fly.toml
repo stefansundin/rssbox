@@ -18,8 +18,9 @@ processes = []
   auto_rollback = true
 
 [mounts]
-source="data"
-destination="/data"
+source = "data"
+destination = "/data"
+scheduled_snapshots = false
 
 [[services]]
   http_checks = []
