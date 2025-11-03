@@ -20,6 +20,9 @@ gem "opengraph_parser"
 gem "airbrake", require: false
 gem "newrelic_rpm", require: false
 
+# openssl 3.6.0 is causing issues in the version of the openssl gem that ships with Ruby. https://github.com/ruby/openssl/issues/949
+gem "openssl", require: false
+
 # Silence Ruby deprecation warning by including drb here. https://github.com/Mon-Ouie/pry-remote/pull/88
 gem "drb"
 
