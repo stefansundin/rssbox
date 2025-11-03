@@ -43,7 +43,7 @@
       <%- if (!$enabled_services || $enabled_services.include?("youtube")) && ENV["GOOGLE_API_KEY"] -%>
       <form class="input-group" method="get" action="youtube">
         <span class="input-group-text"><label for="youtube_q">YouTube</label></span>
-        <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." required>
+        <input class="form-control" type="search" name="q" id="youtube_q" placeholder="Enter a YouTube channel name, channel id, or a url to a channel or video." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -51,7 +51,7 @@
       <%- if (!$enabled_services || $enabled_services.include?("vimeo")) && ENV["VIMEO_ACCESS_TOKEN"] -%>
       <form class="input-group" method="get" action="vimeo">
         <span class="input-group-text"><label for="vimeo_q">Vimeo</label></span>
-        <input class="form-control" type="search" name="q" id="vimeo_q" placeholder="Enter a Vimeo channel name, video id, or a url to a channel or video." required>
+        <input class="form-control" type="search" name="q" id="vimeo_q" placeholder="Enter a Vimeo channel name, video id, or a url to a channel or video." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -59,7 +59,7 @@
       <%- if !$enabled_services || $enabled_services.include?("instagram") -%>
       <form class="input-group" method="get" action="instagram">
         <span class="input-group-text"><label for="instagram_q">Instagram</label></span>
-        <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." required>
+        <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -67,7 +67,7 @@
       <%- if (!$enabled_services || $enabled_services.include?("soundcloud")) && ENV["SOUNDCLOUD_CLIENT_ID"] && ENV["SOUNDCLOUD_CLIENT_SECRET"] -%>
       <form class="input-group" method="get" action="soundcloud">
         <span class="input-group-text"><label for="soundcloud_q">SoundCloud</label></span>
-        <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." required>
+        <input class="form-control" type="search" name="q" id="soundcloud_q" placeholder="Enter a SoundCloud username or a url to a user or track." spellcheck="false" required>
         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu dropdown-menu-end">
           <a class="dropdown-item" data-download target="_blank">Download track</a>
@@ -80,7 +80,7 @@
       <%- if !$enabled_services || $enabled_services.include?("mixcloud") -%>
       <form class="input-group" method="get" action="mixcloud">
         <span class="input-group-text"><label for="mixcloud_q">Mixcloud</label></span>
-        <input class="form-control" type="search" name="q" id="mixcloud_q" placeholder="Enter a Mixcloud username or a url to a user or track." required>
+        <input class="form-control" type="search" name="q" id="mixcloud_q" placeholder="Enter a Mixcloud username or a url to a user or track." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -88,7 +88,7 @@
       <%- if (!$enabled_services || $enabled_services.include?("twitch")) && ENV["TWITCH_CLIENT_ID"] -%>
       <form class="input-group" method="get" action="twitch">
         <span class="input-group-text"><label for="twitch_q">Twitch</label></span>
-        <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username, a url to a user, video or game." required>
+        <input class="form-control" type="search" name="q" id="twitch_q" placeholder="Enter a Twitch username, a url to a user, video or game." spellcheck="false" required>
         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu dropdown-menu-end">
           <%- if ENV["TWITCHTOKEN_CLIENT_ID"] -%>
@@ -105,7 +105,7 @@
       <%- if !$enabled_services || $enabled_services.include?("speedrun") -%>
       <form class="input-group" method="get" action="speedrun">
         <span class="input-group-text"><label for="speedrun_q">Speedrun</label></span>
-        <input class="form-control" type="search" name="q" id="speedrun_q" placeholder="Enter a game name or a speedrun.com url." required>
+        <input class="form-control" type="search" name="q" id="speedrun_q" placeholder="Enter a game name or a speedrun.com url." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -113,7 +113,7 @@
       <%- if !$enabled_services || $enabled_services.include?("dailymotion") -%>
       <form class="input-group" method="get" action="dailymotion">
         <span class="input-group-text"><label for="dailymotion_q">Dailymotion</label></span>
-        <input class="form-control" type="search" name="q" id="dailymotion_q" placeholder="Enter a Dailymotion channel name or a url." required>
+        <input class="form-control" type="search" name="q" id="dailymotion_q" placeholder="Enter a Dailymotion channel name or a url." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -121,7 +121,7 @@
       <%- if (!$enabled_services || $enabled_services.include?("imgur")) && ENV["IMGUR_CLIENT_ID"] -%>
       <form class="input-group" method="get" action="imgur">
         <span class="input-group-text"><label for="imgur_q">Imgur</label></span>
-        <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur username or a url. Or subreddit url." required>
+        <input class="form-control" type="search" name="q" id="imgur_q" placeholder="Enter a Imgur username or a url. Or subreddit url." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -129,7 +129,7 @@
       <%- if !$enabled_services || $enabled_services.include?("svtplay") -%>
       <form class="input-group" method="get" action="svtplay">
         <span class="input-group-text"><label for="svtplay_q">SVT Play</label></span>
-        <input class="form-control" type="search" name="q" id="svtplay_q" placeholder="Enter a SVT Play program name or a url." required>
+        <input class="form-control" type="search" name="q" id="svtplay_q" placeholder="Enter a SVT Play program name or a url." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>
@@ -159,7 +159,7 @@
         <div class="input-group">
           <span class="input-group-text"><label for="donation_amount">$</label></span>
           <input type="hidden" name="currency_code" value="USD">
-          <input class="form-control" type="text" id="donation_amount" name="amount" value="5.00" pattern="\d+\.?\d*" placeholder="Amount">
+          <input class="form-control" type="text" id="donation_amount" name="amount" value="5.00" pattern="\d+\.?\d*" placeholder="Amount" spellcheck="false">
         </div>
       </div>
       <div class="col">
@@ -190,7 +190,7 @@
         <div class="modal-body">
           <label for="feed-url" class="col-form-label">Feed URL:</label>
           <div class="input-group">
-            <input class="form-control" type="text" id="feed-url" placeholder="Feed URL">
+            <input class="form-control" type="text" id="feed-url" placeholder="Feed URL" spellcheck="false">
             <button type="button" class="btn btn-primary" id="copy-button">Copy</button>
           </div>
 
@@ -215,7 +215,7 @@
                 <label class="col-form-label" for="youtube_title_filter">Filter by video title</label>
               </div>
               <div class="col-auto">
-                <input type="text" id="youtube_title_filter" name="q" class="form-control">
+                <input type="text" id="youtube_title_filter" name="q" class="form-control" spellcheck="false">
               </div>
             </div>
           </form>
