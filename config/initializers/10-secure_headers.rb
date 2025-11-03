@@ -30,6 +30,7 @@ SecureHeaders::Configuration.default do |config|
       script_src: %w('unsafe-inline'),
       style_src: %w('unsafe-inline'),
       connect_src: %w('self'),
+      upgrade_insecure_requests: false,
     })
   end
 end
