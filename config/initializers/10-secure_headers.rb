@@ -18,6 +18,7 @@ SecureHeaders::Configuration.default do |config|
   config.referrer_policy = "no-referrer"
   config.csp = {
     default_src: %w('none'),
+    base_src: %w('none'),
     script_src: SecureHeaders::OPT_OUT,
     upgrade_insecure_requests: true,
   }
