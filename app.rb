@@ -257,6 +257,7 @@ end
 
 get "/youtube/:channel_id/:username.ics" do |channel_id, username|
   return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
+  return [404, "Invalid channel ID"] if !channel_id.start_with?('UC')
 
   @channel_id = channel_id
   @username = username
@@ -322,6 +323,7 @@ end
 
 get "/youtube/:channel_id/:username" do |channel_id, username|
   return [404, "Credentials not configured"] if !ENV["GOOGLE_API_KEY"]
+  return [404, "Invalid channel ID"] if !channel_id.start_with?('UC')
 
   @channel_id = channel_id
   playlist_id = "UU" + channel_id[2..]
