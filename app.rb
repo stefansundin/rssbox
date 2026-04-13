@@ -447,7 +447,8 @@ get %r{/facebook/(?<id>\d+)/(?<username>.+)} do |id, username|
 end
 
 get "/instagram" do
-  if /instagram\.com\/(?:p|tv|reel)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
+  if /instagram\.com\/(?:[^\/]+\/)?(?:p|tv|reel)\/(?<post_id>[^\/?#]+)/ =~ params[:q]
+    # https://www.instagram.com/infectedmushroom/p/DWy-7xhCHgJ/
     # https://www.instagram.com/p/B-Pv6COFOjV/
     # https://www.instagram.com/tv/B-Pv6COFOjV/
     # https://www.instagram.com/p/CZfn8_-uYDz/ (carousel with video and photos)
