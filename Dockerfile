@@ -22,7 +22,7 @@
 # Verify YJIT:
 # docker run --rm -it --entrypoint ruby -e RUBYOPT="--yjit" stefansundin/rssbox -e "puts RUBY_DESCRIPTION"
 
-FROM ruby:3.4 AS builder
+FROM ruby:4.0 AS builder
 
 RUN echo 'gem: --no-document' >> /usr/local/etc/gemrc
 
@@ -34,7 +34,7 @@ RUN bundle config set --local deployment true
 RUN bundle install --retry=3 --jobs=4
 
 
-FROM ruby:3.4-slim
+FROM ruby:4.0-slim
 
 LABEL org.opencontainers.image.authors="Stefan Sundin"
 LABEL org.opencontainers.image.url="https://github.com/stefansundin/rssbox"
