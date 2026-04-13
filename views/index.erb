@@ -59,7 +59,7 @@
       <%- if !$enabled_services || $enabled_services.include?("instagram") -%>
       <form class="input-group" method="get" action="instagram">
         <span class="input-group-text"><label for="instagram_q">Instagram</label></span>
-        <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter an Instagram username or a url to a user or post." spellcheck="false" required>
+        <input class="form-control" type="search" name="q" id="instagram_q" placeholder="Enter a url to an Instagram post." spellcheck="false" required>
         <input class="btn btn-primary" type="submit" value="Get RSS Feed">
       </form>
       <%- end -%>

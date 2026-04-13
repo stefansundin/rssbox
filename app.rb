@@ -466,26 +466,7 @@ get "/instagram" do
     user = post["owner"]
     path = "#{user["id"]}/#{user["username"]}"
   else
-    name.downcase!
-    path, _ = App::Cache.cache("instagram.user", name, 24*60*60, 60*60) do
-      response = App::Instagram.post("/graphql/query",
-        "variables=%7B%22data%22%3A%7B%22context%22%3A%22blended%22%2C%22include_reel%22%3A%22true%22%2C%22query%22%3A%22#{name}%22%2C%22rank_token%22%3A%22%22%2C%22search_surface%22%3A%22web_top_search%22%7D%2C%22hasQuery%22%3Atrue%7D&doc_id=9346396502107496",
-        {
-          headers: {
-            "Content-Type" => "application/x-www-form-urlencoded",
-          }
-        }
-      )
-      next "ratelimited" if response.code == 401 && response.body.include?('"Please wait a few minutes before you try again."')
-      raise(App::InstagramError, response) if !response.success? || !response.json?
-      data = response.json["data"]["xdt_api__v1__fbsearch__topsearch_connection"]["users"].find { |data| data["user"]["username"] == name }
-      next "Error: Could not find an Instagram user with that username. Please enter the username exactly." if !data
-      user = data["user"]
-      "#{user["id"]}/#{user["username"]}"
-    end
-    return [422, "Something went wrong. Try again later."] if path.nil?
-    return [429, "Ratelimited. Try again later."] if path == "ratelimited"
-    return [422, path] if path.start_with?("Error:")
+    return [422, "Looking up users by username is not working at the moment. Please use a link to an Instagram post by the user instead."] if path.nil?
   end
   redirect Addressable::URI.new(path: "/instagram/#{path}").normalize.to_s, 301
 end
