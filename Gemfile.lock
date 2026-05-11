@@ -13,33 +13,32 @@ GEM
     connection_pool (3.0.2)
     date (3.5.1)
     dotenv (3.2.0)
-    erb (6.0.2)
+    erb (6.0.4)
     github-release-party (0.4.4)
       rake (>= 12)
     io-console (0.8.2)
-    irb (1.17.0)
+    irb (1.18.0)
       pp (>= 0.6.0)
       prism (>= 1.3.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     logger (1.7.0)
     mini_portile2 (2.8.9)
-    multi_json (1.20.1)
-    mustermann (3.0.4)
-      ruby2_keywords (~> 0.0.1)
-    newrelic_rpm (10.3.0)
+    multi_json (1.21.1)
+    mustermann (3.1.1)
+    newrelic_rpm (10.4.0)
       logger
     nio4r (2.7.5)
-    nokogiri (1.19.2)
+    nokogiri (1.19.3)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.19.2-aarch64-linux-gnu)
+    nokogiri (1.19.3-aarch64-linux-gnu)
       racc (~> 1.4)
-    nokogiri (1.19.2-arm-linux-gnu)
+    nokogiri (1.19.3-arm-linux-gnu)
       racc (~> 1.4)
-    nokogiri (1.19.2-arm64-darwin)
+    nokogiri (1.19.3-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.19.2-x86_64-linux-gnu)
+    nokogiri (1.19.3-x86_64-linux-gnu)
       racc (~> 1.4)
     opengraph_parser (0.2.5)
       addressable
@@ -57,7 +56,7 @@ GEM
       date
       stringio
     public_suffix (7.0.5)
-    puma (8.0.0)
+    puma (8.0.1)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.6)
@@ -69,7 +68,7 @@ GEM
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
     rack-ssl-enforcer (0.2.9)
-    rake (13.3.1)
+    rake (13.4.2)
     rbtree3 (0.7.1)
     rdoc (7.2.0)
       erb
@@ -77,11 +76,10 @@ GEM
       tsort
     redis (5.4.1)
       redis-client (>= 0.22.0)
-    redis-client (0.28.0)
+    redis-client (0.29.0)
       connection_pool
     reline (0.6.3)
       io-console (~> 0.5)
-    ruby2_keywords (0.0.5)
     secure_headers (7.2.0)
       cgi (>= 0.1)
     sinatra (4.2.1)
@@ -138,7 +136,7 @@ DEPENDENCIES
   tzinfo
 
 RUBY VERSION
-  ruby 4.0.2p0
+  ruby 4.0.3
 
 BUNDLED WITH
-  4.0.10
+  4.0.11
