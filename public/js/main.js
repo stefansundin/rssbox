@@ -7,16 +7,15 @@ try {
 
 function sign(n) {
   if (n < 0) {
-    return "-";
+    return '-';
+  } else if (n > 0) {
+    return '+';
   }
-  if (n > 0) {
-    return "+";
-  }
-  return "";
+  return '';
 }
 
-function fmt_filesize(bytes, digits=1) {
-  const units = ["B", "kiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+function formatFilesize(bytes, digits=1) {
+  const units = ['B', 'kiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   let i = 0;
   while (bytes > 1024 && i < units.length) {
     bytes = bytes / 1024;
@@ -29,16 +28,16 @@ function fmt_filesize(bytes, digits=1) {
 
 function toObject(arr, f=decodeURIComponent) {
   const obj = {};
-  arr.forEach(function(e) {
-    obj[e[0]] = f(e[1]);
-  });
+  for (const [name, value] of arr) {
+    obj[name] = f(value);
+  }
   return obj;
 }
 
 function basename(url) {
-  url = url.substr(0, url.indexOf("?")) || url;
-  url = url.substr(0, url.indexOf("#")) || url;
-  return url.substr(url.lastIndexOf("/")+1);
+  url = url.substring(0, url.indexOf('?')) || url;
+  url = url.substring(0, url.indexOf('#')) || url;
+  return url.substring(url.lastIndexOf('/')+1);
 }
 
 // fly sometimes return "502 Bad Gateway" errors and it works on the second try, so retry at most once
@@ -50,31 +49,29 @@ async function fetchWithRetry(resource, options) {
   return response;
 }
 
-$(document).ready(async function() {
+document.addEventListener('DOMContentLoaded', async function() {
   {
-    const links = document.querySelectorAll(".expander");
-    for (let i=0; i < links.length; i++) {
-      const a = links[i];
-      a.style.display = "inline-block";
-      a.addEventListener("click", function() {
-        const id = this.getAttribute("expand");
-        document.getElementById(id).style.display = "block";
-        this.style.display = "none";
+    const links = document.querySelectorAll('.expander');
+    for (const a of links) {
+      a.style.display = 'inline-block';
+      a.addEventListener('click', function() {
+        const id = this.getAttribute('expand');
+        document.getElementById(id).style.display = 'block';
+        this.style.display = 'none';
       });
-      const id = a.getAttribute("expand");
-      document.getElementById(id).style.display = "none";
+      const id = a.getAttribute('expand');
+      document.getElementById(id).style.display = 'none';
     }
   }
 
   {
-    let links = document.querySelectorAll("a[fubar]");
-    for (let i=0; i < links.length; i++) {
-      const a = links[i];
-      if (a.href !== "") {
+    let links = document.querySelectorAll('a[fubar]');
+    for (const a of links) {
+      if (a.href !== '') {
         continue;
       }
       a.textContent = a.textContent
-        .replace(/[A-Z]{2}/, (c) => (c[0] + "@" + c[1]).toLowerCase())
+        .replace(/[A-Z]{2}/, (c) => (`${c[0]}@${c[1]}`).toLowerCase())
         .replace(/[A-Z]/g, (c) => `.${c.toLowerCase()}`);
       a.href = `mailto:${a.textContent}`;
     }
@@ -82,86 +79,86 @@ $(document).ready(async function() {
 
   {
     const forms = document.querySelectorAll('form[action="https://www.paypal.com/cgi-bin/webscr"]');
-    for (let i=0; i < forms.length; i++) {
-      const form = forms[i];
-      form.addEventListener("submit", function(e) {
+    for (const form of forms) {
+      form.addEventListener('submit', function(e) {
         if (parseInt(this.amount.value) < 1) {
           e.preventDefault();
-          alert("The minimum donation amount is one dollar. Anything less than one dollar and you're just giving PayPal everything because of their fees.\n\nIf you can't afford one dollar, then please donate to a local charity instead.");
+          alert("The minimum donation amount is one dollar. Anything less than one dollar and you're just giving PayPal everything because of their fees.");
           return false;
         }
       });
     }
   }
 
-  window.dirty = 0;
-  $(window).on("beforeunload", function(event) {
-    if (window.dirty > 0) {
+  const feedModal = new bootstrap.Modal('#feed-modal');
+  const feedUrlInput = document.querySelector('#feed-url');
+
+  let dirty = 0;
+  window.addEventListener('beforeunload', function(event) {
+    if (dirty > 0) {
       event.preventDefault();
-      event.returnValue = "There are still files downloading!";
+      event.returnValue = 'There are still files downloading!';
       return event.returnValue;
     }
   });
 
-  $(document).on("show.bs.dropdown", function(e) {
-    const form = $(e.target).parents("form");
-    const q = form.find("input[name=q]").val();
-    form.find("[data-download]").each(function() {
-      const btn = $(this);
-      const url = `${form.attr("action")}/download?url=${q}`;
-      btn.attr("href", url);
-    });
-    form.find("[data-action]").each(function() {
-      const btn = $(this);
-      btn.attr("href", `${form.attr("action")}/${btn.attr("data-action")}?url=${q}`);
-    });
-    form.find("[data-vlc]").each(function() {
-      const btn = $(this);
-      btn.attr("href", `vlc://${form[0].action}/${btn.attr("data-vlc")}?url=${q}`);
-    });
-    form.find("[data-irc]").each(function() {
-      const btn = $(this);
+  document.addEventListener('show.bs.dropdown', function(event) {
+    const form = event.target.parentElement;
+    const q = form.elements.namedItem('q').value;
+    for (const button of form.querySelectorAll('[data-download]')) {
+      button.href = `${form.getAttribute('action')}/download?url=${q}`;
+    }
+    for (const button of form.querySelectorAll('[data-action]')) {
+      button.href = `${form.getAttribute('action')}/${button.dataset.action}?url=${q}`;
+    }
+    for (const button of form.querySelectorAll('[data-vlc]')) {
+      button.href = `vlc://${form.action}/${button.dataset.vlc}?url=${q}`;
+    }
+    for (const button of form.querySelectorAll('[data-irc]')) {
       const m = /(?:https?:\/\/(?:www\.|clips\.)?twitch\.tv\/)?([^/]+)/.exec(q);
       if (m === null) {
         return;
       }
       const channel = m[1];
-      btn.attr("href", `irc://${btn.attr("data-irc")}/${channel}`);
-    });
+      button.href = `irc://${button.dataset.irc}/${channel}`;
+    }
   });
 
   let shiftKey = false;
-  document.addEventListener("keydown", function (e) {
+  document.addEventListener('keydown', function (e) {
     shiftKey = e.shiftKey;
   });
-  document.addEventListener("keyup", function (e) {
+  document.addEventListener('keyup', function (e) {
     shiftKey = e.shiftKey;
   });
 
-  $("#services form").submit(async function(event) {
+  async function submitForm(event) {
     event.preventDefault();
 
-    const form = $(this);
-    const action = form.attr("action");
-    let qs = form.serialize();
+    const action = this.getAttribute('action');
+    const data = new FormData(this);
+    let qs = new URLSearchParams(data).toString();
     if (shiftKey) {
-      qs += "&shift";
+      qs += '&shift';
     }
-    const submit = form.find('input[type="submit"]');
-    const submit_value = submit.attr("value");
-    submit.attr("value", "Working...");
-    form.find("input").prop("disabled", true);
+    const oldButtonValue = event.submitter.value;
+    event.submitter.value = 'Working...';
+    for (const input of this.elements) {
+      input.disabled = true;
+    }
 
     const response = await fetchWithRetry(`${action}?${qs}`, {
       headers: {
-        "Accept": "application/json",
+        'Accept': 'application/json',
       },
     });
-    submit.attr("value", submit_value);
-    form.find("input").prop("disabled", false);
+    event.submitter.value = oldButtonValue;
+    for (const input of this.elements) {
+      input.disabled = false;
+    }
     if (response.status === 503) {
       // This is usually just HTML garbage when the server request timeout is reached, so print a better error
-      alert("Something went wrong. Try again later.");
+      alert('Something went wrong. Try again later.');
     } else if (!response.ok) {
       const body = await response.text();
       let error = `Received an error response. HTTP code: ${response.status}`;
@@ -177,10 +174,10 @@ $(document).ready(async function() {
       url = response.url;
     } else {
       const data = await response.json();
-      if (data.startsWith("/")) {
+      if (data.startsWith('/')) {
         // local feed
         let pathname = window.location.pathname;
-        if (pathname.endsWith("/")) {
+        if (pathname.endsWith('/')) {
           pathname = pathname.substring(0, pathname.length-1);
         }
         url = `${window.location.origin}${pathname}${data}`;
@@ -197,177 +194,107 @@ $(document).ready(async function() {
     uri.search = uri.searchParams.toString();
     url = uri.toString();
 
-    const feed_modal = $("#feed-modal");
-    const feed_url = $("#feed-url");
-    feed_url.val(url).trigger("input");
-    feed_modal.modal("show", this);
-    feed_url.select();
+    feedUrlInput.value = url;
+    feedUrlInput.dispatchEvent(new InputEvent('input'));
+    feedModal.show(this);
+    feedUrlInput.select();
 
     return false;
-  });
-
-  $("#feed-modal").on("show.bs.modal", function(event) {
-    const modal = $(this);
-    const form = $(event.relatedTarget);
-    const action = form.attr("action");
-    const url = $("#feed-url").val();
-    console.log(url);
-    modal.find("form").trigger("reset").hide();
-    if (url.startsWith(window.location.origin)) {
-      if (action === "youtube") {
-        const uri = new URL(url);
-        const q = uri.searchParams.get("q");
-        if (q) {
-          $("#youtube_title_filter").val(q);
-        }
-      }
-      modal.find(`#${action}-options`).show().attr("action", url).trigger("change");
-    }
-  });
-
-  $("#copy-button").click(function() {
-    const feed_url = $("#feed-url");
-    feed_url.select();
-    navigator.clipboard.writeText(feed_url.val());
-    this.textContent = "Copied";
-  });
-
-  $("#feed-url").on("input", function() {
-    $("#copy-button").text("Copy");
-  });
-
-  $("#feed-modal form").submit(function(event) {
-    event.preventDefault();
-    return false;
-  });
-
-  $("#feed-modal form").on("input", function(e) {
-    const form = $(this);
-    const uri = new URL(form.attr("action"));
-    const inputs = form.serializeArray();
-    for (const input of inputs) {
-      if (input.value === "") {
-        if (uri.searchParams.has(input.name)) {
-          uri.searchParams.delete(input.name);
-        }
-        continue;
-      }
-      uri.searchParams.set(input.name, input.value);
-    }
-    const url = uri.toString();
-    $("#feed-url").val(url).trigger("input");
-    if (e.target.tagName !== "INPUT" || e.target.type !== "text") {
-      $("#feed-url").select();
-    }
-  });
-
-  $("[data-download-filename]").click(async function() {
-    const form = $(this).parents("form");
-    const q = form.find("input[name=q]").val();
-    if (q === "") {
-      alert("Please enter a URL.");
-      return;
-    }
-
-    const response = await fetch(`${form.attr("action")}/download?url=${q}`, {
-      headers: {
-        "Accept": "application/json",
-      },
-    });
-    if (!response.ok) {
-      alert(await response.text());
-      return;
-    }
-    let data = await response.json();
-    if (!Array.isArray(data)) {
-      data = [data];
-    }
-
-    data.forEach(async (file, i) => {
-      if (file.live) {
-        $(`<div><p><tt>ffmpeg -i "${file.url}" "${file.filename}"</tt></p></div>`).insertAfter(form);
-        return;
-      }
-
-      // this is a big hack for cross-origin <a download="filename">
-      window.dirty++;
-      const controller = new AbortController();
-      const progress = document.createElement("progress");
-      progress.title = file.filename;
-      $(progress).click(function() {
-        if (confirm(`Abort download of "${file.filename}"?`)) {
-          controller.abort();
-          window.dirty--;
-          $(this).off("click");
-        }
-      });
-      $(progress).insertAfter(form);
-
-      const response = await fetch(file.url, {
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
-      }
-      progress.max = parseInt(response.headers.get("Content-Length"), 10);
-
-      const reader = response.body.getReader();
-      const parts = [];
-      while (true) {
-        const {value, done} = await reader.read();
-        console.log(i, value?.length, done);
-        if (done) {
-          break;
-        }
-        parts.push(value);
-        progress.value += value.length;
-        progress.title = `${fmt_filesize(progress.value)} / ${fmt_filesize(progress.max)} (${(progress.value/progress.max*100).toFixed(1)}%) of ${file.filename}`;
-      }
-
-      const blob = new Blob(parts);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.style.display = "none";
-      a.href = url;
-      a.download = file.filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        window.dirty--;
-      }, 100);
-    });
-  });
-
-  const tz_offset = -new Date().getTimezoneOffset();
-  if (tz_offset !== 0) {
-    $("#youtube_q").after($('<input type="hidden" name="tz">').val(`${sign(tz_offset)}${Math.abs(tz_offset/60).toString().padStart(2,'0')}:${Math.abs(tz_offset%60).toString().padStart(2,'0')}`));
   }
 
-  const params = toObject(window.location.search.substring(1).split("&").map((arg) => arg.split("=")));
+  for (const form of document.querySelectorAll('#services form')) {
+    form.addEventListener('submit', submitForm);
+  }
+
+  document.addEventListener('shown.bs.modal', function (event) {
+    const form = event.relatedTarget;
+    const action = form.getAttribute('action');
+    const url = feedUrlInput.value;
+    console.log(url);
+    for (const form of event.target.querySelectorAll('form')) {
+      form.reset();
+      form.classList.add('d-none');
+    }
+    if (url.startsWith(window.location.origin)) {
+      if (action === 'youtube') {
+        const uri = new URL(url);
+        const q = uri.searchParams.get('q');
+        if (q) {
+          document.querySelector('#youtube_title_filter').value = q;
+        }
+      }
+      const formOptions = event.target.querySelector(`#${action}-options`);
+      formOptions.classList.remove('d-none');
+      formOptions.action = url;
+    }
+  });
+
+  const copyButton = document.querySelector('#copy-button');
+  copyButton.addEventListener('click', function() {
+    feedUrlInput.select();
+    navigator.clipboard.writeText(feedUrlInput.value);
+    this.textContent = 'Copied';
+  });
+  feedUrlInput.addEventListener('input', function() {
+    copyButton.textContent = 'Copy';
+  });
+
+  for (const form of document.querySelectorAll('#feed-modal form')) {
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      return false;
+    });
+
+    form.addEventListener('input', function(event) {
+      const uri = new URL(this.action);
+      const data = new FormData(this);
+      for (const [name, value] of data.entries()) {
+        if (value === '') {
+          if (uri.searchParams.has(name)) {
+            uri.searchParams.delete(name);
+          }
+          continue;
+        }
+        uri.searchParams.set(name, value);
+      }
+      const url = uri.toString();
+      feedUrlInput.value = url;
+      feedUrlInput.dispatchEvent(new InputEvent('input'));
+      if (event.target.tagName !== "INPUT" || event.target.type !== "text") {
+        feedUrlInput.select();
+      }
+    });
+  }
+
+  const tzOffset = -new Date().getTimezoneOffset();
+  if (tzOffset !== 0) {
+    const tzInput = document.createElement('input');
+    tzInput.name = 'tz';
+    tzInput.type = 'hidden';
+    tzInput.value = `${sign(tzOffset)}${Math.abs(tzOffset/60).toString().padStart(2,'0')}:${Math.abs(tzOffset%60).toString().padStart(2,'0')}`;
+    document.querySelector('form[action="youtube"]').appendChild(tzInput);
+  }
+
+  const params = toObject(window.location.search.substring(1).split('&').map((arg) => arg.split('=')));
   if (params.q) {
-    $('input[type="search"]').val(params.q);
+    for (const input of document.querySelectorAll('input[type="search"]')) {
+      input.value = params.q;
+    }
   }
   const url = params.download || params.go;
   if (url) {
     const m = /([a-z0-9]+)\.[^./]+\//.exec(url);
     if (m) {
-      const input = $(`#${m[1]}_q`);
-      if (input[0]) {
-        input[0].scrollIntoView({ block: "center" });
-        input.val(url);
-        const form = input.parents("form");
-        if (params.download) {
-          form.find("[data-download-filename]").click();
-        } else {
-          form.submit();
-        }
+      const input = document.querySelector(`#${m[1]}_q`);
+      if (input) {
+        input.scrollIntoView({ block: 'center' });
+        input.value = url;
+        const form = input.parentElement;
+        form.requestSubmit(form.querySelector('input[type="submit"]'));
       } else if (params.go) {
         const response = await fetchWithRetry(`go?q=${encodeURIComponent(params.go)}`, {
           headers: {
-            "Accept": "application/json",
+            'Accept': 'application/json',
           },
         });
         if (!response.ok) {
@@ -375,39 +302,35 @@ $(document).ready(async function() {
           return;
         }
         const url = await response.json();
-        const feed_modal = $("#feed-modal");
-        const feed_url = $("#feed-url");
-        feed_url.val(url);
-        feed_modal.modal("show");
-        feed_url.select();
+        feedUrlInput.value = url;
+        feedModal.show();
+        feedUrlInput.select();
       }
     }
   }
 
   // Only show dark mode switch if JavaScript is enabled
-  $(".js-show").removeClass("d-none");
-});
+  for (const el of document.querySelectorAll('.js-show')) {
+    el.classList.remove('d-none');
+  }
 
-
-// Dark mode
-
-document.addEventListener("DOMContentLoaded", () => {
-  const checkbox = document.getElementById("dark-mode");
+  // Dark mode
+  const checkbox = document.getElementById('dark-mode');
   const label = checkbox.parentElement.querySelector('label[for="dark-mode"]');
   for (const el of [checkbox, label]) {
-    el.addEventListener("click", (e) => {
+    el.addEventListener('click', (e) => {
       if (e.isTrusted && localStorageUsable) {
         // user initiated
         if (e.shiftKey) {
           localStorage.removeItem("theme");
-          checkbox.checked = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          checkbox.checked = window.matchMedia('(prefers-color-scheme: dark)').matches;
           checkbox.indeterminate = true;
         } else {
-          localStorage.setItem("theme", (checkbox.checked ? "dark" : "light"));
+          localStorage.setItem('theme', checkbox.checked ? 'dark' : 'light');
         }
       }
 
-      const theme = (checkbox.checked ? 'dark' : 'light');
+      const theme = checkbox.checked ? 'dark' : 'light';
       document.documentElement.setAttribute('data-bs-theme', theme);
     });
   }
@@ -416,19 +339,19 @@ document.addEventListener("DOMContentLoaded", () => {
   let theme = window.location.search.substring(1).split('&').find(v => v.startsWith('theme='))?.split('=')?.[1]
   if (localStorageUsable) {
     // localStorage has preference over query parameter
-    const localTheme = localStorage.getItem("theme");
+    const localTheme = localStorage.getItem('theme');
     if (localTheme) {
       theme = localTheme;
     }
   }
-  if (theme === "dark" || (theme === undefined && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+  if (theme === 'dark' || (theme === undefined && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     checkbox.click();
   }
   checkbox.indeterminate = (theme === undefined);
 });
 
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-  const checkbox = document.getElementById("dark-mode");
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  const checkbox = document.getElementById('dark-mode');
   if (checkbox.indeterminate && checkbox.checked !== e.matches) {
     checkbox.click();
     checkbox.indeterminate = true;
