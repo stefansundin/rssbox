@@ -16,6 +16,7 @@ gem "tzinfo"
 gem "nokogiri"
 gem "prometheus-client", require: "prometheus/middleware/exporter"
 gem "opengraph_parser"
+gem "rbtrace"
 
 gem "airbrake", require: false
 gem "newrelic_rpm", require: false

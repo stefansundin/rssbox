@@ -13,6 +13,11 @@ GEM
     connection_pool (3.0.2)
     dotenv (3.2.0)
     erb (6.0.4)
+    ffi (1.17.4)
+    ffi (1.17.4-aarch64-linux-gnu)
+    ffi (1.17.4-arm-linux-gnu)
+    ffi (1.17.4-arm64-darwin)
+    ffi (1.17.4-x86_64-linux-gnu)
     github-release-party (0.4.4)
       rake (>= 12)
     io-console (0.8.2)
@@ -23,6 +28,7 @@ GEM
       reline (>= 0.4.2)
     logger (1.7.0)
     mini_portile2 (2.8.9)
+    msgpack (1.8.3)
     multi_json (1.21.1)
     mustermann (3.1.1)
     newrelic_rpm (10.6.0)
@@ -43,6 +49,7 @@ GEM
       addressable
       nokogiri
     openssl (4.0.2)
+    optimist (3.2.1)
     powder (0.4.0)
       thor (>= 0.11.5)
     pp (0.6.4)
@@ -69,6 +76,10 @@ GEM
       logger
       prism (>= 1.6.0)
       tsort
+    rbtrace (0.5.4)
+      ffi (>= 1.0.6)
+      msgpack (>= 0.4.3)
+      optimist (>= 3.0.0)
     rbtree3 (0.7.1)
     rdoc (8.0.0)
       erb
@@ -129,6 +140,7 @@ DEPENDENCIES
   rack
   rack-ssl-enforcer
   rake
+  rbtrace
   redis
   secure_headers
   sinatra

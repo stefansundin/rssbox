@@ -46,7 +46,7 @@ RUN \
     libjemalloc2 \
     # Uncomment if you need YJIT:
     # rustc \
-    vim less && \
+    vim less procps && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
