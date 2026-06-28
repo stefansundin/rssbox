@@ -1360,7 +1360,7 @@ if ENV["BING_VERIFICATION_TOKEN"]
 end
 
 error do |e|
-  [500, "Sorry, a nasty error occurred: #{e}"]
+  [500, "Sorry, a nasty error occurred: #{e.inspect}"]
 end
 
 error Sinatra::NotFound do

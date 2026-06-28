@@ -26,8 +26,8 @@ gem "openssl", require: false
 
 group :development do
   gem "sinatra-contrib", require: "sinatra/reloader"
-  gem "powder"
-  # gem "binding_of_caller"
-  # gem "better_errors"
+  gem "pry"
+  gem "binding_of_caller"
+  gem "better_errors"
   gem "github-release-party"
 end
