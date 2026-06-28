@@ -57,6 +57,7 @@ ENV MALLOC_ARENA_MAX=2
 # Make it possible to execute gem binaries without "bundle exec"
 ENV GEM_PATH=/app/vendor/bundle/ruby/4.0.0
 ENV PATH=$GEM_PATH/bin:$PATH
+RUN echo 'PATH=$GEM_PATH/bin:$PATH' > /etc/profile.d/path.sh
 
 ENV APP_ENV=production
 
