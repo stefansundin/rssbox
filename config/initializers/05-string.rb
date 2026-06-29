@@ -174,7 +174,7 @@ class String
       url += "&time=#{t}" if t
       <<~EOF
         <iframe width="853" height="480" src="#{url}" allowfullscreen referrerpolicy="no-referrer" style="border: 0;"></iframe>
-        <a href="#{url}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> | <a href="#{root_url}/twitch/download?url=#{vod_id || channel_name}">Download video</a>
+        <a href="#{url}" rel="noreferrer">Open embed</a> | <a href="#{root_url}/twitch/watch?url=#{vod_id || channel_name}&open">Open in VLC</a> #{"| <a href=\"#{root_url}/twitch/download?url=#{vod_id || channel_name}\">Download video</a>" if ENV.has_key?("TWITCHTOKEN_CLIENT_ID")}
       EOF
     elsif %r{^https?://(?:www\.)?soundcloud\.com/(?<artist>[^/]+)/(?<set>sets/)?(?<track>[^/?#]+)} =~ self
       # https://soundcloud.com/infectedmushroom/liquid-smoke
