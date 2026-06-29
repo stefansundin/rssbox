@@ -27,7 +27,7 @@ GEM
     ffi (1.17.4-arm-linux-gnu)
     ffi (1.17.4-arm64-darwin)
     ffi (1.17.4-x86_64-linux-gnu)
-    github-release-party (0.4.4)
+    github-release-party (0.4.5)
       rake (>= 12)
     io-console (0.8.2)
     irb (1.18.0)
