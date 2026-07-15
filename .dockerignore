@@ -1,5 +1,6 @@
 /log
 /tmp
+/vendor
 /.env
 /.dockerenv
 /.bundle
