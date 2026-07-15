@@ -16,7 +16,11 @@ gem "tzinfo"
 gem "nokogiri"
 gem "prometheus-client", require: "prometheus/middleware/exporter"
 gem "opengraph_parser"
-gem "rbtrace"
+
+# https://github.com/tmm1/rbtrace/issues/73
+install_if -> { RUBY_PLATFORM.start_with?("arm", "aarch", "x86") } do
+  gem "rbtrace"
+end
 
 gem "airbrake", require: false
 gem "newrelic_rpm", require: false
