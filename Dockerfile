@@ -44,8 +44,6 @@ RUN \
   apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
     libjemalloc2 \
-    # Uncomment if you need YJIT:
-    # rustc \
     vim less procps && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
