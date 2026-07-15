@@ -24,9 +24,15 @@ GEM
     erubi (1.13.1)
     ffi (1.17.4)
     ffi (1.17.4-aarch64-linux-gnu)
+    ffi (1.17.4-aarch64-linux-musl)
     ffi (1.17.4-arm-linux-gnu)
+    ffi (1.17.4-arm-linux-musl)
     ffi (1.17.4-arm64-darwin)
+    ffi (1.17.4-x86-linux-gnu)
+    ffi (1.17.4-x86-linux-musl)
+    ffi (1.17.4-x86_64-darwin)
     ffi (1.17.4-x86_64-linux-gnu)
+    ffi (1.17.4-x86_64-linux-musl)
     github-release-party (0.4.5)
       rake (>= 12)
     io-console (0.8.2)
@@ -49,11 +55,19 @@ GEM
       racc (~> 1.4)
     nokogiri (1.19.4-aarch64-linux-gnu)
       racc (~> 1.4)
+    nokogiri (1.19.4-aarch64-linux-musl)
+      racc (~> 1.4)
     nokogiri (1.19.4-arm-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.19.4-arm-linux-musl)
       racc (~> 1.4)
     nokogiri (1.19.4-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.19.4-x86_64-darwin)
+      racc (~> 1.4)
     nokogiri (1.19.4-x86_64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.19.4-x86_64-linux-musl)
       racc (~> 1.4)
     opengraph_parser (0.2.5)
       addressable
@@ -129,14 +143,21 @@ GEM
 
 PLATFORMS
   aarch64-linux
+  aarch64-linux-gnu
+  aarch64-linux-musl
   arm-linux
-  arm64-darwin-22
-  arm64-darwin-23
-  arm64-darwin-24
-  arm64-darwin-25
+  arm-linux-gnu
+  arm-linux-musl
+  arm64-darwin
   armv7l-linux-eabihf
   riscv64-linux
+  ruby
+  x86-linux-gnu
+  x86-linux-musl
+  x86_64-darwin
   x86_64-linux
+  x86_64-linux-gnu
+  x86_64-linux-musl
 
 DEPENDENCIES
   addressable
