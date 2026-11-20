@@ -272,7 +272,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     tzInput.name = 'tz';
     tzInput.type = 'hidden';
     tzInput.value = `${sign(tzOffset)}${Math.abs(tzOffset/60).toString().padStart(2,'0')}:${Math.abs(tzOffset%60).toString().padStart(2,'0')}`;
-    document.querySelector('form[action="youtube"]').appendChild(tzInput);
+    const form = document.querySelector('form[action="youtube"]');
+    const button = form.querySelector('input[type="submit"]');
+    form.insertBefore(tzInput, button);
   }
 
   const params = toObject(window.location.search.substring(1).split('&').map((arg) => arg.split('=')));
